@@ -13,6 +13,7 @@ function Navbar() {
           首页
         </NavLink>
         <NavLink to="/game">飞机大战</NavLink>
+        <NavLink to="/pomodoro">番茄钟</NavLink>
         <NavLink to="/resume">简历</NavLink>
         <NavLink to="/about">关于</NavLink>
       </nav>

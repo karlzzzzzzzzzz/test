@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import About from './pages/About'
 import Resume from './pages/Resume'
+import Pomodoro from './pages/Pomodoro'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/index.html" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/resume" element={<Resume />} />
+        <Route path="/pomodoro" element={<Pomodoro />} />
         <Route
           path="/game"
           element={

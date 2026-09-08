@@ -1,0 +1,201 @@
+/* 番茄钟页面：全部作用域隔离在 .pomo-page 下 */
+.pomo-page {
+  --accent: #e2554c;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(160deg, #faf7f5 0%, #f0ece8 100%);
+  text-align: center;
+}
+
+.pomo-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  padding: 36px 40px 32px;
+  width: 420px;
+  max-width: 100%;
+}
+
+.pomo-card h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2b2b2b;
+  margin: 0 0 6px;
+  border: none;
+  padding: 0;
+}
+
+.pomo-tip {
+  font-size: 13px;
+  color: #999;
+  margin: 0 0 22px;
+}
+
+/* 模式切换 */
+.pomo-modes {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.pomo-mode-btn {
+  border: 1px solid #e3e0dc;
+  background: #faf9f8;
+  color: #666;
+  font-size: 14px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pomo-mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pomo-mode-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* 圆环进度 */
+.pomo-ring {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 0 auto 26px;
+}
+
+.pomo-ring svg {
+  transform: rotate(-90deg);
+}
+
+.pomo-ring-bg {
+  fill: none;
+  stroke: #f0ece8;
+  stroke-width: 10;
+}
+
+.pomo-ring-fg {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease;
+}
+
+.pomo-time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pomo-time-text {
+  font-size: 56px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #2b2b2b;
+  letter-spacing: 2px;
+}
+
+.pomo-time-label {
+  margin-top: 24px;
+  font-size: 15px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* 控制按钮 */
+.pomo-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.pomo-btn {
+  border: 1px solid #e3e0dc;
+  background: #fff;
+  color: #555;
+  font-size: 15px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pomo-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pomo-btn-main {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  min-width: 96px;
+  font-weight: 600;
+}
+
+.pomo-btn-main:hover {
+  filter: brightness(1.08);
+  color: #fff;
+}
+
+/* 统计 */
+.pomo-stats p {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+
+.pomo-stats strong {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.pomo-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.pomo-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e8e4e0;
+  transition: background 0.25s ease;
+}
+
+.pomo-dot.filled {
+  background: var(--accent);
+}
+
+@media (max-width: 480px) {
+  .pomo-card {
+    padding: 28px 20px 24px;
+  }
+  .pomo-ring {
+    width: 240px;
+    height: 240px;
+  }
+  .pomo-ring svg {
+    width: 240px;
+    height: 240px;
+  }
+  .pomo-time-text {
+    font-size: 44px;
+  }
+}

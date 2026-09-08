@@ -36,6 +36,9 @@ function Home() {
           <Link to="/resume" className="cta-link">
             在线简历
           </Link>
+          <Link to="/pomodoro" className="cta-link">
+            番茄时钟
+          </Link>
           <Link to="/about" className="cta-link">
             了解更多
           </Link>
@@ -70,6 +73,11 @@ function Home() {
             <li>
               <Link to="/game" className="router-link">
                 玩「飞机大战」
+              </Link>
+            </li>
+            <li>
+              <Link to="/pomodoro" className="router-link">
+                打开「番茄时钟」
               </Link>
             </li>
             <li>
