@@ -83,8 +83,8 @@ function Resume() {
             <h2>技术简介</h2>
             <ul className="dot">
               <li>
-                掌握 HTML、CSS、JavaScript 前端基础，精通页面布局与 H5、C3
-                新特性，熟悉 Less、Sass 及移动端适配
+                掌握 HTML、CSS、JavaScript 前端基础，精通页面布局与 H5、C3、ES6
+                新特性，熟悉 Less、Sass、tailwindcss 及移动端适配
               </li>
               <li>
                 掌握 React 全家桶（react-router、react-redux、Hooks），能独立完成中后台
@@ -96,9 +96,8 @@ function Resume() {
                 API 接入经验
               </li>
               <li>
-                掌握 Magix2 / Magix3 区块化框架及
-                magix-brix，熟练使用 iframe +
-                自定义消息机制进行微前端集成与桥接通信
+                掌握 Magix3 区块化框架，Magix Gallery组件库
+                及Magix-brix组件模块化
               </li>
               <li>
                 熟练使用 Fusion、ICE（Vite）、Formily、MDD、JSON Schema
@@ -183,14 +182,13 @@ function Resume() {
                   </li>
                   <li>
                     <strong>项目职责：</strong>
-                    op 旧平台基于 Magix2 框架管理活动及营销数据，开发列表及表单创建类页面；mmcrm-op
+                    op 旧平台基于 Magix 框架管理活动及营销数据，开发列表及表单创建类页面；mmcrm-op
                     使用新版 Magix3 框架结合运营流程优化思路重构历史运营平台，项目以微前端方式嵌入并同时挂载多个同平台功能；负责
                     OSS 上传组件重构（支持分片、批量上传）；数据看板通过 iframe 嵌入 fib
-                    链接并接入 chart 图表；页面轮询 AI
-                    结果时使用时间戳做判定；ai-crm 智能 CRM 平台通过 Magix
+                    或接入 chart 图表；ai-crm 智能 CRM 平台通过 Magix
                     桥接 iframe 嵌入；东风（udradar）使用 magix-brix 开发 ADC
                     节点配置页面及组件；心流（iFlow CLI）aicoder
-                    平台负责移动端适配、GitHub 关联登录、文件 diff、Markdown
+                    平台，使用vite+react+tailwindcss。负责移动端适配、GitHub 关联登录、文件 diff、Markdown
                     文本渲染、shell 终端渲染、文件读写渲染等功能。
                   </li>
                   <li>
