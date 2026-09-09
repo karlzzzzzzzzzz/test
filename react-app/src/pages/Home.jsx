@@ -1,97 +1,118 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import heroImg from '../assets/hero.png'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '../assets/vite.svg'
+import MouseTrail from '../components/MouseTrail'
+import './Home.css'
+
+const SKILLS = [
+  'React', 'Vue', 'TypeScript', 'JavaScript',
+  'Three.js', 'Vite', 'Node.js', 'CSS', 'Webpack',
+]
+
+const WORKS = [
+  {
+    title: '飞机大战',
+    desc: '基于 Three.js 的 3D 射击游戏，含粒子爆炸、星空穿梭、尾焰特效',
+    tags: ['Three.js', 'Canvas', 'Game'],
+    to: '/game',
+    span: 'bento-span-6',
+  },
+  {
+    title: '番茄时钟',
+    desc: '番茄工作法计时器，专注/短休/长休循环',
+    tags: ['React', 'Hooks'],
+    to: '/pomodoro',
+    span: 'bento-span-3',
+  },
+  {
+    title: '在线简历',
+    desc: 'A4 尺寸个人简历，打印适配',
+    tags: ['CSS Grid', 'A4'],
+    to: '/resume',
+    span: 'bento-span-3',
+  },
+]
 
 function Home() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>欢迎来到首页</h1>
-          <p>
-            这是一个基于 <code>Vite</code> + <code>React</code> +{' '}
-            <code>React Router</code> 的项目
+    <div className="home-page">
+      <MouseTrail />
+
+      <div className="bento-grid">
+        {/* 关于我（大卡） */}
+        <section className="bento-card bento-about bento-span-8">
+          <p className="bento-eyebrow">你好，我是</p>
+          <h1 className="bento-name">前端工程师</h1>
+          <p className="bento-tagline">
+            专注 Web 交互与可视化，把想法变成可点击、可游玩、可打印的东西
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-        <div className="home-actions">
-          <Link to="/game" className="cta-link cta-primary">
-            开始游戏 →
-          </Link>
-          <Link to="/resume" className="cta-link">
-            在线简历
-          </Link>
-          <Link to="/pomodoro" className="cta-link">
-            番茄时钟
-          </Link>
-          <Link to="/about" className="cta-link">
-            了解更多
-          </Link>
-        </div>
-      </section>
+          <div className="bento-cta">
+            <Link to="/resume" className="bento-btn bento-btn-primary">
+              查看简历 →
+            </Link>
+            <Link to="/game" className="bento-btn">
+              开始游戏
+            </Link>
+          </div>
+        </section>
 
-      <div className="ticks"></div>
+        {/* 技术栈（小卡） */}
+        <section className="bento-card bento-skills bento-span-4">
+          <h2 className="bento-card-title">
+            <span className="bento-card-num">01</span> 技术栈
+          </h2>
+          <div className="bento-skill-list">
+            {SKILLS.map((s) => (
+              <span key={s} className="bento-skill">{s}</span>
+            ))}
+          </div>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <h2>快速开始</h2>
-          <p>编辑 src/pages/Home.jsx 即可修改本页</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank" rel="noreferrer">
-                <img className="logo" src={viteLogo} alt="" />
-                探索 Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank" rel="noreferrer">
-                <img className="button-icon" src={reactLogo} alt="" />
-                React 文档
-              </a>
-            </li>
-          </ul>
+        {/* 精选作品标题 */}
+        <div className="bento-section-title bento-span-12">
+          <span className="bento-card-num">02</span> 精选作品
         </div>
-        <div id="social">
-          <h2>小游戏</h2>
-          <p>Three.js 打造，带粒子爆炸特效的飞机大战</p>
-          <ul>
-            <li>
-              <Link to="/game" className="router-link">
-                玩「飞机大战」
-              </Link>
-            </li>
-            <li>
-              <Link to="/pomodoro" className="router-link">
-                打开「番茄时钟」
-              </Link>
-            </li>
-            <li>
-              <Link to="/not-exist" className="router-link">
-                触发 404 页
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        {/* 作品卡片 */}
+        {WORKS.map((w) => (
+          <Link key={w.title} to={w.to} className={`bento-card bento-work ${w.span}`}>
+            <div className="bento-work-top">
+              <span className="bento-work-icon">◯</span>
+              <span className="bento-work-arrow">→</span>
+            </div>
+            <h3 className="bento-work-title">{w.title}</h3>
+            <p className="bento-work-desc">{w.desc}</p>
+            <div className="bento-work-tags">
+              {w.tags.map((t) => (
+                <span key={t} className="bento-work-tag">{t}</span>
+              ))}
+            </div>
+          </Link>
+        ))}
+
+        {/* 统计条 */}
+        <footer className="bento-card bento-stats bento-span-12">
+          <div className="bento-stat">
+            <span className="bento-stat-num">3</span>
+            <span className="bento-stat-label">个作品</span>
+          </div>
+          <div className="bento-stat-divider" />
+          <div className="bento-stat">
+            <span className="bento-stat-num">1</span>
+            <span className="bento-stat-label">个游戏</span>
+          </div>
+          <div className="bento-stat-divider" />
+          <div className="bento-stat">
+            <span className="bento-stat-num">1</span>
+            <span className="bento-stat-label">份简历</span>
+          </div>
+          <div className="bento-stat-divider" />
+          <div className="bento-stat bento-stat-contact">
+            <a href="mailto:hello@example.com" className="bento-stat-mail">
+              hello@example.com →
+            </a>
+          </div>
+        </footer>
+      </div>
+    </div>
   )
 }
 

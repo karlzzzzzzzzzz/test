@@ -1,0 +1,495 @@
+/* ============================================================
+   首页样式：Bento Grid 网格展示台（方案三）
+   作用域全部隔离在 .home-page 下
+   保留：鼠标轨迹 canvas、@property 动画、backdrop-filter、
+        color-mix、:has、clip-path、mask-image
+   ============================================================ */
+
+/* 自定义属性：用于渐变角度动画 */
+@property --home-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.home-page {
+  --home-accent: #aa3bff;
+  --home-accent-2: #6a5cff;
+  --home-bg: var(--bg);
+  --home-surface: var(--social-bg);
+  --home-border: var(--border);
+  --home-text: var(--text);
+  --home-text-h: var(--text-h);
+
+  position: relative;
+  min-height: 100svh;
+  text-align: left;
+  padding: 48px 32px 64px;
+  max-width: 1180px;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+/* ===== 鼠标轨迹画布 ===== */
+.mouse-trail {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 5;
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mouse-trail {
+    mix-blend-mode: screen;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mouse-trail {
+    display: none;
+  }
+}
+
+/* ===== Bento 网格容器 ===== */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.bento-span-3 { grid-column: span 3; }
+.bento-span-4 { grid-column: span 4; }
+.bento-span-6 { grid-column: span 6; }
+.bento-span-8 { grid-column: span 8; }
+.bento-span-12 { grid-column: span 12; }
+
+/* ===== 通用卡片 ===== */
+.bento-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 32px;
+  border-radius: 20px;
+  background: var(--home-surface);
+  border: 1px solid var(--home-border);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease;
+  animation: bento-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* 玻璃拟态 */
+@supports (backdrop-filter: blur(12px)) {
+  .bento-card {
+    background: color-mix(in srgb, var(--home-surface) 72%, transparent);
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* 入场动画错峰 */
+.bento-card:nth-child(1) { animation-delay: 0.05s; }
+.bento-card:nth-child(2) { animation-delay: 0.12s; }
+.bento-card:nth-child(3) { animation-delay: 0.19s; }
+.bento-card:nth-child(4) { animation-delay: 0.26s; }
+.bento-card:nth-child(5) { animation-delay: 0.33s; }
+.bento-card:nth-child(6) { animation-delay: 0.40s; }
+.bento-card:nth-child(7) { animation-delay: 0.47s; }
+
+/* ===== 关于我（大卡） ===== */
+.bento-about {
+  min-height: 320px;
+  justify-content: center;
+}
+
+.bento-about::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--home-accent) 20%, transparent) 0%,
+    transparent 70%
+  );
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  filter: blur(30px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bento-eyebrow {
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--home-accent);
+  margin: 0;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.bento-name {
+  font-family: var(--heading);
+  font-size: clamp(40px, 7vw, 76px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -2px;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+
+  background: linear-gradient(
+    135deg,
+    var(--home-text-h) 0%,
+    var(--home-accent) 55%,
+    var(--home-accent-2) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.bento-tagline {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--home-text);
+  max-width: 480px;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.bento-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.bento-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 24px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid var(--home-border);
+  color: var(--home-text-h);
+  background: var(--home-bg);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bento-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--home-accent) 22%, transparent);
+}
+
+.bento-btn-primary {
+  background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+  border-color: transparent;
+  color: #fff;
+}
+
+.bento-btn-primary:hover {
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--home-accent) 42%, transparent);
+}
+
+/* ===== 技术栈卡片 ===== */
+.bento-skills {
+  min-height: 320px;
+}
+
+.bento-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--home-text);
+  margin: 0 0 6px;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.bento-card-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--home-accent);
+}
+
+.bento-skill-list {
+  padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  flex-grow: 1;
+  /* 边缘渐隐 */
+  -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent);
+  mask-image: linear-gradient(180deg, #000 80%, transparent);
+}
+
+.bento-skill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--home-text-h);
+  background: color-mix(in srgb, var(--home-accent) 8%, var(--home-bg));
+  border: 1px solid var(--home-border);
+  transition: all 0.25s ease;
+  cursor: default;
+}
+
+.bento-skill:hover {
+  color: var(--home-accent);
+  border-color: var(--home-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--home-accent) 25%, transparent);
+}
+
+/* ===== 精选作品标题 ===== */
+.bento-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--home-text);
+  padding: 8px 4px 0;
+}
+
+.bento-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--home-border);
+}
+
+/* ===== 作品卡片 ===== */
+.bento-work {
+  text-decoration: none;
+  color: var(--home-text-h);
+  min-height: 200px;
+}
+
+/* 渐变边框动画 */
+.bento-work::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--home-angle),
+    transparent 0%,
+    var(--home-accent) 22%,
+    var(--home-accent-2) 44%,
+    transparent 66%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.bento-work:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--home-accent) 18%, transparent);
+}
+
+.bento-work:hover::before {
+  opacity: 1;
+  animation: bento-rotate 2.8s linear infinite;
+}
+
+/* :has() 父级感知 */
+.bento-grid:has(.bento-work:hover) .bento-work:not(:hover) {
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.bento-work-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bento-work-icon {
+  font-size: 16px;
+  color: var(--home-accent);
+}
+
+.bento-work-arrow {
+  font-size: 18px;
+  color: var(--home-text);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.bento-work:hover .bento-work-arrow {
+  transform: translate(4px, -4px);
+  color: var(--home-accent);
+}
+
+.bento-work-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--home-text-h);
+}
+
+.bento-work-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--home-text);
+  margin: 0;
+  flex-grow: 1;
+}
+
+.bento-work-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bento-work-tag {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  color: var(--home-accent);
+  background: color-mix(in srgb, var(--home-accent) 10%, transparent);
+}
+
+/* ===== 统计条 ===== */
+.bento-stats {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px 32px;
+  min-height: 80px;
+}
+
+.bento-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.bento-stat-num {
+  font-family: var(--heading);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--home-accent);
+  line-height: 1;
+}
+
+.bento-stat-label {
+  font-size: 13px;
+  color: var(--home-text);
+}
+
+.bento-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--home-border);
+}
+
+.bento-stat-contact {
+  margin-left: auto;
+}
+
+.bento-stat-mail {
+  font-size: 14px;
+  color: var(--home-text-h);
+  text-decoration: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--home-border);
+  transition: all 0.25s ease;
+}
+
+.bento-stat-mail:hover {
+  color: var(--home-accent);
+  border-color: var(--home-accent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--home-accent) 22%, transparent);
+}
+
+/* ===== 动画 ===== */
+@keyframes bento-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bento-rotate {
+  to {
+    --home-angle: 360deg;
+  }
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 960px) {
+  .bento-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .bento-span-3 { grid-column: span 3; }
+  .bento-span-4 { grid-column: span 2; }
+  .bento-span-6 { grid-column: span 6; }
+  .bento-span-8 { grid-column: span 6; }
+  .bento-span-12 { grid-column: span 6; }
+}
+
+@media (max-width: 560px) {
+  .home-page {
+    padding: 32px 16px 48px;
+  }
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-span-3,
+  .bento-span-4,
+  .bento-span-6,
+  .bento-span-8,
+  .bento-span-12 {
+    grid-column: span 1;
+  }
+  .bento-about,
+  .bento-skills {
+    min-height: auto;
+  }
+  .bento-stats {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .bento-stat-divider {
+    width: 40px;
+    height: 1px;
+  }
+  .bento-stat-contact {
+    margin-left: 0;
+  }
+}
