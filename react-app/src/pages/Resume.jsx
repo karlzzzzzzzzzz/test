@@ -43,7 +43,7 @@ function Resume() {
             <div className="grid3">
               <span>姓名：邵凯</span>
               <span>性别：男</span>
-              <span>年龄：24</span>
+              <span>年龄：28</span>
               <span>民族：汉</span>
               <span>籍贯：浙江温州</span>
               <span>工作经验：5 年</span>
@@ -83,30 +83,22 @@ function Resume() {
             <h2>技术简介</h2>
             <ul className="dot">
               <li>
-                掌握 HTML、CSS、JavaScript 前端基础，精通页面布局与 H5、C3、ES6
-                新特性，熟悉 Less、Sass、tailwindcss 及移动端适配
+                精通HTML、CSS、JavaScript前端基础，H5、C3、ES6 新特性，Less、Sass、tailwindcss及移动端适配
               </li>
               <li>
-                掌握 React 全家桶（react-router、react-redux、Hooks），能独立完成中后台
-                SPA 开发
+                掌握React全家桶（react-router、react-redux、Hooks），能独立完成中后台SPA开发
               </li>
               <li>
-                掌握 Rax App
-                开发支付宝小程序，熟悉开发、测试、上架全流程，有人脸识别、地址库、设备能力等原生
-                API 接入经验
+                掌握Rax App开发支付宝小程序，熟悉开发、测试、上架全流程。有人脸识别、地址库、设备能力等原生API接入经验
               </li>
               <li>
-                掌握 Magix3 区块化框架，Magix Gallery组件库
-                及Magix-brix组件模块化
+                掌握Magix单页面应用前端架构，Magix-gallery配套组件库，MM-CLI配套命令行工具，Magix微应用落地及Magix-brix组件模块化构建
               </li>
               <li>
-                熟练使用 Fusion、ICE（Vite）、Formily、MDD、JSON Schema
-                等中后台方案，可近乎零代码生成表单页并实现复杂表单联动
+                熟练使用Fusion、ICE（Vite）、Formily、MDD、JSON Schema等中后台方案，可近乎零代码生成表单页并实现复杂表单联动
               </li>
               <li>
-                熟练使用 Git、Webpack、Vite、axios
-                等工程化工具，熟悉 Postman、Charles、ARMS
-                埋点等调试监控手段；了解 Vue 全家桶及 Node.js、MySQL、MongoDB 基础
+                熟练使用Git、Webpack、Vite、axios等工程化工具；熟悉 Postman、Charles、ARMS埋点等调试监控手段；了解Vue全家桶及 Node.js、MySQL、MongoDB基础
               </li>
             </ul>
           </section>
@@ -174,38 +166,25 @@ function Resume() {
                 <ul className="dot">
                   <li>
                     <strong>项目介绍：</strong>
-                    Magix
-                    是区块化管理框架，一个复杂站点可拆分为多个页面，复杂页面再拆分为多个区块进行维护，方便区块的拆分、复用与调试。参与
-                    op（阿里妈妈-运营工作台）旧平台、mmcrm-op 重构平台、ai-crm
-                    智能 CRM 平台、东风（udradar）、心流（iFlow
-                    CLI）等多个平台的前端开发。
+                    阿里妈妈运营工作台系列项目包含：op（阿里妈妈-运营工作台）历史平台、mmcrm-op 业务流程重构平台、ai-crm
+                    智能 CRM 平台及东风（udradar）、心流（iFlowCLI）。
                   </li>
                   <li>
                     <strong>项目职责：</strong>
-                    op 旧平台基于 Magix 框架管理活动及营销数据，开发列表及表单创建类页面；mmcrm-op
-                    使用新版 Magix3 框架结合运营流程优化思路重构历史运营平台，项目以微前端方式嵌入并同时挂载多个同平台功能；负责
-                    OSS 上传组件重构（支持分片、批量上传）；数据看板通过 iframe 嵌入 fib
-                    或接入 chart 图表；ai-crm 智能 CRM 平台通过 Magix
-                    桥接 iframe 嵌入；东风（udradar）使用 magix-brix 开发 ADC
-                    节点配置页面及组件；心流（iFlow CLI）aicoder
-                    平台，使用vite+react+tailwindcss。负责移动端适配、GitHub 关联登录、文件 diff、Markdown
-                    文本渲染、shell 终端渲染、文件读写渲染等功能。
+                    op 历史平台页面功能需求维护，梳理历史业务逻辑，结合新的运营思路重新构建mmcrm-op新版运营工作台，负责项目整体架构设计与开发及后续维护；
+                    ai-crm 使用微前端嵌入crm-op部分功能，负责具体嵌入方案设计与开发及页面嵌入兼容性改造；
+                    东风（udradar）负责重构页面组件，使用 magix-brix 架构开发 ADC 节点配置的组件；
+                    心流（iFlow CLI）aicoder 平台，负责移动端适配、GitHub 关联登录、文件 diff、Markdown文本渲染、shell 终端渲染、文件读写渲染等功能开发及维护。
                   </li>
                   <li>
                     <strong>相关技术：</strong>
-                    Magix2 / Magix3，magix-brix，iframe 微前端桥接，OSS
-                    分片与批量上传，Chart 图表，时间戳轮询，Markdown 渲染，Shell
+                    Magix，Magix-gallery，MM-CLI，Magix-brix，微前端，矢量图标iconfont，Chartpark图表，OSS 上传，Markdown 渲染，Shell
                     终端渲染。
                   </li>
                   <li>
                     <strong>技术描述：</strong>
-                    基于 Magix
-                    区块化理念将页面拆分为独立区块维护，微前端场景下通过 Magix
-                    桥接实现 iframe 与宿主平台通信；OSS
-                    上传组件重构后支持文件分片与批量上传，提升大文件上传稳定性；AI
-                    结果页采用轮询机制并以时间戳判定结果有效性，避免重复渲染；aicoder
-                    平台在浏览器端完成 Markdown 文本与 shell
-                    终端的渲染及文件读写展示，并完成移动端适配。
+                    基于Magix区块化理念，使用配套组件库、RAP接口规范及命令行工具快速构建项目，特殊微前端场景下通过iframe桥接magi互嵌项目，通过webSocket与宿主平台通信；
+                    重构 OSS 上传组件支持文件分片与批量上传，提升大文件上传稳定性；diff2html渲染文件diff，xterm渲染shell终端，react-markdown渲染，tailwindcss配合css变量做移动端适配。
                   </li>
                 </ul>
               </div>
