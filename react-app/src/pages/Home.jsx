@@ -51,6 +51,9 @@ function Home() {
             <Link to="/game" className="bento-btn">
               开始游戏
             </Link>
+            <Link to="/docs" className="bento-btn">
+              技术文档
+            </Link>
           </div>
         </section>
 

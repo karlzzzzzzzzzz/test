@@ -15,6 +15,7 @@ function Navbar() {
         <NavLink to="/game">飞机大战</NavLink>
         <NavLink to="/pomodoro">番茄钟</NavLink>
         <NavLink to="/resume">简历</NavLink>
+        <NavLink to="/docs">技术文档</NavLink>
         <NavLink to="/about">关于</NavLink>
       </nav>
     </header>

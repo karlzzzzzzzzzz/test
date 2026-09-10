@@ -10,6 +10,11 @@ import './App.css'
 
 // 游戏页含 three.js，体积较大，按需加载以减小首屏体积
 const Game = lazy(() => import('./pages/Game'))
+// 文档页依赖 marked 解析 markdown，按需加载
+const Docs = lazy(() => import('./pages/Docs'))
+const DocView = lazy(() => import('./pages/DocView'))
+
+const pageLoading = <div className="game-loading">加载中…</div>
 
 function App() {
   return (
@@ -23,8 +28,24 @@ function App() {
         <Route
           path="/game"
           element={
-            <Suspense fallback={<div className="game-loading">加载中…</div>}>
+            <Suspense fallback={pageLoading}>
               <Game />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/docs"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Docs />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/docs/:slug"
+          element={
+            <Suspense fallback={pageLoading}>
+              <DocView />
             </Suspense>
           }
         />
