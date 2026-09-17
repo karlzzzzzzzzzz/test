@@ -262,6 +262,220 @@
   box-shadow: 0 4px 12px color-mix(in srgb, var(--home-accent) 25%, transparent);
 }
 
+/* ===== 右列容器（技术栈 + 天气） ===== */
+.bento-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 320px;
+}
+
+.bento-side-col .bento-skills {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ===== 天气卡片 ===== */
+.bento-weather {
+  flex: 0 0 auto;
+  padding: 22px 24px;
+  gap: 12px;
+}
+
+.weather-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.weather-title {
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--home-accent);
+  font-weight: 600;
+  margin: 0;
+}
+
+.weather-refresh {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--home-border);
+  background: var(--home-bg);
+  color: var(--home-text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.weather-refresh:hover:not(:disabled) {
+  color: var(--home-accent);
+  border-color: var(--home-accent);
+  transform: rotate(90deg);
+}
+
+.weather-refresh.is-spinning {
+  animation: weather-spin 1s linear infinite;
+}
+
+.weather-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.weather-icon {
+  font-size: 46px;
+  line-height: 1;
+}
+
+.weather-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weather-temp-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.weather-temp {
+  font-family: var(--heading);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--home-text-h);
+}
+
+.weather-unit {
+  font-size: 15px;
+  color: var(--home-text);
+  margin-top: 4px;
+}
+
+.weather-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--home-text);
+}
+
+.weather-range {
+  white-space: nowrap;
+}
+
+.weather-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--home-border);
+  font-size: 12.5px;
+  color: var(--home-text);
+}
+
+.weather-place {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--home-text);
+}
+
+.weather-source {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--home-accent);
+  text-decoration: none;
+  flex: none;
+}
+
+.weather-source:hover {
+  text-decoration: underline;
+}
+
+/* 加载骨架屏 */
+.weather-skeleton {
+  display: block;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--home-text) 12%, transparent);
+  animation: weather-pulse 1.2s ease-in-out infinite;
+}
+
+.weather-skeleton-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.weather-skeleton-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weather-skeleton-temp {
+  width: 72px;
+  height: 34px;
+}
+
+.weather-skeleton-line {
+  width: 130px;
+  height: 12px;
+}
+
+.weather-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--home-text);
+  padding: 8px 0;
+}
+
+.weather-retry {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--home-border);
+  background: var(--home-bg);
+  color: var(--home-text-h);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.weather-retry:hover {
+  color: var(--home-accent);
+  border-color: var(--home-accent);
+}
+
+@keyframes weather-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes weather-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-refresh.is-spinning,
+  .weather-skeleton {
+    animation: none;
+  }
+}
+
 /* ===== 精选作品标题 ===== */
 .bento-section-title {
   display: flex;
@@ -378,6 +592,40 @@
   background: color-mix(in srgb, var(--home-accent) 10%, transparent);
 }
 
+/* ===== Agent 工作流卡片 ===== */
+.bento-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+}
+
+.bento-pipeline-num {
+  font-family: var(--heading);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-image: linear-gradient(135deg, var(--home-accent), color-mix(in srgb, var(--home-accent) 50%, #22d3ee));
+  margin-bottom: 4px;
+}
+
+.bento-pipeline-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--home-text);
+}
+
+.bento-pipeline-desc {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--home-muted);
+  margin: 0;
+}
+
 /* ===== 统计条 ===== */
 .bento-stats {
   flex-direction: row;
@@ -480,6 +728,12 @@
   .bento-about,
   .bento-skills {
     min-height: auto;
+  }
+  .bento-side-col {
+    min-height: 0;
+  }
+  .weather-range {
+    white-space: normal;
   }
   .bento-stats {
     flex-direction: column;

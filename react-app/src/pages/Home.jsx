@@ -1,23 +1,25 @@
 import { Link } from 'react-router-dom'
 import MouseTrail from '../components/MouseTrail'
+import Weather from '../components/Weather'
 import './Home.css'
 
 const SKILLS = [
-  'React', 'Vue', 'TypeScript', 'JavaScript',
-  'Three.js', 'Vite', 'Node.js', 'CSS', 'Webpack',
+  'VibeCode', 'AgentCode', 'CodeGen', 'PromptEng',
+  'CtxEng', 'RAG', 'MultiAgent', 'CLIAgent',
+  'React', 'Three.js', 'Vite',
 ]
 
 const WORKS = [
   {
     title: '飞机大战',
-    desc: '基于 Three.js 的 3D 射击游戏，含粒子爆炸、星空穿梭、尾焰特效',
-    tags: ['Three.js', 'Canvas', 'Game'],
+    desc: 'AI Agent 从零构建的 Three.js 3D 射击游戏，含粒子爆炸、星空穿梭、切页自动暂停修复',
+    tags: ['Three.js', 'AgentCode', 'Game'],
     to: '/game',
     span: 'bento-span-6',
   },
   {
     title: '番茄时钟',
-    desc: '番茄工作法计时器，专注/短休/长休循环',
+    desc: 'Agent 生成的番茄工作法计时器，含模式自动流转与完成数持久化',
     tags: ['React', 'Hooks'],
     to: '/pomodoro',
     span: 'bento-span-3',
@@ -29,6 +31,20 @@ const WORKS = [
     to: '/resume',
     span: 'bento-span-3',
   },
+  {
+    title: '提示词工程文档',
+    desc: 'Agent 检索网络资料后撰写并渲染的 Prompt Engineering 实战手册',
+    tags: ['Markdown', 'Docs'],
+    to: '/docs',
+    span: 'bento-span-6',
+  },
+]
+
+const PIPELINE = [
+  { num: '01', title: '需求理解', desc: 'Agent 解析自然语言指令，拆解为可执行子任务' },
+  { num: '02', title: '代码生成', desc: '自动创建/修改组件、样式、路由，热更新即时验证' },
+  { num: '03', title: '浏览器自测', desc: 'Headless 浏览器逐页点击，截图像素级校验渲染结果' },
+  { num: '04', title: '构建部署', desc: '一键打包、分包优化、Nginx 配置，产物可直接上线' },
 ]
 
 function Home() {
@@ -37,41 +53,58 @@ function Home() {
       <MouseTrail />
 
       <div className="bento-grid">
-        {/* 关于我（大卡） */}
+        {/* 项目定位（大卡） */}
         <section className="bento-card bento-about bento-span-8">
-          <p className="bento-eyebrow">你好，我是</p>
-          <h1 className="bento-name">前端工程师</h1>
+          <p className="bento-eyebrow">AI AGENT AUTOMATED</p>
+          <h1 className="bento-name">自动化构建部署</h1>
           <p className="bento-tagline">
-            专注 Web 交互与可视化，把想法变成可点击、可游玩、可打印的东西
+            这个网站本身由 AI Agent 自主完成：需求理解 → 代码生成 → 浏览器自测 → 构建打包 → 部署上线，全程零人工编码
           </p>
           <div className="bento-cta">
-            <Link to="/resume" className="bento-btn bento-btn-primary">
-              查看简历 →
-            </Link>
-            <Link to="/game" className="bento-btn">
-              开始游戏
+            <Link to="/game" className="bento-btn bento-btn-primary">
+              体验 Agent 产物 →
             </Link>
             <Link to="/docs" className="bento-btn">
               技术文档
             </Link>
+            <Link to="/about" className="bento-btn">
+              关于本项目
+            </Link>
           </div>
         </section>
 
-        {/* 技术栈（小卡） */}
-        <section className="bento-card bento-skills bento-span-4">
-          <h2 className="bento-card-title">
-            <span className="bento-card-num">01</span> 技术栈
-          </h2>
-          <div className="bento-skill-list">
-            {SKILLS.map((s) => (
-              <span key={s} className="bento-skill">{s}</span>
-            ))}
+        {/* 右列：技术栈 + 本地天气 */}
+        <div className="bento-span-4 bento-side-col">
+          <section className="bento-card bento-skills">
+            <h2 className="bento-card-title">
+              <span className="bento-card-num">AI</span> 技术栈
+            </h2>
+            <div className="bento-skill-list">
+              {SKILLS.map((s) => (
+                <span key={s} className="bento-skill">{s}</span>
+              ))}
+            </div>
+          </section>
+
+          <Weather />
+        </div>
+
+        {/* Agent 工作流 */}
+        <div className="bento-section-title bento-span-12">
+          <span className="bento-card-num">01</span> Agent 工作流
+        </div>
+
+        {PIPELINE.map((p) => (
+          <div key={p.num} className="bento-card bento-pipeline bento-span-3">
+            <span className="bento-pipeline-num">{p.num}</span>
+            <h3 className="bento-pipeline-title">{p.title}</h3>
+            <p className="bento-pipeline-desc">{p.desc}</p>
           </div>
-        </section>
+        ))}
 
         {/* 精选作品标题 */}
         <div className="bento-section-title bento-span-12">
-          <span className="bento-card-num">02</span> 精选作品
+          <span className="bento-card-num">02</span> Agent 生成的作品
         </div>
 
         {/* 作品卡片 */}
@@ -94,23 +127,23 @@ function Home() {
         {/* 统计条 */}
         <footer className="bento-card bento-stats bento-span-12">
           <div className="bento-stat">
+            <span className="bento-stat-num">100%</span>
+            <span className="bento-stat-label">AI 生成代码</span>
+          </div>
+          <div className="bento-stat-divider" />
+          <div className="bento-stat">
+            <span className="bento-stat-num">0</span>
+            <span className="bento-stat-label">行人工编码</span>
+          </div>
+          <div className="bento-stat-divider" />
+          <div className="bento-stat">
             <span className="bento-stat-num">3</span>
-            <span className="bento-stat-label">个作品</span>
-          </div>
-          <div className="bento-stat-divider" />
-          <div className="bento-stat">
-            <span className="bento-stat-num">1</span>
-            <span className="bento-stat-label">个游戏</span>
-          </div>
-          <div className="bento-stat-divider" />
-          <div className="bento-stat">
-            <span className="bento-stat-num">1</span>
-            <span className="bento-stat-label">份简历</span>
+            <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat bento-stat-contact">
             <a href="mailto:hello@example.com" className="bento-stat-mail">
-              hello@example.com →
+              由 AI Agent 构建并部署 →
             </a>
           </div>
         </footer>
