@@ -705,7 +705,7 @@
     grid-template-columns: repeat(6, 1fr);
   }
   .bento-span-3 { grid-column: span 3; }
-  .bento-span-4 { grid-column: span 2; }
+  .bento-span-4 { grid-column: span 6; }
   .bento-span-6 { grid-column: span 6; }
   .bento-span-8 { grid-column: span 6; }
   .bento-span-12 { grid-column: span 6; }

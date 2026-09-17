@@ -15,7 +15,7 @@ const WORKS = [
     desc: 'AI Agent 从零构建的 Three.js 3D 射击游戏，含粒子爆炸、星空穿梭、切页自动暂停修复',
     tags: ['Three.js', 'AgentCode', 'Game'],
     to: '/game',
-    span: 'bento-span-6',
+    span: 'bento-span-3',
   },
   {
     title: '番茄时钟',
@@ -36,7 +36,7 @@ const WORKS = [
     desc: 'Agent 检索网络资料后撰写并渲染的 Prompt Engineering 实战手册',
     tags: ['Markdown', 'Docs'],
     to: '/docs',
-    span: 'bento-span-6',
+    span: 'bento-span-3',
   },
 ]
 
