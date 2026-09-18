@@ -29,7 +29,7 @@ function Resume() {
           <div className="qr">
             <img src={qrImg} alt="二维码" />
             <p className="goal">
-              求职目标：<strong>前端工程师</strong>
+              <a href="https://github.com/karlzzzzzzzzzz/test" target="_blank" rel="noopener noreferrer">个人主页</a>
             </p>
           </div>
 
@@ -44,8 +44,8 @@ function Resume() {
               <span>姓名：邵凯</span>
               <span>性别：男</span>
               <span>年龄：28</span>
-              <span>民族：汉</span>
               <span>籍贯：浙江温州</span>
+              <span>学历：本科</span>
               <span>工作经验：5 年</span>
             </div>
           </section>
@@ -54,12 +54,12 @@ function Resume() {
           <section className="sec">
             <h2>教育经历</h2>
             <div className="rows">
-              <div className="row4">
+              {/* <div className="row4">
                 <span>2016.9 至 2019.7</span>
                 <span>宁波职业技术学院</span>
                 <span>电子信息工程学院</span>
                 <span>计算机网络</span>
-              </div>
+              </div> */}
               <div className="row4">
                 <span>2019.9 至 2021.7</span>
                 <span>台州学院</span>
@@ -73,8 +73,9 @@ function Resume() {
           <section className="sec">
             <h2>技术获奖</h2>
             <ul className="dot">
-              <li>浙江省 ACM 全国大学生程序设计竞赛 小组铜奖（专科组）</li>
-              <li>宁波市蓝鸥杯程序设计竞赛 小组银奖（专科组）</li>
+              <li>浙江省 ACM 全国大学生程序设计竞赛 小组铜奖</li>
+              <li>宁波市蓝鸥杯程序设计竞赛 小组银奖</li>
+              <li>大学生英语四级</li>
             </ul>
           </section>
 
@@ -86,19 +87,22 @@ function Resume() {
                 精通HTML、CSS、JavaScript前端基础，H5、C3、ES6 新特性，Less、Sass、tailwindcss及移动端适配
               </li>
               <li>
-                掌握React全家桶（react-router、react-redux、Hooks），能独立完成中后台SPA开发
+                掌握React全家桶（react-router、react-redux、Hooks）能独立完成中后台SPA开发
               </li>
               <li>
-                掌握Rax App开发支付宝小程序，熟悉开发、测试、上架全流程。有人脸识别、地址库、设备能力等原生API接入经验
+                掌握Rax App开发支付宝小程序开发、测试、打包、上架全流程。
               </li>
               <li>
                 掌握Magix单页面应用前端架构，Magix-gallery配套组件库，MM-CLI配套命令行工具，Magix微应用落地及Magix-brix组件模块化构建
               </li>
               <li>
-                熟练使用Fusion、ICE（Vite）、Formily、MDD、JSON Schema等中后台方案，可近乎零代码生成表单页并实现复杂表单联动
+                熟练使用Fusion、ICE（Vite）、Formily、MDD（JSON Schema）等低代码中后台方案使用及开发调试
               </li>
               <li>
-                熟练使用Git、Webpack、Vite、axios等工程化工具；熟悉 Postman、Charles、ARMS埋点等调试监控手段；了解Vue全家桶及 Node.js、MySQL、MongoDB基础
+                熟练使用Git、Webpack、Vite、axios等工程化工具；熟悉 Postman、Charles、ARMS埋点等调试监控手段
+              </li>
+              <li>
+              了解AI Agent开发基础知识LLM、Transformer、RAG、Prompt Engineering等。了解Vue全家桶及 Node.js、MySQL、MongoDB、Python、Java、C++基础。
               </li>
             </ul>
           </section>
@@ -124,45 +128,48 @@ function Resume() {
             <div className="proj">
               <div>
                 <h3>
-                  项目一：菜鸟网络金融科技系列项目（React，Rax，Walle，ICE，Formily）
+                  项目一：金融贷支付宝小程序（React，Rax App）
                 </h3>
                 <ul className="dot">
                   <li>
                     <strong>项目介绍：</strong>
-                    菜鸟网络联合银行等金融机构共同打造的金融科技系列项目，包含：面向品牌经销商的大数据供应链信用贷款支付宝小程序（金融贷）、运维小二处理金融产品问题的
-                    iframe 微前端提效平台（金融小二管理后台），以及融资租赁、物流仓储等多款商业化中后台交付系统。
+                    由菜鸟网络联合银行等金融机构，为开发优质平台经销商专门打造的大数据供应链信用贷款支付宝小程序。
                   </li>
                   <li>
                     <strong>项目职责：</strong>
-                    小程序端负责授信、支用、还款流程表单页面开发与后续维护；管理后台负责黑白名单、客户信息管理、角色权限配置等
-                    SPA 模块的新增与历史页面维护；中后台项目从 PRD
-                    评审、技术评审、开发、联调、测试到 UAT
-                    交付提供全流程技术支持。
-                  </li>
-                  <li>
-                    <strong>相关技术：</strong>
-                    React 全家桶（React-router、Redux、Hooks），Rax
-                    App，Fusion，Walle，ICE（Vite），Formily，MDD，JSON
-                    Schema，axios，Webpack。
+                    小程序端负责授信、支用、还款流程表单页面开发与后续维护.
                   </li>
                   <li>
                     <strong>技术描述：</strong>
-                    小程序端基于 Rax App 搭建，以 React 函数组件 + Hooks
-                    编写，封装原生 request
-                    请求拦截、按需加载与性能优化，接入支付宝地址库、人脸识别、位置/网络/设备等原生
-                    API；微前端平台基于 iframe +
-                    自定义消息传递机制集成 Walle、React
-                    等多类子应用，采用 React + Fusion + ES6 + Webpack
-                    模块化组件化开发；中后台基于 ICE
-                    约定式路由，使用模型驱动开发（MDD）套件配合接口统一规范近乎零代码生成表单页，表单层采用
-                    Formily（@formily/reactive + JSON Schema）
-                    实现一对一、一对多、多对多联动交互。
+                    使用 Rax App 框架，实现支付宝小程序项目架构；Rax 语法层面以 React 为标准，可以使用 Hooks、Context 等80%以上支持度的 React App，因此开发多以 React 函数组件 + hooks 编写组件；
+                    保证不同移动端组件样式兼容性；封装小程序原生request 请求拦截、ARMS数据埋点、按需加载、性能优化；
+                    接入支付宝地址库，人脸识别，位置/网络/设备获取等原生API；使用支付宝开发者工具进行项目的打包发版。
                   </li>
                 </ul>
               </div>
-
               <div>
-                <h3>项目二：阿里妈妈运营工作台系列项目（Magix，Magix3，Brix，微前端）</h3>
+                <h3>
+                  项目二：租赁管理系统，仓储管系统（React，ICE，Formily，MDD，Schema）
+                </h3>
+                <ul className="dot">
+                  <li>
+                    <strong>项目介绍：</strong>
+                    多款商业化交付项目，其中包括融资租赁后台管理系统、物流仓储管理系统等。
+                  </li>
+                  <li>
+                    <strong>项目职责：</strong>
+                    从项目初期 PRD 评审，技术评审，开发，联调，测试，UAT 到交付落地的所有技术支持。
+                  </li>
+                  <li>
+                    <strong>技术描述：</strong>
+                    使用基于 React 的研发解决方案 ICE（Vite）搭建项目，配合约定式路由。
+                    基于 WOTS 项目中大量的 FTP 页面，使用了模型驱动开发（MDD）套件配合前后端接口统一规范套件，几乎零代码生成 FTP 页面。
+                    表单框架使用 Formily，基于延续 Mobx 的@formily/reactive 实现表单进去渲染，配合 JSON Schame 及@formily/react，轻松解决表单构建及一对一，一对多，多对多的表单联动交互。
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3>项目三：阿里妈妈运营工作台系列项目（Magix，Magix3，Brix，微前端）</h3>
                 <ul className="dot">
                   <li>
                     <strong>项目介绍：</strong>
@@ -171,7 +178,7 @@ function Resume() {
                   </li>
                   <li>
                     <strong>项目职责：</strong>
-                    op 历史平台页面功能需求维护，梳理历史业务逻辑，结合新的运营思路重新构建mmcrm-op新版运营工作台，负责项目整体架构设计与开发及后续维护；
+                    op 历史平台页面功能需求维护。梳理历史业务逻辑，结合新的运营思路重新构建mmcrm-op新版运营工作台，负责项目整体架构设计与开发及后续维护；
                     ai-crm 使用微前端嵌入crm-op部分功能，负责具体嵌入方案设计与开发及页面嵌入兼容性改造；
                     东风（udradar）负责重构页面组件，使用 magix-brix 架构开发 ADC 节点配置的组件；
                     心流（iFlow CLI）aicoder 平台，负责移动端适配、GitHub 关联登录、文件 diff、Markdown文本渲染、shell 终端渲染、文件读写渲染等功能开发及维护。
@@ -183,8 +190,28 @@ function Resume() {
                   </li>
                   <li>
                     <strong>技术描述：</strong>
-                    基于Magix区块化理念，使用配套组件库、RAP接口规范及命令行工具快速构建项目，特殊微前端场景下通过iframe桥接magi互嵌项目，通过webSocket与宿主平台通信；
-                    重构 OSS 上传组件支持文件分片与批量上传，提升大文件上传稳定性；diff2html渲染文件diff，xterm渲染shell终端，react-markdown渲染，tailwindcss配合css变量做移动端适配。
+                    基于Magix区块化理念，使用配套组件库、RAP接口规范及命令行工具快速构建项目。结合业务需求，创建模块化新策略构建模式，将新类型需求落地开发时长降低50%，同时提升页面维护，测试效率。
+                    特殊微前端场景下通过iframe桥接magi互嵌项目，通过webSocket与宿主平台通信，桥接方案降低了后续页面模块接入成本；
+                    重构 OSS 上传组件支持文件分片与批量上传，提升大文件并发上传稳定性；diff2html渲染文件diff，xterm渲染shell终端，react-markdown渲染，tailwindcss配合css变量做移动端适配。
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3>
+                  项目四：金融小二管理后台（React，Fusion，axios，Walle）
+                </h3>
+                <ul className="dot">
+                  <li>
+                    <strong>项目介绍：</strong>
+                    运维小二用于处理各类金融产品所对应问题所设计的提效降本运维工具的 Iframe 微前端平台
+                  </li>
+                  <li>
+                    <strong>项目职责：</strong>
+                    使用 React 框架，React-router 搭建路由，配合 funsion 组件库完成新增功能页面开发。使用 Walle 框架及组件库维护历史页面功能。
+                  </li>
+                  <li>
+                    <strong>技术描述：</strong>
+                   项目作为一个使用 iFrame 及自定义消息传递机制大搭建的微前端应用。存在 walle，react 等多中项目。其中 react 项目做为一个后台管理的 SPA，包括黑白名单，客户信息管理，角色权限配置等模块。采用模块化，组件化工程化的模块开发满足增长需求。
                   </li>
                 </ul>
               </div>
