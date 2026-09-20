@@ -285,7 +285,7 @@ export class SpaceShooter {
     this.shake = 0.6
     this._spawnExplosion(this.player.position.clone(), 0xff8833, 90, 20)
     this.player.visible = false
-    this.cb.onGameOver?.(this.score)
+    this.cb.onGameOver?.(this.score, this.elapsed)
   }
 
   _clearEntities() {

@@ -1,0 +1,43 @@
+{
+  "description": "飞机大战排行榜",
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "name": {
+      "bsonType": "string",
+      "title": "玩家昵称",
+      "maxLength": 12
+    },
+    "score": {
+      "bsonType": "int",
+      "title": "得分",
+      "minimum": 1
+    },
+    "elapsed": {
+      "bsonType": "double",
+      "title": "存活时长（秒）"
+    },
+    "ua": {
+      "bsonType": "string",
+      "title": "User-Agent",
+      "maxLength": 300
+    },
+    "ip": {
+      "bsonType": "string",
+      "title": "IP 地址",
+      "maxLength": 50
+    },
+    "createdAt": {
+      "bsonType": "long",
+      "title": "提交时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "version": "0.0.1"
+}

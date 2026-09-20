@@ -31,7 +31,6 @@ function Navbar() {
         <NavLink to="/pomodoro" onClick={close}>番茄钟</NavLink>
         <NavLink to="/resume" onClick={close}>简历</NavLink>
         <NavLink to="/docs" onClick={close}>技术文档</NavLink>
-        <NavLink to="/about" onClick={close}>关于</NavLink>
       </nav>
     </header>
   )

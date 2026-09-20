@@ -67,9 +67,6 @@ function Home() {
             <Link to="/docs" className="bento-btn">
               技术文档
             </Link>
-            <Link to="/about" className="bento-btn">
-              关于本项目
-            </Link>
           </div>
         </section>
 

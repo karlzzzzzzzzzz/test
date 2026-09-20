@@ -156,3 +156,159 @@
     text-decoration: underline;
   }
 }
+
+/* ===== 排行榜 ===== */
+.game-panels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  max-width: 94vw;
+  max-height: 90vh;
+}
+
+.game-board-panel {
+  width: 270px;
+  padding: 26px 28px;
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: #eaf4ff;
+    text-shadow: 0 0 18px rgba(102, 204, 255, 0.4);
+  }
+}
+
+.game-board-empty {
+  margin: 26px 0;
+  color: #9db4d6;
+  font-size: 14px;
+}
+
+.game-board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #cfe6ff;
+    font-size: 14px;
+  }
+
+  .rank {
+    width: 22px;
+    text-align: center;
+    font-weight: 700;
+    color: #9db4d6;
+  }
+
+  .name {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .score {
+    font-weight: 600;
+    color: #ffd166;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .top-1 {
+    background: rgba(255, 209, 102, 0.14);
+
+    .rank {
+      color: #ffd166;
+    }
+  }
+
+  .top-2 {
+    background: rgba(160, 200, 255, 0.12);
+
+    .rank {
+      color: #cfe6ff;
+    }
+  }
+
+  .top-3 {
+    background: rgba(255, 133, 102, 0.12);
+
+    .rank {
+      color: #ff9f6e;
+    }
+  }
+}
+
+.game-submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.game-name-input {
+  width: 220px;
+  padding: 10px 14px;
+  font-size: 16px;
+  text-align: center;
+  color: #eaf4ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #66f7ff;
+  }
+
+  &::placeholder {
+    color: rgba(157, 180, 214, 0.6);
+  }
+}
+
+.game-btn-ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cfe6ff;
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  box-shadow: none;
+  font-size: 15px;
+  padding: 9px 30px;
+
+  &:hover {
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.game-rank-line {
+  color: #ffd166;
+  font-size: 16px;
+  margin: 0 0 22px;
+}
+
+.game-submit-error {
+  color: #ff7788;
+  font-size: 14px;
+  margin: 0;
+}
