@@ -218,3 +218,5 @@ function LeaderboardPanel({ board, loading }) {
     </div>
   )
 }
+
+export default Game

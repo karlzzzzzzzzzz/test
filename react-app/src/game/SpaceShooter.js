@@ -4,9 +4,9 @@ import * as THREE from 'three'
 const PLAYER_Z = 12 // 玩家所在 z 平面
 const CAMERA_Z = 32 // 相机 z 位置
 const BULLET_SPEED = 75 // 子弹速度
-const FIRE_INTERVAL = 0.16 // 自动射击间隔（秒）
-const ENEMY_SPEED_BASE = 9 // 敌机基础速度
-const PLAYER_SPEED = 24 // 键盘移动速度
+const FIRE_INTERVAL = 0.7 // 自动射击间隔（秒）
+const ENEMY_SPEED_BASE = 36 // 敌机基础速度
+const PLAYER_SPEED = 18 // 键盘移动速度
 const BOUND_Y = 11 // 纵向移动边界
 
 /**
@@ -262,10 +262,10 @@ export class SpaceShooter {
     // 清空残留对象
     this._clearEntities()
     this.score = 0
-    this.health = 3
+    this.health = 2
     this.elapsed = 0
     this.fireTimer = 0
-    this.spawnTimer = 1.2
+    this.spawnTimer = 0.4
     this.pointer.x = 0
     this.pointer.y = 0
     this.player.position.set(0, 0, PLAYER_Z)
@@ -276,7 +276,7 @@ export class SpaceShooter {
     this.keys = {}
     this._resetClock()
     this.cb.onScore?.(0)
-    this.cb.onHealth?.(3)
+    this.cb.onHealth?.(2)
   }
 
   _gameOver() {
@@ -460,7 +460,7 @@ export class SpaceShooter {
       this.spawnTimer -= dt
       if (this.spawnTimer <= 0) {
         this._spawnEnemy()
-        this.spawnTimer = Math.max(0.45, 1.3 - this.score / 5000)
+        this.spawnTimer = Math.max(0.25, 0.7 - this.score / 3000)
       }
       // 尾焰
       this.trailTimer -= dt
