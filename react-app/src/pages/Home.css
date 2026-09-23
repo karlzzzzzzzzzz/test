@@ -239,9 +239,19 @@
   gap: 8px;
   align-content: flex-start;
   flex-grow: 1;
+  overflow-y: scroll;
+  scrollbar-width: none;
   /* 边缘渐隐 */
   -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent);
   mask-image: linear-gradient(180deg, #000 80%, transparent);
+}
+
+.cursor-grab-hover:hover {
+  cursor: grab;
+}
+
+.cursor-move {
+  cursor: move;
 }
 
 .bento-skill {
@@ -252,7 +262,7 @@
   background: color-mix(in srgb, var(--home-accent) 8%, var(--home-bg));
   border: 1px solid var(--home-border);
   transition: all 0.25s ease;
-  cursor: default;
+  /* cursor: default; */
 }
 
 .bento-skill:hover {

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import MouseTrail from '../components/MouseTrail'
 import Weather from '../components/Weather'
+import DragList  from '../components/DragList'
 import './Home.css'
 
 const SKILLS = [
@@ -76,11 +77,11 @@ function Home() {
             <h2 className="bento-card-title">
               <span className="bento-card-num">AI</span> 技术栈
             </h2>
-            <div className="bento-skill-list">
+            <DragList className="bento-skill-list">
               {SKILLS.map((s) => (
-                <span key={s} className="bento-skill">{s}</span>
+                <div key={s} className="bento-skill">{s}</div>
               ))}
-            </div>
+            </DragList>
           </section>
 
           <Weather />
