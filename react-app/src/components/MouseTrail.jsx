@@ -55,11 +55,22 @@ function MouseTrail() {
     const EMIT_INTERVAL = 66
     let lastEmit = 0
 
-    // 当前是否 hover 在可交互元素上
-    let hovering = false
+    // 当前是否 hover / 键盘聚焦在可交互元素上（两者等效触发光晕放大与紫色粒子）
+    let mouseHovering = false
+    let focusHovering = false
+    // hover/聚焦到带 data-keywords 元素时的主题词表（如精选作品卡），null 时用通用词表
+    let mouseKeywords = null
+    let focusKeywords = null
 
-    const pickKeyword = () =>
-      KEYWORDS[Math.floor(Math.random() * KEYWORDS.length)]
+    const readKeywords = (el) => {
+      const kwEl = el && el.closest && el.closest('[data-keywords]')
+      return kwEl ? kwEl.getAttribute('data-keywords').split(',') : null
+    }
+
+    const pickKeyword = () => {
+      const pool = mouseKeywords || focusKeywords || KEYWORDS
+      return pool[Math.floor(Math.random() * pool.length)]
+    }
 
     const onMove = (e) => {
       target.x = e.clientX
@@ -89,21 +100,40 @@ function MouseTrail() {
       })
 
       const el = e.target
-      hovering = !!(el && el.closest && el.closest('a, button, [role="button"]'))
+      mouseKeywords = readKeywords(el)
+      mouseHovering = !!(el && el.closest && el.closest('a, button, [role="button"]'))
     }
 
     const onLeave = () => {
       target.x = -9999
       target.y = -9999
+      mouseHovering = false
+      mouseKeywords = null
+    }
+
+    // 键盘 focus 联动：focus-visible 时光晕放大变紫、粒子变紫并使用主题词表（与 hover 等效）
+    const onFocusIn = (e) => {
+      const el = e.target
+      if (!el || !el.matches || !el.matches(':focus-visible')) return
+      focusHovering = true
+      focusKeywords = readKeywords(el)
+    }
+
+    const onFocusOut = () => {
+      focusHovering = false
+      focusKeywords = null
     }
 
     window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('mouseleave', onLeave)
+    window.addEventListener('focusin', onFocusIn)
+    window.addEventListener('focusout', onFocusOut)
     window.addEventListener('resize', resize)
 
     let rafId
 
     const render = () => {
+      const hovering = mouseHovering || focusHovering
       ctx.clearRect(0, 0, width, height)
 
       // 光晕缓动跟随
@@ -157,6 +187,8 @@ function MouseTrail() {
       cancelAnimationFrame(rafId)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseleave', onLeave)
+      window.removeEventListener('focusin', onFocusIn)
+      window.removeEventListener('focusout', onFocusOut)
       window.removeEventListener('resize', resize)
     }
   }, [])

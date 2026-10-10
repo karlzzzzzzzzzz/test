@@ -67,6 +67,12 @@
 .bento-span-8 { grid-column: span 8; }
 .bento-span-12 { grid-column: span 12; }
 
+/* ===== 键盘焦点环（Bento 范围统一，禁止无替代的 outline:none） ===== */
+.bento-grid :focus-visible {
+  outline: 2px solid var(--home-accent);
+  outline-offset: 2px;
+}
+
 /* ===== 通用卡片 ===== */
 .bento-card {
   position: relative;
@@ -610,6 +616,12 @@
   padding: 24px;
 }
 
+/* 工作流卡：聚焦态复用 hover 视觉（边框高亮） */
+.bento-pipeline:focus-visible {
+  border-color: var(--home-accent);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--home-accent) 22%, transparent);
+}
+
 .bento-pipeline-num {
   font-family: var(--heading);
   font-size: 2rem;
@@ -673,6 +685,57 @@
 
 .bento-stat-contact {
   margin-left: auto;
+}
+
+/* ===== 统计条天气摘要格 ===== */
+.bento-stat-weather-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.bento-stat-weather-btn:hover .bento-stat-num {
+  color: var(--home-accent-2);
+}
+
+/* loading 占位：与 ok/error 同结构固定高度，防布局跳动 */
+.bento-weather-loading {
+  color: var(--home-text);
+  opacity: 0.6;
+}
+
+/* ===== 天气定位拒绝提示条 ===== */
+.weather-denied-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--home-text);
+  padding: 8px 12px;
+  border: 1px dashed var(--home-accent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--home-accent) 6%, transparent);
+}
+
+/* ===== 读屏专用（视觉隐藏） ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .bento-stat-mail {

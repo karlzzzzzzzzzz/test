@@ -1,6 +1,7 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MouseTrail from '../components/MouseTrail'
-import Weather from '../components/Weather'
+import Weather, { useWeather } from '../components/Weather'
 import DragList  from '../components/DragList'
 import './Home.css'
 
@@ -15,6 +16,7 @@ const WORKS = [
     title: '飞机大战',
     desc: 'AI Agent 从零构建的 Three.js 3D 射击游戏，含粒子爆炸、星空穿梭、切页自动暂停修复',
     tags: ['Three.js', 'AgentCode', 'Game'],
+    keywords: ['Three.js', '引擎', '碰撞', '粒子', '星空', '弹幕'],
     to: '/game',
     span: 'bento-span-3',
   },
@@ -22,6 +24,7 @@ const WORKS = [
     title: '番茄时钟',
     desc: 'Agent 生成的番茄工作法计时器，含模式自动流转与完成数持久化',
     tags: ['React', 'Hooks'],
+    keywords: ['React', 'Hooks', '专注', '计时', '节奏', '休息'],
     to: '/pomodoro',
     span: 'bento-span-3',
   },
@@ -29,6 +32,7 @@ const WORKS = [
     title: '在线简历',
     desc: 'A4 尺寸个人简历，打印适配',
     tags: ['CSS Grid', 'A4'],
+    keywords: ['CSS', 'Grid', 'A4', '打印', '排版', '简历'],
     to: '/resume',
     span: 'bento-span-3',
   },
@@ -36,6 +40,7 @@ const WORKS = [
     title: '提示词工程文档',
     desc: 'Agent 检索网络资料后撰写并渲染的 Prompt Engineering 实战手册',
     tags: ['Markdown', 'Docs'],
+    keywords: ['Prompt', 'Markdown', 'Docs', '手册', 'LLM', '实战'],
     to: '/docs',
     span: 'bento-span-3',
   },
@@ -48,7 +53,122 @@ const PIPELINE = [
   { num: '04', title: '构建部署', desc: '一键打包、分包优化、Nginx 配置，产物可直接上线' },
 ]
 
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
+
+/**
+ * 统计条数字滚动：50% 进入视口时 800ms ease-out 从 0 滚至目标值，仅触发 1 次
+ * prefers-reduced-motion 或值为 0 时直接显示终值
+ */
+function AnimatedNumber({ value, suffix = '' }) {
+  const ref = useRef(null)
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (window.matchMedia(REDUCED_MOTION).matches || value === 0) {
+      setDisplay(value)
+      return
+    }
+    let played = false
+    let rafId = 0
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || played) return
+        played = true
+        observer.disconnect()
+        const start = performance.now()
+        const DURATION = 800
+        const tick = (now) => {
+          const t = Math.min((now - start) / DURATION, 1)
+          const eased = 1 - Math.pow(1 - t, 3) // ease-out cubic
+          setDisplay(Math.round(value * eased))
+          if (t < 1) rafId = requestAnimationFrame(tick)
+        }
+        rafId = requestAnimationFrame(tick)
+      },
+      { threshold: 0.5 },
+    )
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      cancelAnimationFrame(rafId)
+    }
+  }, [value])
+
+  return (
+    <span ref={ref} className="bento-stat-num">
+      {display}
+      {suffix}
+    </span>
+  )
+}
+
+/**
+ * 统计条天气摘要格：与天气卡片共享同一份 useWeather 状态
+ * 三态：loading "…"占位（不可点击）/ error 提示（可点击定位）/ ok 温度+图标+城市
+ */
+function WeatherStatCell({ weather }) {
+  const { summary } = weather
+
+  const handleClick = () => {
+    const el = document.getElementById('weather-card')
+    if (!el) return // 目标不存在时静默忽略
+    el.scrollIntoView({
+      behavior: window.matchMedia(REDUCED_MOTION).matches ? 'auto' : 'smooth',
+      block: 'nearest',
+    })
+    el.focus({ preventScroll: true })
+  }
+
+  if (summary.kind === 'loading') {
+    return (
+      <div className="bento-stat bento-stat-weather">
+        <span className="bento-stat-num bento-weather-loading" aria-hidden="true">…</span>
+        <span className="bento-stat-label" aria-hidden="true">实时天气</span>
+        <span className="sr-only">天气加载中</span>
+      </div>
+    )
+  }
+
+  if (summary.kind === 'error') {
+    return (
+      <div className="bento-stat bento-stat-weather">
+        <button
+          type="button"
+          className="bento-stat-weather-btn"
+          onClick={handleClick}
+          aria-label="天气暂不可用，点击定位到天气卡片"
+        >
+          <span className="bento-stat-num" aria-hidden="true">–</span>
+          <span className="bento-stat-label" aria-hidden="true">天气暂不可用</span>
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bento-stat bento-stat-weather">
+      <button
+        type="button"
+        className="bento-stat-weather-btn"
+        onClick={handleClick}
+        aria-label={`当前天气 ${summary.temp}°C ${summary.desc}${summary.city ? ' ' + summary.city : ''}，点击查看天气详情`}
+      >
+        <span className="bento-stat-num" aria-hidden="true">
+          {summary.temp}°C {summary.icon}
+        </span>
+        <span className="bento-stat-label" aria-hidden="true">
+          {summary.city || '实时天气'}
+        </span>
+      </button>
+    </div>
+  )
+}
+
 function Home() {
+  const weather = useWeather()
+
   return (
     <div className="home-page">
       <MouseTrail />
@@ -84,7 +204,7 @@ function Home() {
             </DragList>
           </section>
 
-          <Weather />
+          <Weather weather={weather} />
         </div>
 
         {/* Agent 工作流 */}
@@ -93,7 +213,13 @@ function Home() {
         </div>
 
         {PIPELINE.map((p) => (
-          <div key={p.num} className="bento-card bento-pipeline bento-span-3">
+          <div
+            key={p.num}
+            className="bento-card bento-pipeline bento-span-3"
+            tabIndex={0}
+            role="group"
+            aria-label={`Agent 工作流第 ${p.num} 步：${p.title}`}
+          >
             <span className="bento-pipeline-num">{p.num}</span>
             <h3 className="bento-pipeline-title">{p.title}</h3>
             <p className="bento-pipeline-desc">{p.desc}</p>
@@ -105,9 +231,15 @@ function Home() {
           <span className="bento-card-num">02</span> Agent 生成的作品
         </div>
 
-        {/* 作品卡片 */}
+        {/* 作品卡片（data-keywords 供 MouseTrail hover/聚焦时切换粒子主题词） */}
         {WORKS.map((w) => (
-          <Link key={w.title} to={w.to} className={`bento-card bento-work ${w.span}`}>
+          <Link
+            key={w.title}
+            to={w.to}
+            className={`bento-card bento-work ${w.span}`}
+            aria-label={`精选作品：${w.title}`}
+            data-keywords={w.keywords.join(',')}
+          >
             <div className="bento-work-top">
               <span className="bento-work-icon">◯</span>
               <span className="bento-work-arrow">→</span>
@@ -125,19 +257,21 @@ function Home() {
         {/* 统计条 */}
         <footer className="bento-card bento-stats bento-span-12">
           <div className="bento-stat">
-            <span className="bento-stat-num">100%</span>
+            <AnimatedNumber value={100} suffix="%" />
             <span className="bento-stat-label">AI 生成代码</span>
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <span className="bento-stat-num">0</span>
+            <AnimatedNumber value={0} />
             <span className="bento-stat-label">行人工编码</span>
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <span className="bento-stat-num">3</span>
+            <AnimatedNumber value={3} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
+          <div className="bento-stat-divider" />
+          <WeatherStatCell weather={weather} />
           <div className="bento-stat-divider" />
           <div className="bento-stat bento-stat-contact">
             <a href="mailto:hello@example.com" className="bento-stat-mail">
