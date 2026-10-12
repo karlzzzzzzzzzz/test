@@ -26,6 +26,8 @@ export class SpaceShooter {
     this.particles = []
     this.keys = {}
     this.pointer = { x: 0, y: 0 }
+    this.touchId = null // 移动端触摸跟踪：当前指的 identifier，null 表示无触摸
+    this.touchCounted = false // 本局是否已计入触摸启动计数（约束卡①）
     this.fireTimer = 0
     this.spawnTimer = 0
     this.trailTimer = 0
@@ -157,22 +159,65 @@ export class SpaceShooter {
   }
 
   // ---------- 事件 ----------
+  // 将屏幕坐标（clientX/Y）映射到玩家平面坐标，写入 this.pointer；鼠标与触摸共用
+  _mapPointer(clientX, clientY) {
+    const rect = this.renderer.domElement.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return // 隐藏态跳过，避免画布塌陷
+    const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1
+    const ndcY = -(((clientY - rect.top) / rect.height) * 2 - 1)
+    const dist = CAMERA_Z - PLAYER_Z
+    const halfH = Math.tan(THREE.MathUtils.degToRad(30)) * dist
+    const halfW = halfH * this.camera.aspect
+    this.pointer.x = THREE.MathUtils.clamp(ndcX * halfW, -this.boundX, this.boundX)
+    this.pointer.y = THREE.MathUtils.clamp(ndcY * halfH, -BOUND_Y, BOUND_Y)
+  }
+
   _bindEvents() {
     this._onPointerMove = (e) => {
-      const rect = this.renderer.domElement.getBoundingClientRect()
-      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1
-      const ndcY = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
-      const dist = CAMERA_Z - PLAYER_Z
-      const halfH = Math.tan(THREE.MathUtils.degToRad(30)) * dist
-      const halfW = halfH * this.camera.aspect
-      this.pointer.x = THREE.MathUtils.clamp(ndcX * halfW, -this.boundX, this.boundX)
-      this.pointer.y = THREE.MathUtils.clamp(ndcY * halfH, -BOUND_Y, BOUND_Y)
+      this._mapPointer(e.clientX, e.clientY)
     }
     this._onKeyDown = (e) => {
       this.keys[e.key.toLowerCase()] = true
     }
     this._onKeyUp = (e) => {
       this.keys[e.key.toLowerCase()] = false
+    }
+    // 移动端触摸控制：单指拖拽映射到玩家平面，多点触摸仅跟踪首指
+    this._onTouchStart = (e) => {
+      if (e.touches.length === 0) return
+      // 每局首次触摸计入行为统计（约束卡①，localStorage 轻量计数，0~99999 封顶）
+      if (!this.touchCounted) {
+        this.touchCounted = true
+        try {
+          const raw = localStorage.getItem('game-touch-starts')
+          const n = Math.min(99999, (Number(raw) || 0) + 1)
+          localStorage.setItem('game-touch-starts', String(n))
+        } catch {
+          // localStorage 不可用：跳过，不阻断游戏
+        }
+      }
+      this.touchId = e.touches[0].identifier
+      const t = e.touches[0]
+      this._mapPointer(t.clientX, t.clientY)
+      if (e.cancelable) e.preventDefault() // 阻止合成鼠标事件与页面滚动
+    }
+    this._onTouchMove = (e) => {
+      if (this.touchId === null) return
+      let t = null
+      for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].identifier === this.touchId) { t = e.touches[i]; break }
+      }
+      if (!t) return
+      this._mapPointer(t.clientX, t.clientY)
+      if (e.cancelable) e.preventDefault() // 阻止页面滚动/缩放
+    }
+    this._onTouchEnd = (e) => {
+      // 跟踪的指已抬起则解除；不重置 pointer，飞机停留末位等待下次输入
+      let still = false
+      for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].identifier === this.touchId) { still = true; break }
+      }
+      if (!still) this.touchId = null
     }
     this._onResize = () => {
       const w = this.container.clientWidth || window.innerWidth
@@ -188,6 +233,12 @@ export class SpaceShooter {
     window.addEventListener('keydown', this._onKeyDown)
     window.addEventListener('keyup', this._onKeyUp)
     window.addEventListener('resize', this._onResize)
+    // touch 监听绑在画布上（非 window），passive:false 以保证 preventDefault 生效
+    const dom = this.renderer.domElement
+    dom.addEventListener('touchstart', this._onTouchStart, { passive: false })
+    dom.addEventListener('touchmove', this._onTouchMove, { passive: false })
+    dom.addEventListener('touchend', this._onTouchEnd)
+    dom.addEventListener('touchcancel', this._onTouchEnd)
 
     // 切到后台/窗口失焦：自动暂停；WebGL 上下文丢失/恢复处理
     this._onVisibilityChange = () => {
@@ -245,6 +296,7 @@ export class SpaceShooter {
     this.running = false
     this.paused = true
     this.keys = {} // 防止按键卡住
+    this.touchId = null // 清空触摸跟踪，回前台后需重新触摸（约束卡③）
     this.cb.onPause?.()
   }
 
@@ -274,6 +326,8 @@ export class SpaceShooter {
     this.paused = false
     this.running = true
     this.keys = {}
+    this.touchId = null
+    this.touchCounted = false // 新一局重置触摸计数标志
     this._resetClock()
     this.cb.onScore?.(0)
     this.cb.onHealth?.(2)
@@ -604,6 +658,11 @@ export class SpaceShooter {
     window.removeEventListener('keydown', this._onKeyDown)
     window.removeEventListener('keyup', this._onKeyUp)
     window.removeEventListener('resize', this._onResize)
+    const dom = this.renderer.domElement
+    dom.removeEventListener('touchstart', this._onTouchStart)
+    dom.removeEventListener('touchmove', this._onTouchMove)
+    dom.removeEventListener('touchend', this._onTouchEnd)
+    dom.removeEventListener('touchcancel', this._onTouchEnd)
     document.removeEventListener(
       'visibilitychange',
       this._onVisibilityChange

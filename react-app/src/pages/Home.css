@@ -512,100 +512,13 @@
   background: var(--home-border);
 }
 
-/* ===== 作品卡片 ===== */
-.bento-work {
-  text-decoration: none;
-  color: var(--home-text-h);
-  min-height: 200px;
-}
-
-/* 渐变边框动画 */
-.bento-work::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(
-    from var(--home-angle),
-    transparent 0%,
-    var(--home-accent) 22%,
-    var(--home-accent-2) 44%,
-    transparent 66%
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.bento-work:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--home-accent) 18%, transparent);
-}
-
-.bento-work:hover::before {
-  opacity: 1;
-  animation: bento-rotate 2.8s linear infinite;
-}
-
-/* :has() 父级感知 */
-.bento-grid:has(.bento-work:hover) .bento-work:not(:hover) {
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
-}
-
-.bento-work-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.bento-work-icon {
-  font-size: 16px;
-  color: var(--home-accent);
-}
-
-.bento-work-arrow {
-  font-size: 18px;
-  color: var(--home-text);
-  transition: transform 0.3s ease, color 0.3s ease;
-}
-
-.bento-work:hover .bento-work-arrow {
-  transform: translate(4px, -4px);
-  color: var(--home-accent);
-}
-
-.bento-work-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--home-text-h);
-}
-
-.bento-work-desc {
-  font-size: 13.5px;
+/* ===== 作品入口卡片技术描述（CardLayout 内补充段落） ===== */
+.cl-practice {
+  font-size: 13px;
   line-height: 1.6;
   color: var(--home-text);
-  margin: 0;
-  flex-grow: 1;
-}
-
-.bento-work-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.bento-work-tag {
-  font-size: 11px;
-  padding: 3px 9px;
-  border-radius: 4px;
-  color: var(--home-accent);
-  background: color-mix(in srgb, var(--home-accent) 10%, transparent);
+  margin: 8px 0 0;
+  opacity: 0.85;
 }
 
 /* ===== Agent 工作流卡片 ===== */

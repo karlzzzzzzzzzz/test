@@ -92,9 +92,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **精选作品**：4 张卡片（飞机大战/番茄时钟/在线简历/提示词工程文档），整卡可点击跳转对应路由，携带 `data-keywords` 主题词表供 MouseTrail 切换粒子词库。
-5. **技术实践**（03 区块）：3 张由 `CardLayout` 通用卡片布局组件渲染的卡片（前端工程化实践 / Three.js 星空引擎 / 番茄时钟持久化）。每张卡片采用"标题区 → 内容区 → 底部区"三段结构，标题区内置技术标签胶囊群（`techTags` prop），空标签时不渲染标签容器；`footer` prop 为 null 时不渲染底部区。卡片携带 `data-keywords` 供 MouseTrail 切换粒子词库（见 3.1.4）。
-6. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：4 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 
 #### 3.1.1 鼠标轨迹特效（MouseTrail，仅首页挂载）
@@ -139,7 +138,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.2.2 玩法规则
 
-- **控制**：鼠标移动（映射到玩家平面）或键盘 WASD / 方向键（速度 18 单位/秒）；飞机移动带缓动跟随（dt*12）与转向倾斜手感。
+- **控制**：鼠标移动（映射到玩家平面）或键盘 WASD / 方向键（速度 18 单位/秒）；移动端单指触摸拖拽（`touchstart`/`touchmove` 经同一 `_mapPointer` 映射，多点触摸仅跟踪首指 `touchId`）；三者都写入 `pointer` 目标点，飞机带缓动跟随（dt*12）与转向倾斜手感。`touch-action: none` + `preventDefault` 阻止页面滚动/缩放。
 - **射击**：自动双发子弹（间隔 0.7s，弹速 75），无需手动操作。
 - **敌机**：红色八面体，从 z=-75 处生成，基础速度 36 + 分数/600 + 随机扰动，带正弦左右摆动与自旋；生成间隔随分数缩短（0.7s → 最低 0.25s）。
 - **得分**：击毁 1 架敌机 +100 分（子弹与敌机球心距离 < 1.4 判定命中）。
@@ -171,7 +170,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.2.6 后台与异常处理（重要设计）
 
-- **自动暂停**：`visibilitychange`（切后台）、`window.blur`（失焦）、`webglcontextlost`（WebGL 上下文丢失）三种情况触发暂停并清空按键状态（防按键卡住），UI 切到暂停屏。
+- **自动暂停**：`visibilitychange`（切后台）、`window.blur`（失焦）、`webglcontextlost`（WebGL 上下文丢失）三种情况触发暂停并清空按键状态与触摸跟踪态 `touchId`（防按键卡住、回前台需重新触摸），UI 切到暂停屏。
 - **恢复**：回前台时重置时钟基准（防 getDelta 超大步长跳帧）；上下文恢复后重建视口尺寸与像素比。
 - 窗口 resize 自适应；容器尺寸为 0（隐藏态）时跳过避免画布塌陷。
 
@@ -216,6 +215,8 @@ Bento Grid 网格布局，自上而下：
 | `game-leaderboard-v1` | localStorage | 游戏排行榜记录（≤50 条） |
 | `game-player-name` | localStorage | 玩家昵称（下次自动填充） |
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
+| `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
+| `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |

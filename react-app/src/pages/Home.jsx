@@ -12,38 +12,48 @@ const SKILLS = [
   'React', 'Three.js', 'Vite',
 ]
 
-const WORKS = [
+// 作品入口（合并原「精选作品」与「技术实践」两区块，路由去重，统一用 CardLayout 渲染）
+// 每项 to 唯一；practice 为原技术实践卡的技术描述，融入 children 内容区
+const ENTRIES = [
   {
     title: '飞机大战',
-    desc: 'AI Agent 从零构建的 Three.js 3D 射击游戏，含粒子爆炸、星空穿梭、切页自动暂停修复',
-    tags: ['Three.js', 'AgentCode', 'Game'],
+    techTags: ['Three.js', 'AgentCode', 'Game'],
     keywords: ['Three.js', '引擎', '碰撞', '粒子', '星空', '弹幕'],
     to: '/game',
-    span: 'bento-span-3',
+    span: '3',
+    desc: 'AI Agent 从零构建的 Three.js 3D 射击游戏，含粒子爆炸、星空穿梭、切页自动暂停修复',
+    practice: '自研 900 粒星空穿梭背景 + 粒子爆炸系统，支持相机震动与场景雾效。切页自动暂停、WebGL 上下文丢失自恢复。',
+    footer: { meta: ['2026-10-10', '8 min'], link: '查看演示' },
   },
   {
     title: '番茄时钟',
-    desc: 'Agent 生成的番茄工作法计时器，含模式自动流转与完成数持久化',
-    tags: ['React', 'Hooks'],
+    techTags: ['React', 'Hooks', 'localStorage'],
     keywords: ['React', 'Hooks', '专注', '计时', '节奏', '休息'],
     to: '/pomodoro',
-    span: 'bento-span-3',
+    span: '3',
+    desc: 'Agent 生成的番茄工作法计时器，含模式自动流转与完成数持久化',
+    practice: '基于结束时间戳驱动的计时器，切后台恢复仍准确。完成计数采用脏标记延迟持久化，值域 0~99999 自愈。',
+    footer: null,
   },
   {
     title: '在线简历',
-    desc: 'A4 尺寸个人简历，打印适配',
-    tags: ['CSS Grid', 'A4'],
+    techTags: ['CSS Grid', 'A4'],
     keywords: ['CSS', 'Grid', 'A4', '打印', '排版', '简历'],
     to: '/resume',
-    span: 'bento-span-3',
+    span: '3',
+    desc: 'A4 尺寸个人简历，打印适配',
+    practice: null,
+    footer: null,
   },
   {
     title: '提示词工程文档',
-    desc: 'Agent 检索网络资料后撰写并渲染的 Prompt Engineering 实战手册',
-    tags: ['Markdown', 'Docs'],
+    techTags: ['Markdown', 'Docs', 'Vite'],
     keywords: ['Prompt', 'Markdown', 'Docs', '手册', 'LLM', '实战'],
     to: '/docs',
-    span: 'bento-span-3',
+    span: '3',
+    desc: 'Agent 检索网络资料后撰写并渲染的 Prompt Engineering 实战手册',
+    practice: '从零搭建基于 Vite + React 18 的工程化脚手架，含路由懒加载、代码分割与环境变量注入。构建产物分包优化，首屏加载 < 1.2s（4G 网络）。',
+    footer: { meta: ['2026-10-12', '5 min'], link: '阅读全文' },
   },
 ]
 
@@ -52,33 +62,6 @@ const PIPELINE = [
   { num: '02', title: '代码生成', desc: '自动创建/修改组件、样式、路由，热更新即时验证' },
   { num: '03', title: '浏览器自测', desc: 'Headless 浏览器逐页点击，截图像素级校验渲染结果' },
   { num: '04', title: '构建部署', desc: '一键打包、分包优化、Nginx 配置，产物可直接上线' },
-]
-
-const TECH_PRACTICES = [
-  {
-    title: '前端工程化实践',
-    techTags: ['Vite', 'React 18', 'Hooks'],
-    desc: '从零搭建基于 Vite + React 18 的工程化脚手架，含路由懒加载、代码分割与环境变量注入。构建产物分包优化，首屏加载 < 1.2s（4G 网络）。',
-    footer: { meta: ['2026-10-12', '5 min'], link: '阅读全文' },
-    span: '4',
-    to: '/docs',
-  },
-  {
-    title: 'Three.js 星空引擎',
-    techTags: [],
-    desc: '自研 900 粒星空穿梭背景 + 粒子爆炸系统，支持相机震动与场景雾效。切页自动暂停、WebGL 上下文丢失自恢复。',
-    footer: { meta: ['2026-10-10', '8 min'], link: '查看演示', to: '/game' },
-    span: '4',
-    to: '/game',
-  },
-  {
-    title: '番茄时钟持久化',
-    techTags: ['localStorage', 'Web Audio'],
-    desc: '基于结束时间戳驱动的计时器，切后台恢复仍准确。完成计数采用脏标记延迟持久化，值域 0~99999 自愈。',
-    footer: null,
-    span: '4',
-    to: '/pomodoro',
-  },
 ]
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
@@ -197,6 +180,51 @@ function WeatherStatCell({ weather }) {
 function Home() {
   const weather = useWeather()
 
+  // 入口点击计数（约束卡①：localStorage 轻量行为统计，脏标记 + 隐藏/卸载/1s 兜底延迟写入）
+  const clicksRef = useRef({})
+  const dirtyRef = useRef(false)
+  const writeTimerRef = useRef(null)
+
+  const flushClicks = () => {
+    if (!dirtyRef.current) return
+    try {
+      const raw = localStorage.getItem('home-entry-clicks')
+      const base = raw ? JSON.parse(raw) : {}
+      if (typeof base !== 'object' || base === null) throw new Error('bad json')
+      for (const [k, v] of Object.entries(clicksRef.current)) {
+        base[k] = Math.min(99999, (Number(base[k]) || 0) + v)
+      }
+      localStorage.setItem('home-entry-clicks', JSON.stringify(base))
+    } catch {
+      // localStorage 不可用或 JSON 异常：仅内存计数，不阻断主功能
+    } finally {
+      clicksRef.current = {}
+      dirtyRef.current = false
+      if (writeTimerRef.current) {
+        clearTimeout(writeTimerRef.current)
+        writeTimerRef.current = null
+      }
+    }
+  }
+
+  const trackEntryClick = (to) => {
+    clicksRef.current[to] = (clicksRef.current[to] || 0) + 1
+    dirtyRef.current = true
+    if (writeTimerRef.current) return
+    writeTimerRef.current = setTimeout(flushClicks, 1000)
+  }
+
+  useEffect(() => {
+    const onVisibilityHidden = () => { if (document.hidden) flushClicks() }
+    window.addEventListener('pagehide', flushClicks)
+    document.addEventListener('visibilitychange', onVisibilityHidden)
+    return () => {
+      flushClicks()
+      window.removeEventListener('pagehide', flushClicks)
+      document.removeEventListener('visibilitychange', onVisibilityHidden)
+    }
+  }, [])
+
   return (
     <div className="home-page">
       <MouseTrail />
@@ -254,47 +282,20 @@ function Home() {
           </div>
         ))}
 
-        {/* 精选作品标题 */}
+        {/* 作品入口标题（原「精选作品」+「技术实践」两区块合并，路由去重，统一用 CardLayout） */}
         <div className="bento-section-title bento-span-12">
           <span className="bento-card-num">02</span> Agent 生成的作品
         </div>
 
-        {/* 作品卡片（data-keywords 供 MouseTrail hover/聚焦时切换粒子主题词） */}
-        {WORKS.map((w) => (
-          <Link
-            key={w.title}
-            to={w.to}
-            className={`bento-card bento-work ${w.span}`}
-            aria-label={`精选作品：${w.title}`}
-            data-keywords={w.keywords.join(',')}
-          >
-            <div className="bento-work-top">
-              <span className="bento-work-icon">◯</span>
-              <span className="bento-work-arrow">→</span>
-            </div>
-            <h3 className="bento-work-title">{w.title}</h3>
-            <p className="bento-work-desc">{w.desc}</p>
-            <div className="bento-work-tags">
-              {w.tags.map((t) => (
-                <span key={t} className="bento-work-tag">{t}</span>
-              ))}
-            </div>
-          </Link>
-        ))}
-
-        {/* 技术实践标题 */}
-        <div className="bento-section-title bento-span-12">
-          <span className="bento-card-num">03</span> 技术实践
-        </div>
-
-        {/* CardLayout 通用卡片布局组件演示 */}
-        {TECH_PRACTICES.map((c) => (
+        {/* 作品入口卡片（data-keywords 供 MouseTrail hover/聚焦时切换粒子主题词；
+            footer Link 点击计数写入 home-entry-clicks，约束卡①） */}
+        {ENTRIES.map((c) => (
           <CardLayout
             key={c.title}
             title={c.title}
             techTags={c.techTags}
             span={c.span}
-            data-keywords={c.techTags.join(',')}
+            data-keywords={c.keywords.join(',')}
             footer={
               c.footer ? (
                 <>
@@ -302,16 +303,26 @@ function Home() {
                     {c.footer.meta.join(' · ')}
                   </div>
                   <Link
-                    to={c.footer.to || c.to}
+                    to={c.to}
                     className="cl-link"
+                    onClick={() => trackEntryClick(c.to)}
                   >
                     {c.footer.link} →
                   </Link>
                 </>
-              ) : null
+              ) : (
+                <Link
+                  to={c.to}
+                  className="cl-link"
+                  onClick={() => trackEntryClick(c.to)}
+                >
+                  查看详情 →
+                </Link>
+              )
             }
           >
             <p>{c.desc}</p>
+            {c.practice && <p className="cl-practice">{c.practice}</p>}
           </CardLayout>
         ))}
 

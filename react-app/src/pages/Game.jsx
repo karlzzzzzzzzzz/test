@@ -16,6 +16,7 @@ function Game() {
   const [playerName, setPlayerName] = useState('')
   const [submitState, setSubmitState] = useState('idle')
   const [myRank, setMyRank] = useState(null)
+  const [touchHint, setTouchHint] = useState(false) // 移动端触摸操作引导（约束卡②三态）
   const screenRef = useRef('start')
   const elapsedRef = useRef(0)
 
@@ -56,6 +57,14 @@ function Game() {
   useEffect(() => {
     setPlayerName(localStorage.getItem('game-player-name') || '')
     loadBoard()
+  }, [])
+
+  useEffect(() => {
+    // 触摸能力检测（约束卡②三态）：maxTouchPoints>0 且 coarse 指针视为移动端
+    const hasTouch =
+      (navigator.maxTouchPoints || 0) > 0 &&
+      (window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false)
+    setTouchHint(!!hasTouch)
   }, [])
 
   const handleSubmitScore = async () => {
@@ -111,7 +120,9 @@ function Game() {
             <div className="game-panel">
               <h1>飞机大战</h1>
               <p className="game-tip">
-                移动鼠标（或方向键 / WASD）控制飞机，飞机会自动射击。
+                {touchHint
+                  ? '单指拖动屏幕控制飞机，飞机会自动射击。'
+                  : '移动鼠标（或方向键 / WASD）控制飞机，飞机会自动射击。'}
                 <br />
                 击毁敌机得分；敌机撞到你或突破防线都会损失生命，共 3 点生命。
               </p>

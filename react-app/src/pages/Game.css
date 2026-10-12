@@ -9,6 +9,7 @@
 .game-canvas {
   position: absolute;
   inset: 0;
+  touch-action: none; /* 禁止移动端手势（滚动/缩放），保证触摸拖拽控制飞机 */
 
   canvas {
     display: block;
