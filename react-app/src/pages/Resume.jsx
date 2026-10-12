@@ -1,8 +1,56 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import qrImg from '../assets/resume/qr.png'
 import './Resume.css'
 
+const PREF_KEY = 'mobile-layout-pref'
+const PREF_TTL = 30 * 24 * 3600 * 1000 // 30 天过期
+
+/* 读取移动端阅读偏好：含版本校验、过期清理、fontScale 范围回退 */
+function readPref() {
+  try {
+    const raw = localStorage.getItem(PREF_KEY)
+    if (!raw) return { compact: false, fontScale: 1.0 }
+    const data = JSON.parse(raw)
+    // 版本不符 → 整体重置
+    if (data.v !== 1) {
+      localStorage.removeItem(PREF_KEY)
+      return { compact: false, fontScale: 1.0 }
+    }
+    // 过期（ts 超 30 天）→ 静默清理
+    if (data.ts && Date.now() - data.ts > PREF_TTL) {
+      localStorage.removeItem(PREF_KEY)
+      return { compact: false, fontScale: 1.0 }
+    }
+    // 校验 fontScale 范围（0.9~1.3），越界回退 1.0
+    let fontScale = Number(data.fontScale)
+    if (!isFinite(fontScale) || fontScale < 0.9 || fontScale > 1.3) fontScale = 1.0
+    return { compact: data.compact === true, fontScale }
+  } catch {
+    return { compact: false, fontScale: 1.0 }
+  }
+}
+
+/* 写入偏好：含容量控制（>200B 截断）、QuotaExceededError 降级 */
+function writePref(pref) {
+  try {
+    let payload = JSON.stringify({ v: 1, ...pref, ts: Date.now() })
+    // 容量控制：超 200B 时 fontScale 回默认值
+    if (payload.length > 200) {
+      payload = JSON.stringify({ v: 1, compact: pref.compact, fontScale: 1.0, ts: Date.now() })
+    }
+    localStorage.setItem(PREF_KEY, payload)
+    return true
+  } catch {
+    return false // 配额满/隐私模式 → 降级内存
+  }
+}
+
 function Resume() {
+  const [pref, setPref] = useState(readPref)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [sessionOnly, setSessionOnly] = useState(false)
+  const rafRef = useRef(0)
+
   useEffect(() => {
     const prevTitle = document.title
     document.title = '个人简历 - 邵凯'
@@ -11,8 +59,32 @@ function Resume() {
     }
   }, [])
 
+  // 字体缩放：通过 CSS 变量 --resume-fs 驱动根 font-size
+  useEffect(() => {
+    const el = document.querySelector('.resume-page')
+    if (el) el.style.setProperty('--resume-fs', `${16 * pref.fontScale}px`)
+  }, [pref.fontScale])
+
+  const updatePref = useCallback((next) => {
+    setPref((prev) => {
+      const merged = { ...prev, ...next }
+      const ok = writePref(merged)
+      setSessionOnly(!ok)
+      return merged
+    })
+  }, [])
+
+  // 字体缩放滑块：rAF 节流防重排抖动
+  const onFontScale = useCallback(
+    (val) => {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = requestAnimationFrame(() => updatePref({ fontScale: val }))
+    },
+    [updatePref],
+  )
+
   return (
-    <div className="resume-page">
+    <div className={`resume-page${pref.compact ? ' compact' : ''}`}>
       <div className="resume-sheet">
         {/* ===== 顶部（Grid 区域：info / qr / meta） ===== */}
         <header className="hero">
@@ -187,7 +259,9 @@ function Resume() {
                 </ul>
               </div>
               <div>
-                <h3>项目三：阿里妈妈运营工作台系列项目（Magix，Magix3，Brix，微前端）</h3>
+                <h3>
+                  项目三：阿里妈妈运营工作台系列项目（Magix，Magix3，Brix，微前端）
+                </h3>
                 <ul className="dot">
                   <li>
                     <strong>项目介绍：</strong>
@@ -253,6 +327,55 @@ function Resume() {
             </ul>
           </section>
         </main>
+      </div>
+
+      {/* ===== 移动端阅读偏好（浮动齿轮按钮 + 面板，<768 显示） ===== */}
+      <button
+        className="resume-pref-btn"
+        aria-label="阅读偏好"
+        aria-expanded={panelOpen}
+        onClick={() => setPanelOpen((v) => !v)}
+      >
+        ⚙
+      </button>
+      <div
+        className={`resume-pref-panel${panelOpen ? ' open' : ''}`}
+        role="dialog"
+        aria-label="阅读偏好"
+      >
+        <p className="resume-pref-title">阅读偏好</p>
+        <div className="resume-pref-row">
+          <span>紧凑模式</span>
+          <button
+            className="resume-pref-switch"
+            role="switch"
+            aria-checked={pref.compact}
+            aria-label="紧凑模式"
+            onClick={() => updatePref({ compact: !pref.compact })}
+          />
+        </div>
+        <div className="resume-pref-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>字体大小</span>
+            <span>{Math.round(pref.fontScale * 100)}%</span>
+          </div>
+          <input
+            className="resume-pref-slider"
+            type="range"
+            min="0.9"
+            max="1.3"
+            step="0.1"
+            value={pref.fontScale}
+            role="slider"
+            aria-valuemin="90"
+            aria-valuemax="130"
+            aria-valuenow={Math.round(pref.fontScale * 100)}
+            aria-label="字体大小"
+            onChange={(e) => onFontScale(parseFloat(e.target.value))}
+          />
+        </div>
+        <p className="resume-pref-hint">偏好仅在移动端生效，30 天后自动清理。</p>
+        {sessionOnly && <p className="resume-pref-session-tip show">偏好仅本次会话有效</p>}
       </div>
     </div>
   )

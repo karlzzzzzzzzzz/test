@@ -85,7 +85,7 @@
 }
 
 /* 移动端适配 */
-@media (max-width: 660px) {
+@media (max-width: 767px) {
   .navbar {
     flex-wrap: wrap;
     padding: 12px 16px;
@@ -112,6 +112,21 @@
 
   .nav-links.nav-open {
     display: flex;
+  }
+
+  .page {
+    padding: 24px 16px;
+  }
+}
+
+/* 超小屏适配 */
+@media (max-width: 479px) {
+  .page h1 {
+    font-size: 28px;
+  }
+
+  .card-grid .card {
+    padding: 20px 16px;
   }
 }
 

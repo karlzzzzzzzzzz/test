@@ -75,6 +75,7 @@ react-app/src/
 - 右侧导航链接 5 项：首页（`/index.html`）、飞机大战（`/game`）、番茄钟（`/pomodoro`）、简历（`/resume`）、技术文档（`/docs`）。
 - 当前路由高亮（NavLink active 态）。
 - 移动端：汉堡按钮（aria-expanded 无障碍标注）展开/收起菜单；点击任意链接自动收起菜单。
+- **移动端响应式**：断点对齐统一三级体系；汉堡菜单触发点 <768（767px）；收起态链接 <768 字号 15px、padding 10px 12px。
 
 ### 2.2 已知路由怪癖
 
@@ -95,6 +96,7 @@ Bento Grid 网格布局，自上而下：
 4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：4 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
 5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
+- **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
 #### 3.1.1 鼠标轨迹特效（MouseTrail，仅首页挂载）
 
@@ -174,6 +176,10 @@ Bento Grid 网格布局，自上而下：
 - **恢复**：回前台时重置时钟基准（防 getDelta 超大步长跳帧）；上下文恢复后重建视口尺寸与像素比。
 - 窗口 resize 自适应；容器尺寸为 0（隐藏态）时跳过避免画布塌陷。
 
+#### 3.2.7 移动端响应式
+
+- HUD 字号 <768 降为 14px、生命心 18px、padding 10px 14px；<480 返回链接 13px、得分 15px、`.game-panel` padding 32px 24px、`h1` 32px、`.game-tip` 14px。
+
 ### 3.3 番茄时钟（/pomodoro）
 
 - **三模式**：专注 25min（红）/ 短休息 5min（绿）/ 长休息 15min（蓝），主题色随模式切换（CSS 变量 `--accent`）。
@@ -184,13 +190,27 @@ Bento Grid 网格布局，自上而下：
 - **进度展示**：SVG 圆环进度（半径 130）+ 中心倒计时 MM:SS + 模式标签；本轮周期完成数圆点（4 个，完成的实心）。
 - **统计**："已完成 N 个番茄钟"计数，localStorage 键 `pomo-completed` 持久化（刷新不丢失）。值域收敛为 0~99999 整数：读取时非法值回退 0 并清除原值，计数达 99999 封顶不再增长。写入采用脏标记延迟持久化——完成/跳过仅置脏标记，在页面隐藏（visibilitychange）、pagehide/beforeunload、组件卸载时统一写入，运行中每 30 秒兜底写一次；localStorage 不可用时仅内存计数。
 - **标签页标题**：运行中显示 `MM:SS 模式名 - 番茄钟`，停止时恢复"番茄时钟"。
+- **移动端响应式**：断点对齐统一三级体系；`.pomo-card` <768 `width:100%`、padding 28px 24px；`.pomo-ring` <768 缩至 260px、倒计时字号 48px；<480 `.pomo-ring` 240px、字号 44px。
 
 ### 3.4 在线简历（/resume）
 
-- A4 尺寸纸张样式（`resume-sheet`），打印适配。
+- A4 尺寸纸张样式（`resume-sheet`，宽 794px），打印适配；<768 改流式 `width:100%`、去阴影。
 - 挂载时设置 `document.title = '个人简历 - 邵凯'`，卸载恢复。
 - 内容模块：顶部 hero（姓名/电话/邮箱/地址/GitHub 链接/二维码）→ 个人信息 → 教育经历 → 技术获奖 → 技术简介 → 工作经历 → 项目经验（3 个项目：金融贷支付宝小程序、租赁/仓储管理系统、阿里妈妈运营工作台，含"项目介绍/职责/技术描述/难点"结构）→ 自我评价。
 - 简历内容为静态 JSX 硬编码，无数据驱动；部分历史条目以注释保留。
+- **移动端响应式（三级断点 768/480）**：
+  - `resume-sheet` ≥768 固定 794px 居中，<768 流式 100%、去阴影、`border-radius:0`。
+  - `.hero` ≥768 两列 grid（info / qr），<768 改单列堆叠（info → qr → meta），<480 padding 降为 28px 16px、h1 22px。
+  - `.qr img` 128px / <768 96px / <480 80px。
+  - `.grid3` ≥768 三列 / <768 两列 / <480 单列；`.row4` / `.row3` 同理降到 2 列、1 列。
+  - `.proj` 长文本 <480 `word-break: break-all` 防 URL 撑破布局。
+- **移动端阅读偏好面板**（<768 显示，≥768 隐藏）：
+  - 浮动齿轮按钮（`position:fixed; right:12px; bottom:12px`，触控区 ≥44×44px），`aria-expanded` 联动面板展开。
+  - 面板 `role="dialog" aria-label="阅读偏好"`；含**紧凑模式开关**（`role="switch" aria-checked`）与**字体缩放滑块**（`role="slider" aria-valuemin="90" aria-valuemax="130"`，90%~130% 步长 10%）。
+  - 字体缩放通过 CSS 变量 `--resume-fs`（默认 16px）驱动根 `font-size`；滑块 `onChange` 用 `requestAnimationFrame` 节流防重排抖动。
+  - 紧凑模式（`.resume-page.compact`）将移动端 `--content-padding` 与 `.resume-page` padding 降为 8px 4px、行高 1.6；不影响 ≥768 桌面端。
+  - `prefers-reduced-motion` 时禁用面板过渡动画。
+  - 持久化键 `mobile-layout-pref`（见第 4 节），含版本校验 `v:1`、30 天 TTL 自动清理、`fontScale` 越界回退 1.0、`JSON.stringify` 长度 >200B 时截断、`QuotaExceededError` 降级内存（面板顶部显示"偏好仅本次会话有效"提示条）。
 
 ### 3.5 技术文档中心（/docs 与 /docs/:slug）
 
@@ -202,11 +222,13 @@ Bento Grid 网格布局，自上而下：
   - 切换文档自动回顶；URL 带 `#锚点` 时延迟 50ms 平滑滚动到对应章节（等待渲染完成）。
   - slug 不存在显示"文档未找到"空态 + 返回列表链接。
 - 现有文档：`prompt-engineering`（提示词工程实战手册，2026-09）。
+- **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 
 ### 3.6 关于页（/about）与 404 页
 
 - About：Vite / React / React Router 三卡片技术栈介绍 + 返回首页链接。
 - NotFound：404 标题 + "返回首页"链接（指向 `/index.html`）。
+- **移动端响应式**：断点对齐统一三级体系；`.page` <768 padding 降为 24px 16px；<480 `.page h1` 28px、`.card` padding 20px 16px。
 
 ## 4. 数据与存储一览
 
@@ -217,6 +239,7 @@ Bento Grid 网格布局，自上而下：
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |
+| `mobile-layout-pref` | localStorage | 简历页移动端阅读偏好（`{ v:1, compact:boolean, fontScale:number(0.9~1.3), ts:number }`；30 天 TTL 自动清理；版本不符重置；fontScale 越界回退 1.0；>200B 截断；配额满降级内存） |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |

@@ -183,7 +183,25 @@
   background: var(--accent);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
+  .pomo-card {
+    padding: 28px 24px 26px;
+    width: 100%;
+  }
+  .pomo-ring {
+    width: 260px;
+    height: 260px;
+  }
+  .pomo-ring svg {
+    width: 260px;
+    height: 260px;
+  }
+  .pomo-time-text {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 479px) {
   .pomo-card {
     padding: 28px 20px 24px;
   }

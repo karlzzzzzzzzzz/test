@@ -686,7 +686,7 @@
 }
 
 /* ===== 响应式 ===== */
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .bento-grid {
     grid-template-columns: repeat(6, 1fr);
   }
@@ -697,7 +697,33 @@
   .bento-span-12 { grid-column: span 6; }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 767px) {
+  .home-page {
+    padding: 24px 16px 48px;
+  }
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-span-3,
+  .bento-span-4,
+  .bento-span-6,
+  .bento-span-8,
+  .bento-span-12 {
+    grid-column: span 1;
+  }
+  .bento-about,
+  .bento-skills {
+    min-height: auto;
+  }
+  .bento-side-col {
+    min-height: 0;
+  }
+  .bento-stat-num {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 479px) {
   .home-page {
     padding: 32px 16px 48px;
   }
