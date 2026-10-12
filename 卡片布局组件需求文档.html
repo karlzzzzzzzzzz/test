@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卡片布局组件 PRD - 主页 CardLayout</title>
+<style>
+  :root {
+    --accent: #aa3bff;
+    --accent-2: #6a5cff;
+    --bg: #0b0c14;
+    --surface: #14162390;
+    --surface-solid: #161825;
+    --border: #2a2d3d;
+    --text: #a4a7bb;
+    --text-h: #e8eaf3;
+    --mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    --heading: -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fc;
+      --surface-solid: #ffffff;
+      --border: #e2e4ee;
+      --text: #565a6e;
+      --text-h: #1a1d2e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--heading);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* 文档头部 */
+  .doc-header { border-bottom: 2px solid var(--border); padding-bottom: 24px; margin-bottom: 36px; }
+  .doc-header h1 {
+    font-size: 30px; font-weight: 800; color: var(--text-h); margin: 0 0 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .doc-meta { font-size: 13px; color: var(--text); display: flex; gap: 16px; flex-wrap: wrap; }
+  .doc-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .doc-meta .tag {
+    padding: 2px 10px; border-radius: 999px; font-size: 12px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  h2 {
+    font-size: 22px; font-weight: 700; color: var(--text-h); margin: 40px 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2::before {
+    content: ''; width: 4px; height: 20px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  }
+  h3 { font-size: 17px; font-weight: 600; color: var(--text-h); margin: 28px 0 12px; }
+  h4 { font-size: 15px; font-weight: 600; color: var(--text-h); margin: 20px 0 8px; }
+  p { margin: 0 0 14px; }
+  ul, ol { padding-left: 22px; margin: 0 0 16px; }
+  li { margin-bottom: 6px; }
+  code {
+    font-family: var(--mono); font-size: 0.88em; padding: 2px 6px; border-radius: 4px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);
+  }
+  strong { color: var(--text-h); }
+
+  table { width: 100%; border-collapse: collapse; margin: 0 0 18px; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+  th { background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid)); color: var(--text-h); font-weight: 600; }
+  td { color: var(--text); }
+  tr:hover td { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+
+  .fr-id {
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    color: var(--accent); padding: 1px 8px; border-radius: 4px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent); white-space: nowrap;
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent); padding: 14px 18px; margin: 0 0 18px;
+    background: color-mix(in srgb, var(--accent) 6%, var(--surface-solid));
+    border-radius: 0 8px 8px 0; font-size: 14px;
+  }
+  .callout strong { color: var(--accent); }
+
+  /* ===== 交互演示：卡片组件预览 ===== */
+  .demo-section {
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin: 20px 0 28px;
+    background: var(--surface-solid);
+  }
+  .demo-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px; border-bottom: 1px solid var(--border);
+    font-size: 13px; color: var(--text);
+    background: color-mix(in srgb, var(--accent) 6%, var(--surface-solid));
+  }
+  .demo-bar .dots { display: flex; gap: 6px; }
+  .demo-bar .dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+  .demo-bar .dots span:nth-child(1) { background: #ff5f57; }
+  .demo-bar .dots span:nth-child(2) { background: #febc2e; }
+  .demo-bar .dots span:nth-child(3) { background: #28c840; }
+  .demo-stage {
+    padding: 28px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px;
+    background: var(--bg);
+  }
+
+  /* ---- CardLayout 组件预览样式 ---- */
+  .cl-card {
+    grid-column: span 4;
+    display: flex; flex-direction: column;
+    border-radius: 16px; overflow: hidden;
+    background: color-mix(in srgb, var(--surface-solid) 80%, transparent);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease;
+    min-height: 240px;
+  }
+  .cl-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px color-mix(in srgb, var(--accent) 18%, transparent); }
+
+  /* 标题区 */
+  .cl-head {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .cl-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .cl-title { font-size: 18px; font-weight: 700; color: var(--text-h); margin: 0; line-height: 1.3; }
+  .cl-icon { font-size: 18px; color: var(--accent); flex: none; }
+  .cl-tech-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cl-tech-tag {
+    font-size: 11px; padding: 3px 10px; border-radius: 999px;
+    color: var(--accent); font-family: var(--mono); font-weight: 600;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    transition: all 0.2s ease;
+  }
+  .cl-tech-tag:hover { background: var(--accent); color: #fff; }
+
+  /* 内容区 */
+  .cl-body { padding: 18px 22px; flex-grow: 1; font-size: 14px; line-height: 1.65; color: var(--text); }
+  .cl-body p { margin: 0 0 8px; }
+  .cl-body p:last-child { margin: 0; }
+
+  /* 底部区 */
+  .cl-foot {
+    padding: 14px 22px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: 13px; color: var(--text);
+  }
+  .cl-foot-meta { display: flex; align-items: center; gap: 8px; }
+  .cl-foot-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text); opacity: 0.5; }
+  .cl-link {
+    color: var(--accent); text-decoration: none; font-weight: 600; font-size: 13px;
+    transition: gap 0.2s ease;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .cl-link:hover { text-decoration: underline; }
+
+  /* 空标签态 */
+  .cl-tech-empty {
+    font-size: 11px; color: var(--text); opacity: 0.5; font-style: italic;
+  }
+
+  /* 演示控制面板 */
+  .demo-controls {
+    padding: 16px 18px; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    font-size: 13px;
+  }
+  .demo-controls label { display: flex; align-items: center; gap: 6px; color: var(--text); cursor: pointer; }
+  .demo-controls input[type="text"] {
+    padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text-h); font-size: 13px; width: 160px;
+    font-family: var(--heading);
+  }
+  .demo-controls button {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text-h); font-size: 13px; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .demo-controls button:hover { border-color: var(--accent); color: var(--accent); }
+  .demo-controls .hint { color: var(--text); opacity: 0.7; font-size: 12px; }
+
+  .wireframe { text-align: center; color: var(--text); font-size: 12px; opacity: 0.7; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== 文档头部 ===== -->
+  <header class="doc-header">
+    <h1>主页卡片布局组件（CardLayout）需求文档</h1>
+    <div class="doc-meta">
+      <span>页面：首页 <code>/index.html</code></span>
+      <span>类型：新增组件</span>
+      <span>深度：Medium</span>
+      <span class="tag">PRD</span>
+    </div>
+  </header>
+
+  <!-- ===== 1. 背景与目标 ===== -->
+  <h2>1. 背景与目标</h2>
+  <p>首页 Bento 网格中已有多种卡片（项目定位大卡、技术栈卡、作品卡、工作流卡、统计条），但它们各自的 JSX 结构和样式类名独立编写，缺少一个可复用的<strong>通用卡片布局骨架</strong>。当后续需要在首页新增内容卡片时，开发者需要复制粘贴既有结构再手动调整，结构不统一且容易遗漏无障碍属性。</p>
+  <p>同时，首页的"精选作品"卡已展示过技术标签（<code>bento-work-tag</code>），但标签放在了卡片底部、与标题分离。用户希望将<strong>技术标签上提到标题区</strong>，使读者在浏览标题时即可一眼识别该卡片涉及的技术栈。</p>
+  <p><strong>产品决策</strong>：抽象一个通用的 <code>CardLayout</code> 组件，固定"标题区 → 内容区 → 底部区"三段结构，并在标题区内置技术标签展示能力，供首页及未来其他页面复用。</p>
+  <p><strong>可观测结果</strong>：开发者在首页新增卡片时，只需传入 <code>title</code>、<code>techTags</code>、<code>children</code>、<code>footer</code> 四类数据即可得到一张结构完整、无障碍属性齐全、视觉风格统一的卡片。</p>
+
+  <!-- ===== 2. 范围 ===== -->
+  <h2>2. 范围</h2>
+  <h3>2.1 P0（本次必须完成）</h3>
+  <ul>
+    <li><strong>入口条件</strong>：首页 Bento 网格中需要展示一张新内容卡片时，使用 <code>&lt;CardLayout&gt;</code> 组件。</li>
+    <li><strong>P0 动作</strong>：
+      <ol>
+        <li>组件渲染三段结构：标题区（含技术标签）、内容区、底部区。</li>
+        <li>标题区展示卡片标题文字 + 0~N 个技术标签胶囊。</li>
+        <li>内容区接受任意 ReactNode（文本、列表、图片等）。</li>
+        <li>底部区接受任意 ReactNode（操作链接、元信息等）。</li>
+      </ol>
+    </li>
+    <li><strong>完成证据</strong>：浏览器中渲染出的卡片视觉上分为三个明确区域，标题区可见技术标签胶囊；无标签时不渲染标签容器。</li>
+    <li><strong>恢复路径</strong>：技术标签数据缺失或为空数组时，标题区只显示标题文字，不报错、不留空容器。</li>
+  </ul>
+  <h3>2.2 P1（可后续扩展，本次不做）</h3>
+  <ul>
+    <li>卡片可点击整卡跳转（当前由底部链接独立承担跳转）。</li>
+    <li>标题区图标插槽（当前仅文字标题 + 标签）。</li>
+    <li>标签的筛选/点击跳转搜索功能。</li>
+  </ul>
+  <h3>2.3 明确排除</h3>
+  <ul>
+    <li>不替换首页已有的既有卡片结构（作品卡、工作流卡等保持原样，仅在新增卡片时使用本组件）。</li>
+    <li>不引入第三方 UI 库；使用原生 CSS + 项目既有 CSS 变量。</li>
+    <li>不涉及后端数据获取；所有数据由调用方以 props 传入。</li>
+  </ul>
+
+  <!-- ===== 3. 功能需求 ===== -->
+  <h2>3. 功能需求</h2>
+  <p class="callout"><strong>组件签名</strong>：<code>&lt;CardLayout title="" techTags=[] footer={} span="" &gt;{children}&lt;/CardLayout&gt;</code>。以下需求按模块组织。</p>
+
+  <!-- FR-01: 三段结构 -->
+  <h3>FR-01　三段结构渲染</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-01</span></td><td>组件固定渲染三个 DOM 区域，顺序为标题区 → 内容区 → 底部区，不可调换。</td></tr>
+    <tr><td>触发</td><td>组件挂载即渲染；无条件分支。</td></tr>
+    <tr><td>处理规则</td><td>三段均为同级 flex 子元素，纵向排列（<code>flex-direction: column</code>）。内容区 <code>flex-grow: 1</code> 撑满剩余高度，标题区和底部区高度由内容决定。</td></tr>
+    <tr><td>结果与状态变更</td><td>无持久化状态；纯展示组件，渲染后不产生副作用。</td></tr>
+    <tr><td>区域边界</td><td>标题区与内容区之间、内容区与底部区之间各有一条 1px 分隔线（<code>border-top / border-bottom</code>，颜色取 <code>--border</code> 变量），保证视觉分段。</td></tr>
+  </table>
+
+  <!-- FR-02: 标题区 -->
+  <h3>FR-02　标题区与技术标签</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-02</span></td><td>标题区渲染卡片标题文字 + 技术标签胶囊群。</td></tr>
+    <tr><td>布局</td><td>标题区分上下两行：第一行为标题文字（可选同行末尾图标/箭头）；第二行为技术标签群，横向排列、超出换行。</td></tr>
+    <tr><td>字段：title</td><td>类型 <code>string</code>，必填。渲染为 <code>&lt;h3&gt;</code> 标题，字号 18px，字重 700，颜色取 <code>--text-h</code>。</td></tr>
+    <tr><td>字段：techTags</td><td>类型 <code>string[]</code>，可选，默认空数组。每个标签渲染为一个胶囊（<code>span</code>），圆角 999px，字号 11px，等宽字体，颜色取 <code>--accent</code>，背景取 <code>accent 10%</code> 混合。</td></tr>
+    <tr><td>标签状态</td><td><strong>hover</strong>：标签背景变为 <code>--accent</code> 实色，文字变白，轻微上移 1px。</td></tr>
+    <tr><td>空标签</td><td><code>techTags</code> 为空数组或未传时，<strong>不渲染标签容器 DOM</strong>（而非渲染空 div），标题区仅显示标题文字。</td></tr>
+    <tr><td>无障碍</td><td>标题区容器 <code>role="group"</code>，<code>aria-label</code> 取标题文字。标签 <code>aria-hidden="true"</code>（标签为视觉辅助，不可单独聚焦；若需可点击则在 P1 扩展）。</td></tr>
+  </table>
+
+  <!-- FR-03: 内容区 -->
+  <h3>FR-03　内容区</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-03</span></td><td>内容区接受任意 ReactNode，作为组件 <code>children</code> 传入。</td></tr>
+    <tr><td>触发</td><td>组件挂载即渲染 children。</td></tr>
+    <tr><td>处理规则</td><td>内容区 <code>flex-grow: 1</code>，纵向占满标题区与底部区之间的剩余空间。内部默认 <code>font-size: 14px; line-height: 1.65</code>，颜色 <code>--text</code>。</td></tr>
+    <tr><td>空内容</td><td>children 为 <code>null</code>/<code>undefined</code> 时内容区仍渲染容器（保持三段结构完整），容器高度为 0 + padding，不报错。</td></tr>
+    <tr><td>溢出</td><td>内容超出卡片高度时，由调用方决定是否滚动；组件默认 <code>overflow: hidden</code>，不自动滚动。如需滚动，调用方可通过 <code>className</code> 覆盖。</td></tr>
+  </table>
+
+  <!-- FR-04: 底部区 -->
+  <h3>FR-04　底部区</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-04</span></td><td>底部区接受任意 ReactNode，作为 <code>footer</code> prop 传入。</td></tr>
+    <tr><td>触发</td><td><code>footer</code> prop 非空时渲染底部区；为 <code>null</code>/<code>undefined</code> 时<strong>不渲染底部区 DOM</strong>，卡片仅保留标题区 + 内容区两段。</td></tr>
+    <tr><td>处理规则</td><td>底部区默认 <code>display: flex; justify-content: space-between; align-items: center</code>，适合左侧放元信息、右侧放操作链接的布局。</td></tr>
+    <tr><td>典型内容</td><td>左侧：日期 / 阅读时长 / 作者等元信息；右侧："阅读全文 →"、"查看演示"等链接。</td></tr>
+    <tr><td>分隔</td><td>底部区与内容区之间有一条 <code>border-top: 1px solid --border</code> 分隔线。</td></tr>
+  </table>
+
+  <!-- FR-05: 网格占位 -->
+  <h3>FR-05　网格占位（span）</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-05</span></td><td>组件支持通过 <code>span</code> prop 指定在 Bento 12 栏网格中的占位宽度。</td></tr>
+    <tr><td>字段：span</td><td>类型 <code>'3' | '4' | '6' | '8' | '12'</code>，可选，默认 <code>'4'</code>。映射为既有 CSS 类 <code>bento-span-{n}</code>。</td></tr>
+    <tr><td>处理规则</td><td>组件根元素拼接 <code>cl-card bento-span-{span}</code> 类名。调用方传入非法值时降级为 <code>bento-span-4</code>。</td></tr>
+    <tr><td>响应式</td><td>复用 Home.css 中既有的 <code>bento-span-*</code> 响应式断点（≤960px 缩半、≤560px 单列），组件不额外定义断点。</td></tr>
+  </table>
+
+  <!-- FR-06: 视觉风格 -->
+  <h3>FR-06　视觉风格一致性</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-06</span></td><td>卡片视觉复用首页既有 Bento 卡设计语言。</td></tr>
+    <tr><td>背景</td><td>玻璃拟态：<code>background: color-mix(surface 72%, transparent)</code> + <code>backdrop-filter: blur(12px)</code>（不支持时降级为实色）。</td></tr>
+    <tr><td>圆角 / 边框</td><td>圆角 16px，1px 边框，颜色 <code>--border</code>。</td></tr>
+    <tr><td>悬停</td><td>整卡 hover：<code>translateY(-4px)</code> + 紫色阴影 <code>0 12px 32px accent 18%</code>。</td></tr>
+    <tr><td>入场动画</td><td>复用 <code>bento-fade-up</code> 入场动画，<code>animation-fill-mode: backwards</code>（避免覆盖 hover 样式，遵循项目既有经验）。</td></tr>
+    <tr><td>焦点环</td><td>卡片内可交互元素 <code>:focus-visible</code> 显示 2px <code>--accent</code> 焦点环。</td></tr>
+    <tr><td>动效降级</td><td><code>prefers-reduced-motion: reduce</code> 时禁用入场动画和 hover 位移。</td></tr>
+  </table>
+
+  <!-- FR-07: 无障碍 -->
+  <h3>FR-07　无障碍</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>说明</th></tr>
+    <tr><td><span class="fr-id">FR-07</span></td><td>组件满足键盘可达和读屏可达。</td></tr>
+    <tr><td>标题语义</td><td>标题渲染为 <code>&lt;h3&gt;</code>，保证页面标题层级正确（首页大标题为 h1，卡片标题为 h3）。</td></tr>
+    <tr><td>区域标注</td><td>标题区 <code>role="group" aria-label="{title}"</code>；底部区如含操作链接，链接自身携带 <code>aria-label</code>。</td></tr>
+    <tr><td>标签可达</td><td>技术标签为视觉辅助，<code>aria-hidden="true"</code>，不进入 Tab 序列。</td></tr>
+    <tr><td>对比度</td><td>标签文字色 <code>--accent</code> 与背景对比度 ≥ 3:1（大字/UI 组件阈值）。</td></tr>
+  </table>
+
+  <!-- FR-08: Props 汇总 -->
+  <h3>FR-08　Props 接口汇总</h3>
+  <table>
+    <tr><th>Prop</th><th>类型</th><th>必填</th><th>默认值</th><th>说明</th></tr>
+    <tr><td><code>title</code></td><td><code>string</code></td><td>是</td><td>—</td><td>卡片标题，渲染为 h3</td></tr>
+    <tr><td><code>techTags</code></td><td><code>string[]</code></td><td>否</td><td><code>[]</code></td><td>技术标签数组，渲染在标题区第二行</td></tr>
+    <tr><td><code>children</code></td><td><code>ReactNode</code></td><td>否</td><td>—</td><td>内容区内容</td></tr>
+    <tr><td><code>footer</code></td><td><code>ReactNode</code></td><td>否</td><td>—</td><td>底部区内容；不传则不渲染底部区</td></tr>
+    <tr><td><code>span</code></td><td><code>'3'|'4'|'6'|'8'|'12'</code></td><td>否</td><td><code>'4'</code></td><td>Bento 网格占位宽度</td></tr>
+    <tr><td><code>className</code></td><td><code>string</code></td><td>否</td><td>—</td><td>附加类名，用于调用方覆盖样式</td></tr>
+  </table>
+
+  <!-- ===== 4. 交互演示 ===== -->
+  <h2>4. 交互演示</h2>
+  <p>下方为 <code>CardLayout</code> 组件的交互预览。可实时编辑标题和技术标签，观察标签渲染和空标签降级行为。</p>
+
+  <div class="demo-section">
+    <div class="demo-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <span>CardLayout 组件预览</span>
+      <span style="font-family:var(--mono);font-size:12px;">/index.html</span>
+    </div>
+    <div class="demo-stage">
+      <!-- 卡片 A：完整三段 + 技术标签 -->
+      <article class="cl-card bento-span-4" role="group" aria-label="前端工程化实践">
+        <div class="cl-head">
+          <div class="cl-head-row">
+            <h3 class="cl-title">前端工程化实践</h3>
+            <span class="cl-icon">◆</span>
+          </div>
+          <div class="cl-tech-tags">
+            <span class="cl-tech-tag" aria-hidden="true">Vite</span>
+            <span class="cl-tech-tag" aria-hidden="true">React 18</span>
+            <span class="cl-tech-tag" aria-hidden="true">Hooks</span>
+          </div>
+        </div>
+        <div class="cl-body">
+          <p>从零搭建基于 Vite + React 18 的工程化脚手架，含路由懒加载、代码分割与环境变量注入。</p>
+          <p>构建产物分包优化，首屏加载 &lt; 1.2s（4G 网络）。</p>
+        </div>
+        <div class="cl-foot">
+          <div class="cl-foot-meta">
+            <span>2026-10-12</span><span class="dot"></span><span>5 min</span>
+          </div>
+          <a class="cl-link" href="javascript:void(0)" onclick="return false">阅读全文 →</a>
+        </div>
+      </article>
+
+      <!-- 卡片 B：无技术标签（空标签降级） -->
+      <article class="cl-card bento-span-4" role="group" aria-label="Three.js 星空引擎">
+        <div class="cl-head">
+          <div class="cl-head-row">
+            <h3 class="cl-title">Three.js 星空引擎</h3>
+            <span class="cl-icon">★</span>
+          </div>
+        </div>
+        <div class="cl-body">
+          <p>自研 900 粒星空穿梭背景 + 粒子爆炸系统，支持相机震动与场景雾效。</p>
+          <p>切页自动暂停、上下文丢失自恢复。</p>
+        </div>
+        <div class="cl-foot">
+          <div class="cl-foot-meta">
+            <span>2026-10-10</span><span class="dot"></span><span>8 min</span>
+          </div>
+          <a class="cl-link" href="javascript:void(0)" onclick="return false">查看演示 →</a>
+        </div>
+      </article>
+
+      <!-- 卡片 C：无底部区（footer 不传降级） -->
+      <article class="cl-card bento-span-4" role="group" aria-label="番茄时钟持久化">
+        <div class="cl-head">
+          <div class="cl-head-row">
+            <h3 class="cl-title">番茄时钟持久化</h3>
+            <span class="cl-icon">⏱</span>
+          </div>
+          <div class="cl-tech-tags">
+            <span class="cl-tech-tag" aria-hidden="true">localStorage</span>
+            <span class="cl-tech-tag" aria-hidden="true">Web Audio</span>
+          </div>
+        </div>
+        <div class="cl-body">
+          <p>基于结束时间戳驱动的计时器，切后台恢复仍准确。完成计数采用脏标记延迟持久化，值域 0~99999 自愈。</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="demo-controls">
+      <label>标题：<input type="text" id="ctrl-title" value="可访问性最佳实践" /></label>
+      <label>技术标签（逗号分隔）：<input type="text" id="ctrl-tags" value="ARIA, a11y, WCAG" /></label>
+      <button id="ctrl-apply">应用</button>
+      <button id="ctrl-clear-tags">清空标签</button>
+      <span class="hint">← 观察标题区标签渲染与空标签降级</span>
+    </div>
+
+    <div class="demo-stage" style="border-top:1px solid var(--border);padding-top:28px;">
+      <article class="cl-card bento-span-4" id="dynamic-card" role="group" aria-label="可访问性最佳实践">
+        <div class="cl-head">
+          <div class="cl-head-row">
+            <h3 class="cl-title" id="dyn-title">可访问性最佳实践</h3>
+            <span class="cl-icon">♿</span>
+          </div>
+          <div class="cl-tech-tags" id="dyn-tags">
+            <span class="cl-tech-tag" aria-hidden="true">ARIA</span>
+            <span class="cl-tech-tag" aria-hidden="true">a11y</span>
+            <span class="cl-tech-tag" aria-hidden="true">WCAG</span>
+          </div>
+        </div>
+        <div class="cl-body">
+          <p>这是一张动态卡片：修改上方输入框并点击"应用"，标题和技术标签会实时更新。清空标签后观察标题区降级为仅标题文字。</p>
+        </div>
+        <div class="cl-foot">
+          <div class="cl-foot-meta"><span>动态预览</span></div>
+          <a class="cl-link" href="javascript:void(0)" onclick="return false">了解更多 →</a>
+        </div>
+      </article>
+      <p class="wireframe" style="grid-column:span 8;align-self:center;">↑ 实时编辑预览区（CardLayout 动态实例）</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var titleInput = document.getElementById('ctrl-title');
+      var tagsInput  = document.getElementById('ctrl-tags');
+      var card       = document.getElementById('dynamic-card');
+      var dynTitle   = document.getElementById('dyn-title');
+      var dynTags    = document.getElementById('dyn-tags');
+
+      function render() {
+        var t = titleInput.value.trim() || '未命名卡片';
+        dynTitle.textContent = t;
+        card.setAttribute('aria-label', t);
+
+        var raw = tagsInput.value.trim();
+        if (raw === '') {
+          // 空标签：移除标签容器 DOM（降级为仅标题）
+          if (dynTags.parentNode) dynTags.parentNode.removeChild(dynTags);
+          return;
+        }
+        // 确保容器存在
+        if (!dynTags.parentNode) {
+          card.querySelector('.cl-head').appendChild(dynTags);
+        }
+        var tags = raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        dynTags.innerHTML = '';
+        tags.forEach(function (tag) {
+          var span = document.createElement('span');
+          span.className = 'cl-tech-tag';
+          span.setAttribute('aria-hidden', 'true');
+          span.textContent = tag;
+          dynTags.appendChild(span);
+        });
+      }
+
+      document.getElementById('ctrl-apply').addEventListener('click', render);
+      document.getElementById('ctrl-clear-tags').addEventListener('click', function () {
+        tagsInput.value = '';
+        render();
+      });
+      titleInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') render(); });
+      tagsInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') render(); });
+    })();
+  </script>
+
+  <!-- ===== 5. 共享规则与异常 ===== -->
+  <h2>5. 共享规则与异常</h2>
+
+  <h3>5.1 样式作用域</h3>
+  <ul>
+    <li>组件样式类名统一使用 <code>cl-</code> 前缀（CardLayout），写在 <code>src/components/CardLayout.css</code> 中，由组件文件 <code>import</code> 引入。</li>
+    <li>网格占位类 <code>bento-span-*</code> 复用 Home.css 中既有定义，不重复声明。</li>
+    <li>颜色、字体等 CSS 变量引用首页既有的 <code>--home-*</code> 或全局 <code>--accent</code> 等变量，不硬编码色值。</li>
+  </ul>
+
+  <h3>5.2 异常与降级</h3>
+  <table>
+    <tr><th>场景</th><th>处理</th></tr>
+    <tr><td><code>title</code> 未传</td><td>组件抛出控制台警告 <code>CardLayout requires a title prop</code>，渲染占位文本"未命名卡片"。</td></tr>
+    <tr><td><code>techTags</code> 为空数组 / undefined</td><td>不渲染标签容器 DOM；标题区仅显示标题行。</td></tr>
+    <tr><td><code>techTags</code> 含空字符串项</td><td>渲染前过滤掉空字符串项；过滤后为空则同上降级。</td></tr>
+    <tr><td><code>children</code> 为 null</td><td>内容区渲染空容器（保持三段结构），高度为 padding 值。</td></tr>
+    <tr><td><code>footer</code> 为 null / undefined</td><td>不渲染底部区 DOM，卡片仅两段。</td></tr>
+    <tr><td><code>span</code> 传入非法值</td><td>降级为 <code>bento-span-4</code>，控制台警告。</td></tr>
+    <tr><td>不支持 <code>backdrop-filter</code></td><td>降级为实色背景（<code>@supports</code> 回退，与既有 bento-card 一致）。</td></tr>
+    <tr><td><code>prefers-reduced-motion: reduce</code></td><td>禁用入场动画、hover 位移、标签 hover 动效。</td></tr>
+  </table>
+
+  <h3>5.3 文件落位</h3>
+  <table>
+    <tr><th>文件</th><th>路径</th><th>职责</th></tr>
+    <tr><td>组件逻辑</td><td><code>src/components/CardLayout.jsx</code></td><td>React 函数组件，props 解析与三段结构渲染</td></tr>
+    <tr><td>组件样式</td><td><code>src/components/CardLayout.css</code></td><td><code>cl-</code> 前缀样式，玻璃拟态、标签、响应式</td></tr>
+    <tr><td>首页调用</td><td><code>src/pages/Home.jsx</code></td><td>在 Bento 网格中引入并使用 <code>&lt;CardLayout&gt;</code> 渲染新卡片</td></tr>
+  </table>
+
+  <h3>5.4 基线对比</h3>
+  <p>对比 <code>src/docs/project-features.md</code> 第 3.1 节首页基线：</p>
+  <ul>
+    <li><strong>新增</strong>：首页 Bento 网格中出现由 <code>CardLayout</code> 组件渲染的卡片（三段结构 + 标题区技术标签）。</li>
+    <li><strong>修改</strong>：Home.jsx 新增 <code>import CardLayout</code> 及对应 JSX 调用；Home.css 无修改（组件样式独立）。</li>
+    <li><strong>删除</strong>：无（既有卡片结构保持不变）。</li>
+  </ul>
+
+  <div class="callout">
+    <strong>待确认 [TBD]</strong>：本次新增的 CardLayout 卡片在首页网格中展示的具体内容（标题文案、技术标签内容、正文、底部链接）尚未确定。[假设] 实现阶段由开发者填入与首页主题一致的内容（如"可访问性最佳实践""前端工程化实践"等技术向内容），PRD 不限定具体文案。
+  </div>
+
+</div>
+</body>
+</html>
