@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import MouseTrail from '../components/MouseTrail'
 import Weather, { useWeather } from '../components/Weather'
 import DragList  from '../components/DragList'
+import CardLayout from '../components/CardLayout'
 import './Home.css'
 
 const SKILLS = [
@@ -51,6 +52,33 @@ const PIPELINE = [
   { num: '02', title: '代码生成', desc: '自动创建/修改组件、样式、路由，热更新即时验证' },
   { num: '03', title: '浏览器自测', desc: 'Headless 浏览器逐页点击，截图像素级校验渲染结果' },
   { num: '04', title: '构建部署', desc: '一键打包、分包优化、Nginx 配置，产物可直接上线' },
+]
+
+const TECH_PRACTICES = [
+  {
+    title: '前端工程化实践',
+    techTags: ['Vite', 'React 18', 'Hooks'],
+    desc: '从零搭建基于 Vite + React 18 的工程化脚手架，含路由懒加载、代码分割与环境变量注入。构建产物分包优化，首屏加载 < 1.2s（4G 网络）。',
+    footer: { meta: ['2026-10-12', '5 min'], link: '阅读全文' },
+    span: '4',
+    to: '/docs',
+  },
+  {
+    title: 'Three.js 星空引擎',
+    techTags: [],
+    desc: '自研 900 粒星空穿梭背景 + 粒子爆炸系统，支持相机震动与场景雾效。切页自动暂停、WebGL 上下文丢失自恢复。',
+    footer: { meta: ['2026-10-10', '8 min'], link: '查看演示', to: '/game' },
+    span: '4',
+    to: '/game',
+  },
+  {
+    title: '番茄时钟持久化',
+    techTags: ['localStorage', 'Web Audio'],
+    desc: '基于结束时间戳驱动的计时器，切后台恢复仍准确。完成计数采用脏标记延迟持久化，值域 0~99999 自愈。',
+    footer: null,
+    span: '4',
+    to: '/pomodoro',
+  },
 ]
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
@@ -252,6 +280,39 @@ function Home() {
               ))}
             </div>
           </Link>
+        ))}
+
+        {/* 技术实践标题 */}
+        <div className="bento-section-title bento-span-12">
+          <span className="bento-card-num">03</span> 技术实践
+        </div>
+
+        {/* CardLayout 通用卡片布局组件演示 */}
+        {TECH_PRACTICES.map((c) => (
+          <CardLayout
+            key={c.title}
+            title={c.title}
+            techTags={c.techTags}
+            span={c.span}
+            data-keywords={c.techTags.join(',')}
+            footer={
+              c.footer ? (
+                <>
+                  <div className="cl-foot-meta">
+                    {c.footer.meta.join(' · ')}
+                  </div>
+                  <Link
+                    to={c.footer.to || c.to}
+                    className="cl-link"
+                  >
+                    {c.footer.link} →
+                  </Link>
+                </>
+              ) : null
+            }
+          >
+            <p>{c.desc}</p>
+          </CardLayout>
         ))}
 
         {/* 统计条 */}

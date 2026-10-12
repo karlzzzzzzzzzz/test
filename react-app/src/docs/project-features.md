@@ -1,6 +1,6 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-11 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-12 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
@@ -43,7 +43,8 @@ react-app/src/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
 │   ├── DragList.jsx             # 拖拽列表（H5 原生拖放）
-│   └── Weather.jsx              # 天气卡片
+│   ├── Weather.jsx              # 天气卡片
+│   └── CardLayout.jsx / .css   # 通用卡片布局组件（三段结构 + 技术标签）
 ├── api/
 │   └── leaderboard.js           # 排行榜 API（localStorage 版，接口对齐未来云函数版）
 └── docs/
@@ -92,7 +93,8 @@ Bento Grid 网格布局，自上而下：
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
 4. **精选作品**：4 张卡片（飞机大战/番茄时钟/在线简历/提示词工程文档），整卡可点击跳转对应路由，携带 `data-keywords` 主题词表供 MouseTrail 切换粒子词库。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+5. **技术实践**（03 区块）：3 张由 `CardLayout` 通用卡片布局组件渲染的卡片（前端工程化实践 / Three.js 星空引擎 / 番茄时钟持久化）。每张卡片采用"标题区 → 内容区 → 底部区"三段结构，标题区内置技术标签胶囊群（`techTags` prop），空标签时不渲染标签容器；`footer` prop 为 null 时不渲染底部区。卡片携带 `data-keywords` 供 MouseTrail 切换粒子词库（见 3.1.4）。
+6. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 
 #### 3.1.1 鼠标轨迹特效（MouseTrail，仅首页挂载）
@@ -118,6 +120,16 @@ Bento Grid 网格布局，自上而下：
 - 基于 HTML5 原生拖放 API 的极简实现（非第三方库）。
 - 交互：按住拖动 → dragEnter 确定目标位 → 松手时**两元素互换位置**（注意：是交换，不是插入式重排序）。
 - **键盘交换**：列表项可聚焦（tabindex=0），Alt+↑/↓ 与相邻项交换位置（与鼠标交换语义一致），首项按↑/末项按↓无操作；焦点跟随被移动项，`aria-live="polite"` 播报交换结果。
+
+#### 3.1.4 通用卡片布局组件（CardLayout）
+
+- 位置：`src/components/CardLayout.jsx` + `CardLayout.css`，样式类名 `cl-` 前缀隔离。
+- **三段结构**：标题区（`cl-head`，含标题 h3 + 技术标签）→ 内容区（`cl-body`，flex-grow 撑满）→ 底部区（`cl-foot`，仅 `footer` prop 非空时渲染），区域间 1px 分隔线。
+- **Props**：`title`（必填 string）/ `techTags`（可选 string[]，默认 []）/ `children`（内容区 ReactNode）/ `footer`（底部区 ReactNode，null 则不渲染）/ `span`（'3'|'4'|'6'|'8'|'12'，默认 '4'，非法值降级 '4'）/ `className` / `...rest`（透传 data-* 等属性至根 article）。
+- **技术标签**：渲染在标题区第二行，圆角 999px 胶囊样式，等宽字体，紫色描边 + 10% 紫色背景；hover 变实色紫 + 白字 + 上移 1px。`techTags` 为空数组或全空字符串时不渲染标签容器 DOM。
+- **降级与异常**：`title` 未传时控制台警告 + 占位"未命名卡片"；`techTags` 过滤空字符串项后为空则降级；`footer` 为 null/undefined 时不渲染底部区；不支持 `backdrop-filter` 时降级实色背景；`prefers-reduced-motion` 禁用入场动画和 hover 位移。
+- **视觉**：玻璃拟态（surface 80% + blur 12px），圆角 16px，入场动画 `bento-fade-up`（fill-mode backwards），hover 上移 4px + 紫色阴影，复用首页 `--home-*` CSS 变量。
+- **无障碍**：根 article `role="group" aria-label={title}`；技术标签 `aria-hidden="true"`（视觉辅助，不可单独聚焦）；`...rest` 透传 `data-keywords` 供 MouseTrail 切换粒子词库。
 
 ### 3.2 飞机大战（/game）
 
