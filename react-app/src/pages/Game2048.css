@@ -1,0 +1,485 @@
+/* ===== 2048 小游戏页面 =====
+ * 风格：深色页面框架（与基线 Game.jsx 一致）+ 经典 2048 浅色棋盘
+ * 断点：≥768 / 768~481 / <480 三级（对齐基线首页三级体系）
+ */
+
+.g2048-page {
+  min-height: 100vh;
+  background: #05060f;
+  color: #eaf4ff;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ===== HUD ===== */
+.g2048-hud {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.g2048-back {
+  color: #9db4d6;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: color 0.2s, background 0.2s;
+}
+
+.g2048-back:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.g2048-scores {
+  display: flex;
+  gap: 8px;
+}
+
+.g2048-score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  min-width: 92px;
+}
+
+.g2048-score-box.g2048-best {
+  background: rgba(255, 209, 102, 0.12);
+  border-color: rgba(255, 209, 102, 0.35);
+}
+
+.g2048-score-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #9db4d6;
+  text-transform: uppercase;
+}
+
+.g2048-score-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #eaf4ff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  animation: g2048-score-bump 300ms ease-out;
+}
+
+.g2048-best .g2048-score-value {
+  color: #ffd166;
+}
+
+@keyframes g2048-score-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); color: #ffd166; }
+  100% { transform: scale(1); }
+}
+
+/* ===== 持久化降级提示 ===== */
+.g2048-persist-tip {
+  width: 100%;
+  max-width: 480px;
+  padding: 8px 14px;
+  background: rgba(255, 119, 136, 0.15);
+  border: 1px solid rgba(255, 119, 136, 0.4);
+  color: #ff9aab;
+  font-size: 13px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* ===== 工具条 ===== */
+.g2048-toolbar {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.g2048-btn {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #04101e;
+  background: linear-gradient(135deg, #66f7ff, #4fc3f7);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 22px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(79, 195, 247, 0.3);
+}
+
+.g2048-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(79, 195, 247, 0.5);
+}
+
+.g2048-btn:active {
+  transform: translateY(0);
+}
+
+.g2048-btn-ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cfe6ff;
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  box-shadow: none;
+  padding: 9px 18px;
+}
+
+.g2048-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.g2048-btn-ghost.is-disabled,
+.g2048-btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.g2048-undo-count {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(102, 247, 255, 0.18);
+  color: #66f7ff;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.g2048-help-toggle {
+  margin-left: auto;
+  font-size: 13px;
+  color: #9db4d6;
+  background: transparent;
+  border: 1px solid rgba(157, 180, 214, 0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.g2048-help-toggle:hover {
+  color: #cfe6ff;
+  border-color: rgba(120, 170, 255, 0.5);
+}
+
+.g2048-help {
+  width: 100%;
+  max-width: 480px;
+  padding: 14px 18px;
+  background: rgba(15, 20, 40, 0.6);
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  border-radius: 10px;
+  color: #9db4d6;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.g2048-help ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.g2048-help li {
+  margin: 2px 0;
+}
+
+/* ===== 棋盘 =====
+ * 4x4 Grid，方块用 grid 定位（不做滑动动画，仅 spawn + pop 动画）
+ * 棋盘边长：≥768 480px / 768~481 360px / <480 min(90vw, 320px)
+ */
+.g2048-grid {
+  --g2048-cell: 108px;
+  --g2048-gap: 12px;
+  --g2048-pad: 12px;
+  position: relative;
+  width: calc(var(--g2048-cell) * 4 + var(--g2048-gap) * 3 + var(--g2048-pad) * 2);
+  height: calc(var(--g2048-cell) * 4 + var(--g2048-gap) * 3 + var(--g2048-pad) * 2);
+  padding: var(--g2048-pad);
+  background: #bbada0;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, var(--g2048-cell));
+  grid-template-rows: repeat(4, var(--g2048-cell));
+  gap: var(--g2048-gap);
+  touch-action: none; /* 移动端禁滚屏，保证触控滑动 */
+  outline: none;
+}
+
+.g2048-grid:focus-visible {
+  outline: 2px solid var(--g2048-focus, #aa3bff);
+  outline-offset: 3px;
+}
+
+.g2048-cell {
+  background: rgba(238, 228, 218, 0.35);
+  border-radius: 6px;
+}
+
+/* 方块：通过 grid-column/row 定位到对应格子 */
+.g2048-tile {
+  grid-column: calc(var(--g2048-c) + 1);
+  grid-row: calc(var(--g2048-r) + 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  background: #eee4da;
+  color: #776e65;
+  font-size: 42px;
+  transition: background-color 150ms ease;
+}
+
+.g2048-tile.is-new {
+  animation: g2048-spawn 180ms ease-out;
+}
+
+.g2048-tile.is-merged {
+  animation: g2048-pop 220ms ease-in-out;
+  z-index: 2;
+}
+
+@keyframes g2048-spawn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes g2048-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* 数字颜色映射（参照 PRD 第 4 节"主题色"行） */
+.g2048-tile-2 { background: #eee4da; color: #776e65; }
+.g2048-tile-4 { background: #ede0c8; color: #776e65; }
+.g2048-tile-8 { background: #f2b179; color: #fff; }
+.g2048-tile-16 { background: #f59563; color: #fff; }
+.g2048-tile-32 { background: #f67c5f; color: #fff; }
+.g2048-tile-64 { background: #f65e3b; color: #fff; }
+.g2048-tile-128 {
+  background: #edcf72;
+  color: #fff;
+  font-size: 36px;
+  box-shadow: 0 0 18px rgba(237, 207, 114, 0.45);
+}
+.g2048-tile-256 {
+  background: #edcc61;
+  color: #fff;
+  font-size: 36px;
+  box-shadow: 0 0 22px rgba(237, 204, 97, 0.55);
+}
+.g2048-tile-512 {
+  background: #edc850;
+  color: #fff;
+  font-size: 36px;
+  box-shadow: 0 0 26px rgba(237, 200, 80, 0.6);
+}
+.g2048-tile-1024 {
+  background: #edc53f;
+  color: #fff;
+  font-size: 30px;
+  box-shadow: 0 0 30px rgba(237, 197, 63, 0.7);
+}
+.g2048-tile-2048 {
+  background: #edc22e;
+  color: #fff;
+  font-size: 30px;
+  box-shadow: 0 0 36px rgba(237, 194, 46, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+/* 数字超过 2048（4096/8192 等）复用 2048 样式 + 字号自动缩放防溢出 */
+.g2048-tile-2048 ~ .g2048-tile,
+.g2048-tile[data-overflow='true'] {
+  font-size: 26px;
+}
+
+/* ===== 遮罩 ===== */
+.g2048-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 6, 15, 0.55);
+  backdrop-filter: blur(3px);
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.g2048-overlay-panel {
+  text-align: center;
+  padding: 36px 44px;
+  border-radius: 14px;
+  background: rgba(15, 20, 40, 0.85);
+  border: 1px solid rgba(120, 170, 255, 0.25);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 28px;
+    color: #eaf4ff;
+    letter-spacing: 2px;
+  }
+
+  p {
+    margin: 0 0 18px;
+    color: #9db4d6;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+}
+
+.g2048-overlay-win .g2048-overlay-panel h2 {
+  color: #ffd166;
+  text-shadow: 0 0 20px rgba(255, 209, 102, 0.55);
+}
+
+.g2048-overlay-over .g2048-overlay-panel h2 {
+  color: #ff7788;
+}
+
+.g2048-final {
+  color: #ffd166;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.g2048-best-line {
+  font-size: 14px;
+  color: #9db4d6;
+}
+
+.g2048-overlay-panel .g2048-btn {
+  margin: 4px 6px;
+}
+
+.g2048-home-link {
+  display: inline-block;
+  margin-top: 14px;
+  color: #9db4d6;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.g2048-home-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ===== 屏幕阅读器专用 ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== 响应式：768~481 中等屏 ===== */
+@media (max-width: 767px) {
+  .g2048-grid {
+    --g2048-cell: 78px;
+    --g2048-gap: 10px;
+    --g2048-pad: 10px;
+  }
+  .g2048-tile {
+    font-size: 30px;
+  }
+  .g2048-tile-128,
+  .g2048-tile-256,
+  .g2048-tile-512 {
+    font-size: 24px;
+  }
+  .g2048-tile-1024,
+  .g2048-tile-2048 {
+    font-size: 20px;
+  }
+  .g2048-hud,
+  .g2048-toolbar,
+  .g2048-help,
+  .g2048-persist-tip {
+    max-width: 360px;
+  }
+}
+
+/* ===== 响应式：<480 小屏 ===== */
+@media (max-width: 480px) {
+  .g2048-page {
+    padding: 16px 12px 32px;
+  }
+  .g2048-grid {
+    --g2048-cell: calc((min(90vw, 320px) - var(--g2048-pad) * 2 - var(--g2048-gap) * 3) / 4);
+    width: min(90vw, 320px);
+    height: min(90vw, 320px);
+  }
+  .g2048-tile {
+    font-size: 26px;
+  }
+  .g2048-tile-128,
+  .g2048-tile-256,
+  .g2048-tile-512 {
+    font-size: 20px;
+  }
+  .g2048-tile-1024,
+  .g2048-tile-2048 {
+    font-size: 18px;
+  }
+  .g2048-back {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+  .g2048-score-box {
+    padding: 5px 12px;
+    min-width: 78px;
+  }
+  .g2048-score-value {
+    font-size: 18px;
+  }
+  .g2048-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* ===== prefers-reduced-motion：禁用 spawn/pop/score 动画 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .g2048-tile.is-new,
+  .g2048-tile.is-merged,
+  .g2048-score-value {
+    animation: none;
+  }
+  .g2048-tile {
+    transition: none;
+  }
+}

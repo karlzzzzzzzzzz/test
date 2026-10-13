@@ -1,13 +1,13 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-12 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-13 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、番茄时钟、在线简历、技术文档中心四大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、番茄时钟、在线简历、技术文档中心五大功能模块。
 
 ### 1.2 技术栈
 
@@ -31,6 +31,7 @@ react-app/src/
 ├── pages/
 │   ├── Home.jsx / Home.css      # 首页（Bento 网格）
 │   ├── Game.jsx / Game.css      # 飞机大战页面壳（UI + 状态）
+│   ├── Game2048.jsx / .css      # 2048 小游戏页面壳（UI + 状态）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Resume.jsx / .css        # 在线简历
 │   ├── Docs.jsx / .css          # 文档列表页
@@ -38,7 +39,8 @@ react-app/src/
 │   ├── About.jsx                # 关于页
 │   └── NotFound.jsx             # 404 页
 ├── game/
-│   └── SpaceShooter.js          # Three.js 游戏引擎（纯逻辑，与 UI 解耦）
+│   ├── SpaceShooter.js          # Three.js 飞机大战引擎（纯逻辑，与 UI 解耦）
+│   └── Game2048Engine.js         # 2048 引擎（纯逻辑：滑动/合并/撤销/持久化）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -61,6 +63,7 @@ react-app/src/
 | `/resume` | Resume 简历 | 直接引入 |
 | `/pomodoro` | Pomodoro 番茄钟 | 直接引入 |
 | `/game` | Game 飞机大战 | **lazy 懒加载**（含 Three.js，体积大） |
+| `/2048` | Game2048 2048 小游戏 | **lazy 懒加载**（含引擎逻辑，与飞机大战分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `*` | NotFound 404 | 直接引入 |
@@ -93,7 +96,7 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：4 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：5 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
 5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
@@ -180,7 +183,61 @@ Bento Grid 网格布局，自上而下：
 
 - HUD 字号 <768 降为 14px、生命心 18px、padding 10px 14px；<480 返回链接 13px、得分 15px、`.game-panel` padding 32px 24px、`h1` 32px、`.game-tip` 14px。
 
-### 3.3 番茄时钟（/pomodoro）
+### 3.3 2048 小游戏（/2048）
+
+#### 3.3.1 架构
+
+- 页面壳 `Game2048.jsx` 管理 UI 状态机（idle / playing / paused / over / win 五屏）与 HUD；引擎 `Game2048Engine.js` 纯逻辑（无 Three.js），通过回调（onState / onScore / onBest / onWin / onGameOver / onPause / onPersistError）与 UI 通信；组件卸载时 `engine.dispose()` 持久化并清理定时器。架构模式参照飞机大战 3.2.1。
+
+#### 3.3.2 玩法规则
+
+- **棋盘**：4×4 网格，开局在空格随机生成 2 个方块（数字 2 占 90% / 数字 4 占 10%）。
+- **控制**：键盘 ↑↓←→ 或 WASD（约束卡 2 键盘可达）；移动端单指触摸滑动（touchstart/touchend 计算位移向量，水平/垂直分量较大者判定方向，阈值 24px；多点触摸仅跟踪首指；`touch-action: none` + `preventDefault` 阻止页面滚动/缩放，约束卡 1 移动端兼容）。
+- **合并规则**：每次滑动每行/列至多合并 1 次（避免连锁）；合并产生的新数字累加到本局得分；同一次滑动内已合并过的方块不可再合并。
+- **新方块**：每次有效移动后（棋盘发生位置变化或合并）在随机空格生成 1 个新方块（2 或 4，比例同上）；滑动方向无可移动方块时不生成新方块、不消耗撤销次数。
+- **得分与最高分**：合并产生的新数字累加到本局 `score`；当 `score > bestScore` 时实时覆盖最高分并触发 HUD 数字 bump 动画（300ms）。
+- **胜利判定**：棋盘出现 2048 方块时切到 win 状态，弹胜利遮罩；点击「继续挑战」回到 playing 不重复弹（仅首次 2048 弹窗，由 `won` 标记锁）。
+- **结束判定**：棋盘填满且无任何相邻同值方块时切到 over 状态；棋盘满但仍存在可合并方块时不进入 over，允许继续滑动。
+- **撤销**：每局初始 3 次，每次有效移动前快照（board/score/undosLeft）入历史栈（容量 5）；撤销时回退到上一快照，undosLeft - 1；次数为 0 时按钮置灰 `aria-disabled="true"` + 禁用点击；win/over 状态下也允许撤销回到 playing。
+
+#### 3.3.3 视觉与无障碍
+
+- **棋盘**：CSS Grid 4×4 布局，浅米色 `#bbada0` 底（贴经典 2048 风格），方块用 grid-column/row 定位（不做滑动动画，仅 spawn + pop 动画）。
+- **主题色映射**：2=#eee4da、4=#ede0c8、8=#f2b179、16=#f59563、32=#f67c5f、64=#f65e3b、128=#edcf72、256=#edcc61、512=#edc850、1024=#edc53f、2048=#edc22e（金色描边 + 发光）；数字超过 2048 复用 2048 样式 + 字号自动缩放防溢出。
+- **动画**：新方块 spawn（scale 0→1，180ms ease-out）；合并方块 pop（scale 1→1.2→1，220ms）；`prefers-reduced-motion` 时全部禁用。
+- **无障碍**：棋盘 `role="grid" aria-label="2048 棋盘"` `aria-rowcount=4 aria-colcount=4` `tabindex=0`；方块 `role="gridcell" aria-label="第 R 行 第 C 列，值 N"`；`aria-live="polite"` 区播报得分变化与最高分；撤销/重新开始按钮 `role="button"`；焦点环 2px #aa3bff（参照首页 3.1 焦点环规范）；玩法说明折叠面板 `aria-expanded` + `aria-controls` 联动（约束卡 2）。
+
+#### 3.3.4 屏幕与 HUD
+
+- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右两个得分框（当前得分 + 最高分，最高分金色高亮）。
+- **工具条**：重新开始按钮、撤销按钮（角标显示剩余次数）、玩法说明折叠按钮（点击展开说明 panel）。
+- **暂停遮罩**（切后台触发）：提示"检测到你切换了页面，游戏已自动暂停并保存进度" + 继续按钮 + 返回首页链接。
+- **胜利遮罩**：标题"达成 2048！" + 当前得分 + 「继续挑战」/「重新开始」。
+- **结束遮罩**：标题"游戏结束" + 最终得分 + 最高分 + 「再来一局」+ 返回首页。
+
+#### 3.3.5 持久化与恢复
+
+- **存储键 `game-2048-state`**（localStorage）：`{ v:1, board:number[4][4], score, bestScore, undosLeft(0~3), history:Array<{board,score,undosLeft}>≤5, won:boolean, ts:number }`。
+  - 版本校验：`v` 不符时清旧值回退新开局。
+  - 写入策略：脏标记延迟持久化（参照番茄钟 3.4 计时模式），在 move / reset / undo / pause / dispose / pagehide 时统一落盘，运行中 1 秒兜底写一次。
+  - 容错：`JSON.stringify` 长度 >5000B 时丢弃 history 压缩；`QuotaExceededError` 降级内存（顶部红色提示条"存储配额已满，进度仅本次会话有效"，onPersistError 回调通知 UI）；localStorage 完全不可用同样降级。
+- **存储键 `game-2048-touch-starts`**（localStorage）：触摸操作启动累计次数，每局仅记 1 次（参照飞机大战 `game-touch-starts` 模式），0~99999 封顶。
+- **开局策略**：访问 `/2048` 时优先从 localStorage 恢复上次棋盘快照；无快照或版本不符时新开局（生成 2 个初始方块）。
+
+#### 3.3.6 后台与异常处理（参照飞机大战 3.2.6，去掉 WebGL 路径）
+
+- **自动暂停**：`visibilitychange`（切后台）与 `window.blur`（失焦）双触发；与 visibility 同步标志 `pausedByVisibilityRef` 去重——visibility 已触发则忽略 blur；UI 切到 paused 状态、立即 persist 写入完整快照。
+- **恢复**：回前台点击「继续游戏」从快照重建棋盘与得分；状态机从 paused 切回 playing。
+- **组件卸载**：`engine.dispose()` 调用 `persist()` 落盘 + 清理 persistTimer。
+- **窗口 resize**：棋盘尺寸由 CSS 三级断点响应式自动适配，无 JS 监听。
+
+#### 3.3.7 移动端响应式
+
+- 棋盘边长三级断点：≥768 480px（cell 108px / gap 12px / pad 12px）、768~481 360px（cell 78px / gap 10px / pad 10px）、<480 `min(90vw, 320px)` 自适应（cell 由 CSS calc 计算）。
+- HUD 字号 <768 降为 18px、按钮 padding 8px 16px；<480 返回链接 13px、得分框 min-width 78px、按钮 padding 8px 16px、tile 字号降至 26px / 128-512 降至 20px / 1024+ 降至 18px。
+- 大数字（128+）字号自动缩放防溢出棋格。
+
+### 3.4 番茄时钟（/pomodoro）
 
 - **三模式**：专注 25min（红）/ 短休息 5min（绿）/ 长休息 15min（蓝），主题色随模式切换（CSS 变量 `--accent`）。
 - **周期规则**：每完成 4 个专注番茄自动进入长休息，否则短休息；休息结束自动切回专注但**不自动开始**（给用户准备时间）。
@@ -192,7 +249,7 @@ Bento Grid 网格布局，自上而下：
 - **标签页标题**：运行中显示 `MM:SS 模式名 - 番茄钟`，停止时恢复"番茄时钟"。
 - **移动端响应式**：断点对齐统一三级体系；`.pomo-card` <768 `width:100%`、padding 28px 24px；`.pomo-ring` <768 缩至 260px、倒计时字号 48px；<480 `.pomo-ring` 240px、字号 44px。
 
-### 3.4 在线简历（/resume）
+### 3.5 在线简历（/resume）
 
 - A4 尺寸纸张样式（`resume-sheet`，宽 794px），打印适配；<768 改流式 `width:100%`、去阴影。
 - 挂载时设置 `document.title = '个人简历 - 邵凯'`，卸载恢复。
@@ -212,7 +269,7 @@ Bento Grid 网格布局，自上而下：
   - `prefers-reduced-motion` 时禁用面板过渡动画。
   - 持久化键 `mobile-layout-pref`（见第 4 节），含版本校验 `v:1`、30 天 TTL 自动清理、`fontScale` 越界回退 1.0、`JSON.stringify` 长度 >200B 时截断、`QuotaExceededError` 降级内存（面板顶部显示"偏好仅本次会话有效"提示条）。
 
-### 3.5 技术文档中心（/docs 与 /docs/:slug）
+### 3.6 技术文档中心（/docs 与 /docs/:slug）
 
 - **注册表机制**：新增文档 = Markdown 文件放入 `src/docs/` + Vite `?raw` 导入 + 在 `registry.js` 登记 `{ slug, title, summary, date, tags, readTime, content }`。
 - **列表页**：文档卡片（日期 · 阅读时长 / 标题 / 摘要 / 标签 / "阅读全文 →"），整卡跳转详情。
@@ -224,7 +281,7 @@ Bento Grid 网格布局，自上而下：
 - 现有文档：`prompt-engineering`（提示词工程实战手册，2026-09）。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 
-### 3.6 关于页（/about）与 404 页
+### 3.7 关于页（/about）与 404 页
 
 - About：Vite / React / React Router 三卡片技术栈介绍 + 返回首页链接。
 - NotFound：404 标题 + "返回首页"链接（指向 `/index.html`）。
@@ -234,8 +291,10 @@ Bento Grid 网格布局，自上而下：
 
 | 键 / 来源 | 位置 | 用途 |
 |-----------|------|------|
-| `game-leaderboard-v1` | localStorage | 游戏排行榜记录（≤50 条） |
-| `game-player-name` | localStorage | 玩家昵称（下次自动填充） |
+| `game-leaderboard-v1` | localStorage | 飞机大战排行榜记录（≤50 条） |
+| `game-player-name` | localStorage | 飞机大战玩家昵称（下次自动填充） |
+| `game-2048-state` | localStorage | 2048 完整状态（`{ v:1, board, score, bestScore, undosLeft(0~3), history≤5, won, ts }`；版本校验、QuotaExceededError 降级内存、>5000B 丢弃 history 压缩；1s 兜底写入） |
+| `game-2048-touch-starts` | localStorage | 2048 触摸操作启动累计次数（0~99999 封顶，每局 1 次） |
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |

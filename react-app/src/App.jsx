@@ -10,6 +10,8 @@ import './App.css'
 
 // 游戏页含 three.js，体积较大，按需加载以减小首屏体积
 const Game = lazy(() => import('./pages/Game'))
+// 2048 小游戏，按需加载（与飞机大战引擎解耦，避免互相影响）
+const Game2048 = lazy(() => import('./pages/Game2048'))
 // 文档页依赖 marked 解析 markdown，按需加载
 const Docs = lazy(() => import('./pages/Docs'))
 const DocView = lazy(() => import('./pages/DocView'))
@@ -30,6 +32,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Game />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/2048"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Game2048 />
             </Suspense>
           }
         />

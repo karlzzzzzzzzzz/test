@@ -55,6 +55,16 @@ const ENTRIES = [
     practice: '从零搭建基于 Vite + React 18 的工程化脚手架，含路由懒加载、代码分割与环境变量注入。构建产物分包优化，首屏加载 < 1.2s（4G 网络）。',
     footer: { meta: ['2026-10-12', '5 min'], link: '阅读全文' },
   },
+  {
+    title: '2048 小游戏',
+    techTags: ['Canvas2D', 'React Hooks'],
+    keywords: ['2048', 'puzzle', 'canvas', '滑动', '合并', '撤销'],
+    to: '/2048',
+    span: '3',
+    desc: 'Canvas 2D + 触控/键盘双输入的轻量级 2048，含切后台自动暂停与进度恢复、3 次撤销',
+    practice: '引擎与页面壳解耦（参照飞机大战架构），脏标记延迟持久化到 localStorage；切后台/失焦双路去重暂停，回前台从快照恢复棋盘。',
+    footer: null,
+  },
 ]
 
 const PIPELINE = [
