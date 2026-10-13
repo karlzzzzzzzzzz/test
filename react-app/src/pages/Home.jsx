@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MouseTrail from '../components/MouseTrail'
 import Weather, { useWeather } from '../components/Weather'
-import DragList  from '../components/DragList'
+import DragList from '../components/DragList'
 import CardLayout from '../components/CardLayout'
 import './Home.css'
 

@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  */
 
 // 定位失败时的默认坐标（北京）
-const FALLBACK = { lat: 39.9042, lon: 116.4074, label: '北京（默认）' }
+const FALLBACK = { lat: 30.2809, lon: 120.0267, label: '杭州（默认）' }
 const REFRESH_INTERVAL = 10 * 60 * 1000
 // 手动刷新节流窗口
 const REFRESH_THROTTLE = 30 * 1000
