@@ -4,6 +4,7 @@ import MouseTrail from '../components/MouseTrail'
 import Weather, { useWeather } from '../components/Weather'
 import DragList from '../components/DragList'
 import CardLayout from '../components/CardLayout'
+import Loading from '../components/Loading'
 import './Home.css'
 
 const SKILLS = [
@@ -63,6 +64,17 @@ const ENTRIES = [
     span: '3',
     desc: 'Canvas 2D + 触控/键盘双输入的轻量级 2048，含切后台自动暂停与进度恢复、3 次撤销',
     practice: '引擎与页面壳解耦（参照飞机大战架构），脏标记延迟持久化到 localStorage；切后台/失焦双路去重暂停，回前台从快照恢复棋盘。',
+    footer: null,
+  },
+  {
+    title: '更多',
+    techTags: null,
+    keywords: [],
+    to: null,
+    span: '3',
+    desc: '更多作品正在生成中，敬请期待',
+    practice: null,
+    content: <Loading />,
     footer: null,
   },
 ]
@@ -320,7 +332,7 @@ function Home() {
                     {c.footer.link} →
                   </Link>
                 </>
-              ) : (
+              ) : c.to && (
                 <Link
                   to={c.to}
                   className="cl-link"
@@ -331,8 +343,9 @@ function Home() {
               )
             }
           >
-            <p>{c.desc}</p>
+            {c.desc && <p>{c.desc}</p>}
             {c.practice && <p className="cl-practice">{c.practice}</p>}
+            {c.content}
           </CardLayout>
         ))}
 
