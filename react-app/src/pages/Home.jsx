@@ -67,6 +67,16 @@ const ENTRIES = [
     footer: null,
   },
   {
+    title: '俄罗斯方块',
+    techTags: ['BitOps', 'Canvas2D', 'React Hooks'],
+    keywords: ['Tetris', '位运算', 'bitmask', 'canvas', '消行', '踢墙'],
+    to: '/tetris',
+    span: '3',
+    desc: '位运算驱动的经典俄罗斯方块，10bit 行棋盘 + 16bit 方块查表，含天气联动配色主题',
+    practice: '碰撞检测、旋转踢墙、消行判定全部通过整数位运算完成，单帧逻辑 <1ms；7-bag 随机序列，切后台自动暂停，方块配色随 Open-Meteo 天气码切换。',
+    footer: null,
+  },
+  {
     title: '更多',
     techTags: null,
     keywords: [],

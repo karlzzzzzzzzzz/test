@@ -12,6 +12,8 @@ import './App.css'
 const Game = lazy(() => import('./pages/Game'))
 // 2048 小游戏，按需加载（与飞机大战引擎解耦，避免互相影响）
 const Game2048 = lazy(() => import('./pages/Game2048'))
+// 俄罗斯方块（位运算引擎 + Canvas 2D），按需加载
+const Tetris = lazy(() => import('./pages/Tetris'))
 // 文档页依赖 marked 解析 markdown，按需加载
 const Docs = lazy(() => import('./pages/Docs'))
 const DocView = lazy(() => import('./pages/DocView'))
@@ -40,6 +42,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Game2048 />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/tetris"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Tetris />
             </Suspense>
           }
         />

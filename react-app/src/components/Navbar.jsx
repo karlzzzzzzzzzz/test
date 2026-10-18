@@ -28,6 +28,7 @@ function Navbar() {
       <nav className={`nav-links ${open ? 'nav-open' : ''}`}>
         <NavLink to="/index.html" end onClick={close}>首页</NavLink>
         <NavLink to="/game" onClick={close}>飞机大战</NavLink>
+        <NavLink to="/tetris" onClick={close}>俄罗斯方块</NavLink>
         <NavLink to="/pomodoro" onClick={close}>番茄钟</NavLink>
         <NavLink to="/resume" onClick={close}>简历</NavLink>
         <NavLink to="/docs" onClick={close}>技术文档</NavLink>
