@@ -77,6 +77,16 @@ const ENTRIES = [
     footer: null,
   },
   {
+    title: '贪吃蛇',
+    techTags: ['Canvas2D', 'InputBuffer', 'React Hooks'],
+    keywords: ['Snake', '贪吃蛇', 'canvas', '节拍', '缓冲队列', '街机'],
+    to: '/snake',
+    span: '3',
+    desc: '经典贪吃蛇重制：固定节拍 + 方向输入缓冲队列，快速连按不反向自杀',
+    practice: '移动节拍由结束时间戳驱动，切后台恢复不跳帧；方向输入经容量 2 缓冲队列逐拍消费，杜绝 180° 反向自杀；撞墙/撞身判定 O(蛇长)。',
+    footer: null,
+  },
+  {
     title: '更多',
     techTags: null,
     keywords: [],

@@ -1,0 +1,413 @@
+/* ===== 贪吃蛇页面 =====
+ * 风格：深色游戏页（对齐基线 Game.jsx / Game2048.jsx / Tetris.jsx）
+ * 断点：≥768 / 768~481 / <480 三级（对齐基线统一体系）
+ * 棋盘：Canvas 内部 480×480 逻辑像素（20×20 格 × 24px），CSS 控制显示尺寸
+ */
+
+.snake-page {
+  min-height: 100vh;
+  background: #05060f;
+  color: #eaf4ff;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ===== HUD ===== */
+.snake-hud {
+  width: 100%;
+  max-width: 480px; /* 对齐棋盘 ≥768 显示宽度 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.snake-back {
+  color: #9db4d6;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: color 0.2s, background 0.2s;
+}
+
+.snake-back:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.snake-scores {
+  display: flex;
+  gap: 8px;
+}
+
+.snake-score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  min-width: 72px;
+}
+
+.snake-score-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #9db4d6;
+  text-transform: uppercase;
+}
+
+.snake-score-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #eaf4ff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  animation: snake-score-bump 300ms ease-out;
+}
+
+.snake-best {
+  color: #ffd166; /* 最高分金色高亮（对齐 2048 HUD） */
+}
+
+@keyframes snake-score-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); color: #5ef79a; }
+  100% { transform: scale(1); }
+}
+
+/* ===== 游戏区 ===== */
+.snake-board-wrap {
+  width: 480px; /* ≥768：cell 24px × 20 列 */
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 170, 255, 0.22);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  touch-action: none; /* 移动端禁滚屏，保证触控手势（约束卡①） */
+}
+
+.snake-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1; /* 20×20 正方形棋盘 */
+}
+
+/* ===== 移动端操作提示条（<768 显示） ===== */
+.snake-touch-tip {
+  display: none;
+  margin: 0;
+  color: #9db4d6;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+/* ===== 遮罩与面板（全页 overlay，对齐 Game.jsx / Tetris.jsx 模式） ===== */
+.snake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 6, 15, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.snake-panels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  max-width: 94vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.snake-panel {
+  text-align: center;
+  padding: 40px 48px;
+  border-radius: 16px;
+  background: rgba(15, 20, 40, 0.85);
+  border: 1px solid rgba(120, 170, 255, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
+
+  h1 {
+    margin: 0 0 16px;
+    font-size: 40px;
+    color: #eaf4ff;
+    letter-spacing: 4px;
+    text-shadow: 0 0 24px rgba(94, 247, 154, 0.45);
+  }
+
+  .snake-tip {
+    color: #9db4d6;
+    font-size: 15px;
+    line-height: 1.8;
+    margin: 0 0 26px;
+  }
+
+  .snake-tip-tech {
+    color: #5ef79a;
+    font-size: 13px;
+  }
+
+  .snake-final {
+    color: #ffd166;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 26px;
+  }
+}
+
+.snake-btn {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #04140a;
+  background: linear-gradient(135deg, #5ef79a, #2fbf71);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 40px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 8px 24px rgba(47, 191, 113, 0.35);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(47, 191, 113, 0.55);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.snake-btn-ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cfe6ff;
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  box-shadow: none;
+  font-size: 15px;
+  padding: 9px 30px;
+
+  &:hover {
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.snake-home-link {
+  display: inline-block;
+  margin-top: 16px;
+  margin-left: 16px;
+  color: #9db4d6;
+  font-size: 14px;
+  text-decoration: none;
+
+  &:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+/* ===== 排行榜 ===== */
+.snake-board-panel {
+  width: 270px;
+  padding: 26px 28px;
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: #eaf4ff;
+    text-shadow: 0 0 18px rgba(94, 247, 154, 0.4);
+  }
+}
+
+.snake-board-empty {
+  margin: 26px 0;
+  color: #9db4d6;
+  font-size: 14px;
+}
+
+.snake-board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #cfe6ff;
+    font-size: 14px;
+  }
+
+  .rank {
+    width: 22px;
+    text-align: center;
+    font-weight: 700;
+    color: #9db4d6;
+  }
+
+  .name {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .score {
+    font-weight: 600;
+    color: #ffd166;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .top-1 {
+    background: rgba(255, 209, 102, 0.14);
+
+    .rank { color: #ffd166; }
+  }
+
+  .top-2 {
+    background: rgba(160, 200, 255, 0.12);
+
+    .rank { color: #cfe6ff; }
+  }
+
+  .top-3 {
+    background: rgba(255, 133, 102, 0.12);
+
+    .rank { color: #ff9f6e; }
+  }
+}
+
+.snake-submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.snake-name-input {
+  width: 220px;
+  padding: 10px 14px;
+  font-size: 16px;
+  text-align: center;
+  color: #eaf4ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #5ef79a;
+  }
+
+  &::placeholder {
+    color: rgba(157, 180, 214, 0.6);
+  }
+}
+
+.snake-rank-line {
+  color: #ffd166;
+  font-size: 16px;
+  margin: 0;
+}
+
+.snake-submit-error {
+  color: #ff7788;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ===== 键盘可达：统一焦点环（对齐首页 2px #aa3bff 规范） ===== */
+.snake-page :focus-visible,
+.snake-overlay :focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* ===== 响应式：768~481 中等屏（棋盘 cell 18px = 360px） ===== */
+@media (max-width: 767px) {
+  .snake-hud {
+    max-width: 360px;
+  }
+  .snake-board-wrap {
+    width: 360px;
+  }
+  .snake-touch-tip {
+    display: block; /* 移动端显示操作提示（约束卡①） */
+  }
+  .snake-score-value {
+    font-size: 18px;
+  }
+  .snake-back {
+    font-size: 14px;
+    padding: 5px 10px;
+  }
+}
+
+/* ===== 响应式：<480 小屏（棋盘 min(90vw, 340px) 自适应） ===== */
+@media (max-width: 479px) {
+  .snake-page {
+    padding: 16px 12px 32px;
+  }
+  .snake-hud {
+    max-width: 100%;
+  }
+  .snake-board-wrap {
+    width: min(90vw, 340px);
+  }
+  .snake-back {
+    font-size: 13px;
+  }
+  .snake-score-box {
+    padding: 5px 10px;
+    min-width: 62px;
+  }
+  .snake-panel {
+    padding: 30px 22px;
+
+    h1 {
+      font-size: 30px;
+    }
+
+    .snake-tip {
+      font-size: 13px;
+    }
+  }
+}
+
+/* ===== prefers-reduced-motion：禁用 bump 动画 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .snake-score-value {
+    animation: none;
+  }
+}

@@ -1,13 +1,13 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-18 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-20 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、番茄时钟、在线简历、技术文档中心六大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、番茄时钟、在线简历、技术文档中心七大功能模块。
 
 ### 1.2 技术栈
 
@@ -33,6 +33,7 @@ react-app/src/
 │   ├── Game.jsx / Game.css      # 飞机大战页面壳（UI + 状态）
 │   ├── Game2048.jsx / .css      # 2048 小游戏页面壳（UI + 状态）
 │   ├── Tetris.jsx / .css        # 俄罗斯方块页面壳（UI + 状态 + Canvas 2D 渲染）
+│   ├── Snake.jsx / .css         # 贪吃蛇页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Resume.jsx / .css        # 在线简历
 │   ├── Docs.jsx / .css          # 文档列表页
@@ -42,7 +43,8 @@ react-app/src/
 ├── game/
 │   ├── SpaceShooter.js          # Three.js 飞机大战引擎（纯逻辑，与 UI 解耦）
 │   ├── Game2048Engine.js         # 2048 引擎（纯逻辑：滑动/合并/撤销/持久化）
-│   └── TetrisEngine.js           # 俄罗斯方块引擎（位运算核心：10bit 行棋盘 + 16bit 方块查表）
+│   ├── TetrisEngine.js           # 俄罗斯方块引擎（位运算核心：10bit 行棋盘 + 16bit 方块查表）
+│   └── SnakeEngine.js            # 贪吃蛇引擎（纯逻辑：固定节拍 + 容量 2 方向输入缓冲队列）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -67,6 +69,7 @@ react-app/src/
 | `/game` | Game 飞机大战 | **lazy 懒加载**（含 Three.js，体积大） |
 | `/2048` | Game2048 2048 小游戏 | **lazy 懒加载**（含引擎逻辑，与飞机大战分包） |
 | `/tetris` | Tetris 俄罗斯方块 | **lazy 懒加载**（位运算引擎 + Canvas 2D，独立分包） |
+| `/snake` | Snake 贪吃蛇 | **lazy 懒加载**（输入缓冲引擎 + Canvas 2D，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `*` | NotFound 404 | 直接引入 |
@@ -99,7 +102,7 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：6 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs）+ 1 张"更多"占位卡，每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：7 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs）+ 1 张"更多"占位卡，每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
 5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
@@ -303,7 +306,46 @@ Bento Grid 网格布局，自上而下：
 - **标签页标题**：运行中显示 `MM:SS 模式名 - 番茄钟`，停止时恢复"番茄时钟"。
 - **移动端响应式**：断点对齐统一三级体系；`.pomo-card` <768 `width:100%`、padding 28px 24px；`.pomo-ring` <768 缩至 260px、倒计时字号 48px；<480 `.pomo-ring` 240px、字号 44px。
 
-### 3.6 在线简历（/resume）
+### 3.6 贪吃蛇（/snake）
+
+#### 3.6.1 架构
+
+- 页面壳 `Snake.jsx` 管理 UI 状态机（start / playing / paused / over 四屏）与 HUD；引擎 `SnakeEngine.js` 纯逻辑（网格/节拍/输入缓冲/碰撞，无渲染依赖），通过回调（onState / onGameOver / onPause）与 UI 通信；组件卸载时 `engine.dispose()` 清理节拍定时器。架构模式参照俄罗斯方块 3.4.1。
+- 渲染：Canvas 2D（无 WebGL，无上下文丢失路径），快照变化时整盘重绘（20×20=400 格：网格底色 + 蛇体头亮尾暗渐进色 + 食物金色高亮块）；devicePixelRatio 上限 2；窗口 resize 自适应重设画布。
+
+#### 3.6.2 引擎核心（输入缓冲）
+
+- **网格与蛇体**：20×20 网格；蛇体为坐标队列（头在前），初始长度 3，位于棋盘中部向右移动。
+- **输入缓冲队列**：方向输入进入容量 2 的缓冲队列，每个节拍消费 1 个；入队过滤与队尾（队列空时与当前方向）**相同或相反（180°，点积 ±1）**的输入——一拍内快速连按两键在相邻两拍依次转向，不会同帧反向自杀；队列满时丢弃新输入。
+- **节拍驱动**：基于结束时间戳（setTimeout 链），初始 150ms/格；速度档位 = min(9, floor(score/50))，节拍 = 150 − 档位×10 ms（档 0~9 → 150~60ms 封底）；切后台恢复重置时钟基准，超大 dt 吸收为单拍推进 1 格，不跳帧不瞬移。
+- **碰撞**：撞墙（新蛇头越界）或撞身（与蛇体任一节重合，**从紧判定含本拍即将移出的尾节**）→ over；onGameOver 回调恰好触发一次。
+- **得分与食物**：吃食物 +10 分、长度 +1（本拍不移除尾节）；食物随机生成于空格（排除蛇体全部坐标）；蛇占满全图（400 节）无空格生成食物 → 判通关结束，分数有效。
+
+#### 3.6.3 操作与触控（约束卡①）
+
+- **键盘**：↑↓←→ / WASD 转向（keydown repeat 由缓冲"过滤同向"自然去重）；P / 空格暂停/恢复；仅 playing 态响应转向，over 态按键全部忽略。
+- **触控**：滑动位移 ≥24px 判定转向方向（水平/垂直取分量较大主轴，无对角移动；阈值对齐 2048），判定后重置起点支持连续滑动多次转向；点按（<200ms 且位移 <10px）切换暂停/恢复；多点触摸仅跟踪首指 identifier；`touch-action: none` + `preventDefault` 阻止滚动缩放；touchcancel 清空跟踪态。
+
+#### 3.6.4 屏幕与 HUD
+
+- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右三个数据框（得分 / 最高分 / 长度）；得分 bump 动画 300ms（`prefers-reduced-motion` 禁用）；**最高分 = 排行榜第一名分数**（不单设存储键），排行榜空时显示 0。
+- **开始屏**：玩法说明（含输入缓冲技术标注）+「开始游戏」+ 排行榜面板（TOP 10）。
+- **暂停屏**：切后台/失焦触发显示"检测到你切换了页面，游戏已自动暂停"；P 键/点按手动暂停显示"游戏已暂停"；均配「继续游戏」。
+- **结束屏**：标题（通关显示"通关！"）+ 最终得分 + 排行榜提交（见 3.6.5，分数 >0 才显示提交表单）+「再来一局」+ 排行榜面板。
+- **操作提示条**："滑动转向 · 点按暂停"，<768 显示于棋盘下方。
+
+#### 3.6.5 排行榜与后台处理（约束卡②）
+
+- **存储键 `game-snake-leaderboard-v1`**：通过 `createLeaderboard(storageKey)` 绑定（见 3.2.5 参数化改造），结构、50 条上限、TOP 10 展示、前三名样式、昵称规则（maxlength 12 默认"无名飞侠"）、`game-player-name` 自动填充全部对齐 3.2.5。
+- 损坏 JSON → 读取回退空数组显示"虚位以待，等你上榜"；localStorage 完全不可用 → 提交显示"提交失败，请重试"，游戏本体不受影响。
+- **自动暂停**：`visibilitychange`（切后台）与 `window.blur`（失焦）双触发 + `pausedByVisibilityRef` 去重（参照 2048 的 3.3.6）；仅 playing 态生效；暂停时清空触摸跟踪态；恢复时重置时钟基准防大步长跳帧。
+
+#### 3.6.6 移动端响应式
+
+- 棋盘三级断点：≥768 边长 480px（cell 24px）、768~481 宽 360px（cell 18px）、<480 `min(90vw, 340px)` 自适应；`aspect-ratio: 1/1`；<320px 超窄屏按 90vw 收缩不溢出。
+- HUD 字号 <768 18px、<480 13px；返回链接与提示条 <480 纵向堆叠不遮挡棋盘。
+
+### 3.7 在线简历（/resume）
 
 - A4 尺寸纸张样式（`resume-sheet`，宽 794px），打印适配；<768 改流式 `width:100%`、去阴影。
 - 挂载时设置 `document.title = '个人简历 - 邵凯'`，卸载恢复。
@@ -323,7 +365,7 @@ Bento Grid 网格布局，自上而下：
   - `prefers-reduced-motion` 时禁用面板过渡动画。
   - 持久化键 `mobile-layout-pref`（见第 4 节），含版本校验 `v:1`、30 天 TTL 自动清理、`fontScale` 越界回退 1.0、`JSON.stringify` 长度 >200B 时截断、`QuotaExceededError` 降级内存（面板顶部显示"偏好仅本次会话有效"提示条）。
 
-### 3.7 技术文档中心（/docs 与 /docs/:slug）
+### 3.8 技术文档中心（/docs 与 /docs/:slug）
 
 - **注册表机制**：新增文档 = Markdown 文件放入 `src/docs/` + Vite `?raw` 导入 + 在 `registry.js` 登记 `{ slug, title, summary, date, tags, readTime, content }`。
 - **列表页**：文档卡片（日期 · 阅读时长 / 标题 / 摘要 / 标签 / "阅读全文 →"），整卡跳转详情。
@@ -335,7 +377,7 @@ Bento Grid 网格布局，自上而下：
 - 现有文档：`prompt-engineering`（提示词工程实战手册，2026-09）。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 
-### 3.8 关于页（/about）与 404 页
+### 3.9 关于页（/about）与 404 页
 
 - About：Vite / React / React Router 三卡片技术栈介绍 + 返回首页链接。
 - NotFound：404 标题 + "返回首页"链接（指向 `/index.html`）。
@@ -346,10 +388,11 @@ Bento Grid 网格布局，自上而下：
 | 键 / 来源 | 位置 | 用途 |
 |-----------|------|------|
 | `game-leaderboard-v1` | localStorage | 飞机大战排行榜记录（≤50 条） |
-| `game-player-name` | localStorage | 游戏玩家昵称（飞机大战/俄罗斯方块共用，下次自动填充） |
+| `game-player-name` | localStorage | 游戏玩家昵称（飞机大战/俄罗斯方块/贪吃蛇共用，下次自动填充） |
 | `game-2048-state` | localStorage | 2048 完整状态（`{ v:1, board, score, bestScore, undosLeft(0~3), history≤5, won, ts }`；版本校验、QuotaExceededError 降级内存、>5000B 丢弃 history 压缩；1s 兜底写入） |
 | `game-2048-touch-starts` | localStorage | 2048 触摸操作启动累计次数（0~99999 封顶，每局 1 次） |
 | `game-tetris-leaderboard-v1` | localStorage | 俄罗斯方块排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
+| `game-snake-leaderboard-v1` | localStorage | 贪吃蛇排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |

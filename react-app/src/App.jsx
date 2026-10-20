@@ -14,6 +14,8 @@ const Game = lazy(() => import('./pages/Game'))
 const Game2048 = lazy(() => import('./pages/Game2048'))
 // 俄罗斯方块（位运算引擎 + Canvas 2D），按需加载
 const Tetris = lazy(() => import('./pages/Tetris'))
+// 贪吃蛇（输入缓冲引擎 + Canvas 2D），按需加载（独立分包）
+const Snake = lazy(() => import('./pages/Snake'))
 // 文档页依赖 marked 解析 markdown，按需加载
 const Docs = lazy(() => import('./pages/Docs'))
 const DocView = lazy(() => import('./pages/DocView'))
@@ -50,6 +52,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Tetris />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/snake"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Snake />
             </Suspense>
           }
         />
