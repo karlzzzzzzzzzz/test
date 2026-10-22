@@ -1,13 +1,13 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-20 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-22 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、番茄时钟、在线简历、技术文档中心七大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、番茄时钟、在线简历、技术文档中心八大功能模块。
 
 ### 1.2 技术栈
 
@@ -34,6 +34,7 @@ react-app/src/
 │   ├── Game2048.jsx / .css      # 2048 小游戏页面壳（UI + 状态）
 │   ├── Tetris.jsx / .css        # 俄罗斯方块页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Snake.jsx / .css         # 贪吃蛇页面壳（UI + 状态 + Canvas 2D 渲染）
+│   ├── Breakout.jsx / .css      # 打砖块页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Resume.jsx / .css        # 在线简历
 │   ├── Docs.jsx / .css          # 文档列表页
@@ -44,7 +45,8 @@ react-app/src/
 │   ├── SpaceShooter.js          # Three.js 飞机大战引擎（纯逻辑，与 UI 解耦）
 │   ├── Game2048Engine.js         # 2048 引擎（纯逻辑：滑动/合并/撤销/持久化）
 │   ├── TetrisEngine.js           # 俄罗斯方块引擎（位运算核心：10bit 行棋盘 + 16bit 方块查表）
-│   └── SnakeEngine.js            # 贪吃蛇引擎（纯逻辑：固定节拍 + 容量 2 方向输入缓冲队列）
+│   ├── SnakeEngine.js            # 贪吃蛇引擎（纯逻辑：固定节拍 + 容量 2 方向输入缓冲队列）
+│   └── BreakoutEngine.js         # 打砖块引擎（纯逻辑：1/240s 固定步长物理 + 关卡布局 + 持久化）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -70,6 +72,7 @@ react-app/src/
 | `/2048` | Game2048 2048 小游戏 | **lazy 懒加载**（含引擎逻辑，与飞机大战分包） |
 | `/tetris` | Tetris 俄罗斯方块 | **lazy 懒加载**（位运算引擎 + Canvas 2D，独立分包） |
 | `/snake` | Snake 贪吃蛇 | **lazy 懒加载**（输入缓冲引擎 + Canvas 2D，独立分包） |
+| `/breakout` | Breakout 打砖块 | **lazy 懒加载**（固定步长物理引擎 + Canvas 2D，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `*` | NotFound 404 | 直接引入 |
@@ -102,7 +105,7 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：7 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs）+ 1 张"更多"占位卡，每条路由唯一。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：8 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
 5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
@@ -153,7 +156,7 @@ Bento Grid 网格布局，自上而下：
 - **射击**：自动双发子弹（间隔 0.7s，弹速 75），无需手动操作。
 - **敌机**：红色八面体，从 z=-75 处生成，基础速度 36 + 分数/600 + 随机扰动，带正弦左右摆动与自旋；生成间隔随分数缩短（0.7s → 最低 0.25s）。
 - **得分**：击毁 1 架敌机 +100 分（子弹与敌机球心距离 < 1.4 判定命中）。
-- **生命**：敌机与玩家距离 < 1.7 判定撞击，损失 1 点生命并触发相机震动（0.35）。
+- **生命**：初始 3 点（2026-10-22 修正：`start()` 由 2 改 3，与 UI 文案/HUD 3 心一致，原已知不一致点 1 已消除）；敌机与玩家距离 < 1.7 判定撞击，损失 1 点生命并触发相机震动（0.35）。
 - **结束**：生命归零时游戏结束，播放爆炸粒子（90 粒）并隐藏玩家飞机。
 
 #### 3.2.3 视觉效果
@@ -345,7 +348,62 @@ Bento Grid 网格布局，自上而下：
 - 棋盘三级断点：≥768 边长 480px（cell 24px）、768~481 宽 360px（cell 18px）、<480 `min(90vw, 340px)` 自适应；`aspect-ratio: 1/1`；<320px 超窄屏按 90vw 收缩不溢出。
 - HUD 字号 <768 18px、<480 13px；返回链接与提示条 <480 纵向堆叠不遮挡棋盘。
 
-### 3.7 在线简历（/resume）
+### 3.7 打砖块（/breakout）
+
+#### 3.7.1 架构
+
+- 页面壳 `Breakout.jsx` 管理 UI 状态机（start / playing / paused / over / win 五屏）与 HUD；引擎 `BreakoutEngine.js` 纯逻辑（物理/碰撞/关卡/持久化，无渲染依赖），通过回调（onState / onGameOver / onWin / onPause / onPersistError）与 UI 通信；组件卸载时 `engine.dispose()` 落盘并清理定时器。架构模式参照贪吃蛇 3.6.1。
+- 渲染：Canvas 2D（无 WebGL，无上下文丢失路径），引擎快照写入 ref + 单 rAF 渲染循环按需重绘（480×640 逻辑坐标），不对 React setState 高频施压；devicePixelRatio 上限 2；显示尺寸由 CSS 三级断点自适应，无 JS resize 监听。
+
+#### 3.7.2 固定步长物理
+
+- **定步积分**：步长 1/240s（封顶球速 720px/s 单步仅 3px < 挡板厚度 12px，杜绝隧道穿透）；8ms setTimeout 节拍链驱动（对齐 SnakeEngine 结束时间戳模式），单拍步数上限 12（≈50ms 吸收窗口），超大 dt 钳制吸收，切后台恢复不跳帧。
+- **发球**：待发态球停挡板中心，空格/点击/点按发球，角度 90°±15° 随机。
+- **反射**：挡板反射角 = 击中点相对中心偏移（∈[−1,1]）× 60°；砖块碰撞按最近点判定入射轴镜像反弹，**每步最多处理 1 次砖块碰撞**，物理结果确定。
+- **快照节流**：常规推送 ≤16ms/次（≈60/s），击砖/掉命/过关等事件强制立即推送。
+
+#### 3.7.3 玩法规则
+
+- **砖块**：10 列 × 6 行共 60 块（砖高 20、间距 4）；普通砖 1 击 +50 分；坚固砖 2 击（首击 +20、击碎再 +80，配色区分）；L1~L5 预定义布局表。
+- **关卡**：清空本关砖块进入下一关，球速 ×1.08（封顶 720px/s），挡板宽 96 起每关 −8（封底 64）；完成 L5 触发 win 遮罩「通关！」（`won` 标记锁仅首次弹出，对齐 3.3.2），「继续挑战」无尽循环 L3~L5 布局且球速继续 +8%（仍封顶）。
+- **生命**：共 3 点（HUD 3 颗红心）；小球落底 −1 并复位挡板待发；归零 → over。
+
+#### 3.7.4 操作与触控（约束卡①）
+
+- **键盘**：←→ / AD 按住移动（540px/s，keyup 停止）；空格在待发态发球、飞行中暂停；P 暂停/恢复；仅 playing 态响应方向键。
+- **鼠标**：mousemove 映射挡板中心 X（钳制画布内）；点击画布在待发态发球。
+- **触控**：单指拖拽跟手（多点仅跟踪首指 identifier）；点按（<200ms 且位移 <10px）待发态发球；`touch-action: none` + `preventDefault` 阻止页面滚动/缩放；touchcancel 清空跟踪态。
+
+#### 3.7.5 屏幕与 HUD
+
+- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右数据框（得分 bump 动画 300ms / 关卡 / 3 颗红心 / 天气主题标签——仅主题非默认时显示）；`aria-live="polite"` 播报。
+- **开始屏**：玩法说明（含固定步长物理技术标注）+「开始游戏」+ 条件显示「继续游戏（第 N 关）」（存在合法快照时）+ 排行榜面板（TOP 10）。
+- **暂停屏**：切后台/失焦显示"检测到你切换了页面，游戏已自动暂停"；P 键手动暂停显示"游戏已暂停"；均配「继续游戏」。
+- **通关屏**：标题"通关！"+ 当前得分 +「继续挑战」/「重新开始」。
+- **结束屏**：最终得分 + 排行榜提交（分数 >0 才显示表单）+「再来一局」+ 排行榜面板。
+- **操作提示条**："滑动移动挡板 · 点按发球"，<768 显示于画布下方。
+
+#### 3.7.6 天气主题联动（3.1.2 数据源，策略对齐 3.4.6）
+
+- 进入 /breakout 时请求 Open-Meteo 当前 `weather_code`（Geolocation 8s 超时、10min 缓存，失败/拒绝回退北京坐标，**不显示定位提示条**）。
+- WMO 码映射 4 套砖块/小球配色：晴(0,1)→暖橙系 / 多云(2,3,45,48)→灰蓝系 / 雨(51~67,80~82,95~99)→冷蓝系 / 雪(71~77,85,86)→白青系；HUD 显示主题名（如"晴 · 暖橙"）。
+- 定位失败、API 超时（8s AbortController）、非 2xx、解析失败、未知 WMO 码 → 一律静默降级默认深空配色，不显示主题标签，不阻断游戏。
+
+#### 3.7.7 持久化与排行榜
+
+- **存储键 `game-breakout-state`**（localStorage）：`{ v:1, level, score, lives, bricks:number[](每砖剩余击打数 0/1/2), won, ts }`——不存球/挡板瞬时值，恢复时球复位挡板待发。
+  - 校验：版本不符、JSON 损坏、`ts` 超 7 天 TTL、命数/砖数越界、无剩余砖 → 清除旧值新开局。
+  - 写入：脏标记延迟持久化，在关卡切换/生命变化/暂停/over/win/dispose 统一落盘，运行中 5 秒兜底写一次。
+  - 容错：`JSON.stringify` >4000B 丢弃快照；`QuotaExceededError`/localStorage 不可用 → 降级内存 + 顶部红色提示条"存储配额已满，进度仅本次会话有效"（onPersistError 回调）。
+- **存储键 `game-breakout-leaderboard-v1`**：通过 `createLeaderboard(storageKey)` 绑定（见 3.2.5），结构、50 条上限、TOP 10、前三名样式、昵称规则（maxlength 12 默认"无名飞侠"）、`game-player-name` 自动填充全部对齐 3.2.5；损坏 JSON 回退空数组显示"虚位以待，等你上榜"。
+- **存储键 `game-breakout-touch-starts`**：触摸操作启动累计次数，每局仅记 1 次（参照 `game-2048-touch-starts` 模式），0~99999 封顶。
+
+#### 3.7.8 后台与移动端
+
+- **自动暂停**：`visibilitychange`（切后台）与 `window.blur`（失焦）双触发 + `pausedByVisibilityRef` 去重（对齐 3.3.6）；仅 playing 态（含待发子态）生效；暂停时立即落盘并清空按键状态；恢复时重置时钟基准防大步长跳帧。
+- **画布三级断点**：≥768 480×640 / 768~481 360×480 / <480 `min(94vw, 340px)` 宽自适应（`aspect-ratio: 3/4`）；HUD 字号 <768 18px、<480 13px；<320px 超窄屏按 94vw 收缩不溢出。
+
+### 3.8 在线简历（/resume）
 
 - A4 尺寸纸张样式（`resume-sheet`，宽 794px），打印适配；<768 改流式 `width:100%`、去阴影。
 - 挂载时设置 `document.title = '个人简历 - 邵凯'`，卸载恢复。
@@ -365,7 +423,7 @@ Bento Grid 网格布局，自上而下：
   - `prefers-reduced-motion` 时禁用面板过渡动画。
   - 持久化键 `mobile-layout-pref`（见第 4 节），含版本校验 `v:1`、30 天 TTL 自动清理、`fontScale` 越界回退 1.0、`JSON.stringify` 长度 >200B 时截断、`QuotaExceededError` 降级内存（面板顶部显示"偏好仅本次会话有效"提示条）。
 
-### 3.8 技术文档中心（/docs 与 /docs/:slug）
+### 3.9 技术文档中心（/docs 与 /docs/:slug）
 
 - **注册表机制**：新增文档 = Markdown 文件放入 `src/docs/` + Vite `?raw` 导入 + 在 `registry.js` 登记 `{ slug, title, summary, date, tags, readTime, content }`。
 - **列表页**：文档卡片（日期 · 阅读时长 / 标题 / 摘要 / 标签 / "阅读全文 →"），整卡跳转详情。
@@ -377,7 +435,7 @@ Bento Grid 网格布局，自上而下：
 - 现有文档：`prompt-engineering`（提示词工程实战手册，2026-09）。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 
-### 3.9 关于页（/about）与 404 页
+### 3.10 关于页（/about）与 404 页
 
 - About：Vite / React / React Router 三卡片技术栈介绍 + 返回首页链接。
 - NotFound：404 标题 + "返回首页"链接（指向 `/index.html`）。
@@ -388,11 +446,14 @@ Bento Grid 网格布局，自上而下：
 | 键 / 来源 | 位置 | 用途 |
 |-----------|------|------|
 | `game-leaderboard-v1` | localStorage | 飞机大战排行榜记录（≤50 条） |
-| `game-player-name` | localStorage | 游戏玩家昵称（飞机大战/俄罗斯方块/贪吃蛇共用，下次自动填充） |
+| `game-player-name` | localStorage | 游戏玩家昵称（飞机大战/俄罗斯方块/贪吃蛇/打砖块共用，下次自动填充） |
 | `game-2048-state` | localStorage | 2048 完整状态（`{ v:1, board, score, bestScore, undosLeft(0~3), history≤5, won, ts }`；版本校验、QuotaExceededError 降级内存、>5000B 丢弃 history 压缩；1s 兜底写入） |
 | `game-2048-touch-starts` | localStorage | 2048 触摸操作启动累计次数（0~99999 封顶，每局 1 次） |
 | `game-tetris-leaderboard-v1` | localStorage | 俄罗斯方块排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
 | `game-snake-leaderboard-v1` | localStorage | 贪吃蛇排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
+| `game-breakout-leaderboard-v1` | localStorage | 打砖块排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
+| `game-breakout-state` | localStorage | 打砖块局中快照（`{ v:1, level, score, lives, bricks, won, ts }`；版本校验、7 天 TTL 自动清理、>4000B 丢弃、配额满降级内存；5s 兜底写入） |
+| `game-breakout-touch-starts` | localStorage | 打砖块触摸操作启动累计次数（0~99999 封顶，每局 1 次） |
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |
@@ -405,10 +466,9 @@ Bento Grid 网格布局，自上而下：
 
 这些是源码中实际存在的"实现与文案不一致"，生成/评审需求文档时应作为已确认的现状：
 
-1. **游戏生命数**：UI 文案写"共 3 点生命"，HUD 渲染 3 颗心，但引擎 `start()` 中 `this.health = 2`（实际 2 点生命，开局只亮 2 颗心）。
-2. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
-3. **根路径 404**：访问 `/` 显示 404，首页实际在 `/index.html`；导航 Logo 点击会落到 404。
-4. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
+1. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
+2. **根路径 404**：访问 `/` 显示 404，首页实际在 `/index.html`；导航 Logo 点击会落到 404。
+3. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
 
 ## 6. 基线对比使用方式
 

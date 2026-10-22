@@ -1,0 +1,457 @@
+/* ===== 打砖块页面 =====
+ * 风格：深色游戏页（对齐基线 Snake.jsx / Tetris.jsx）
+ * 断点：≥768 / 768~481 / <480 三级（对齐基线统一体系）
+ * 画布：Canvas 内部 480×640 逻辑像素（3:4），CSS 控制显示尺寸
+ */
+
+.breakout-page {
+  min-height: 100vh;
+  background: #05060f;
+  color: #eaf4ff;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ===== 存储降级提示条（约束卡③） ===== */
+.breakout-persist-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 130;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #ffd7dd;
+  background: rgba(190, 40, 60, 0.92);
+}
+
+/* ===== HUD ===== */
+.breakout-hud {
+  width: 100%;
+  max-width: 480px; /* 对齐画布 ≥768 显示宽度 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.breakout-back {
+  color: #9db4d6;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.breakout-back:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.breakout-scores {
+  display: flex;
+  gap: 8px;
+}
+
+.breakout-score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  min-width: 64px;
+}
+
+.breakout-score-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #9db4d6;
+  text-transform: uppercase;
+}
+
+.breakout-score-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #eaf4ff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  animation: breakout-score-bump 300ms ease-out;
+}
+
+@keyframes breakout-score-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); color: #66f7ff; }
+  100% { transform: scale(1); }
+}
+
+/* 生命红心（对齐 Game.jsx HUD 语义：3 颗，熄灭表示已损失） */
+.breakout-hearts {
+  display: flex;
+  gap: 4px;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.breakout-hearts .heart {
+  color: rgba(255, 255, 255, 0.18);
+  transition: color 0.2s;
+}
+
+.breakout-hearts .heart.on {
+  color: #ff5b6e;
+  text-shadow: 0 0 10px rgba(255, 91, 110, 0.6);
+}
+
+.breakout-theme-tag {
+  border-color: rgba(255, 209, 102, 0.3);
+}
+
+.breakout-theme-name {
+  font-size: 14px;
+  color: #ffd166;
+  white-space: nowrap;
+}
+
+/* ===== 游戏区 ===== */
+.breakout-board-wrap {
+  width: 480px; /* ≥768：逻辑宽 480px */
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 170, 255, 0.22);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  touch-action: none; /* 移动端禁滚屏，保证触控手势（约束卡①） */
+}
+
+.breakout-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4; /* 480×640 */
+}
+
+/* ===== 移动端操作提示条（<768 显示） ===== */
+.breakout-touch-tip {
+  display: none;
+  margin: 0;
+  color: #9db4d6;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+/* ===== 遮罩与面板（全页 overlay，对齐 Snake.jsx 模式） ===== */
+.breakout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 6, 15, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.breakout-panels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  max-width: 94vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.breakout-panel {
+  text-align: center;
+  padding: 40px 48px;
+  border-radius: 16px;
+  background: rgba(15, 20, 40, 0.85);
+  border: 1px solid rgba(120, 170, 255, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
+
+  h1 {
+    margin: 0 0 16px;
+    font-size: 40px;
+    color: #eaf4ff;
+    letter-spacing: 4px;
+    text-shadow: 0 0 24px rgba(102, 247, 255, 0.45);
+  }
+
+  .breakout-tip {
+    color: #9db4d6;
+    font-size: 15px;
+    line-height: 1.8;
+    margin: 0 0 26px;
+  }
+
+  .breakout-tip-tech {
+    color: #66f7ff;
+    font-size: 13px;
+  }
+
+  .breakout-final {
+    color: #ffd166;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 26px;
+  }
+}
+
+.breakout-btn {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #04121a;
+  background: linear-gradient(135deg, #66f7ff, #2fa8bf);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 40px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 8px 24px rgba(47, 168, 191, 0.35);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(47, 168, 191, 0.55);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.breakout-btn-ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cfe6ff;
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  box-shadow: none;
+  font-size: 15px;
+  padding: 9px 30px;
+
+  &:hover {
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.breakout-btn-gap {
+  margin-left: 12px;
+}
+
+.breakout-home-link {
+  display: inline-block;
+  margin-top: 16px;
+  margin-left: 16px;
+  color: #9db4d6;
+  font-size: 14px;
+  text-decoration: none;
+
+  &:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+/* ===== 排行榜 ===== */
+.breakout-board-panel {
+  width: 270px;
+  padding: 26px 28px;
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: #eaf4ff;
+    text-shadow: 0 0 18px rgba(102, 247, 255, 0.4);
+  }
+}
+
+.breakout-board-empty {
+  margin: 26px 0;
+  color: #9db4d6;
+  font-size: 14px;
+}
+
+.breakout-board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #cfe6ff;
+    font-size: 14px;
+  }
+
+  .rank {
+    width: 22px;
+    text-align: center;
+    font-weight: 700;
+    color: #9db4d6;
+  }
+
+  .name {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .score {
+    font-weight: 600;
+    color: #ffd166;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .top-1 {
+    background: rgba(255, 209, 102, 0.14);
+
+    .rank { color: #ffd166; }
+  }
+
+  .top-2 {
+    background: rgba(160, 200, 255, 0.12);
+
+    .rank { color: #cfe6ff; }
+  }
+
+  .top-3 {
+    background: rgba(255, 133, 102, 0.12);
+
+    .rank { color: #ff9f6e; }
+  }
+}
+
+.breakout-submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.breakout-name-input {
+  width: 220px;
+  padding: 10px 14px;
+  font-size: 16px;
+  text-align: center;
+  color: #eaf4ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #66f7ff;
+  }
+
+  &::placeholder {
+    color: rgba(157, 180, 214, 0.6);
+  }
+}
+
+.breakout-rank-line {
+  color: #ffd166;
+  font-size: 16px;
+  margin: 0;
+}
+
+.breakout-submit-error {
+  color: #ff7788;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ===== 键盘可达：统一焦点环（对齐首页 2px #aa3bff 规范） ===== */
+.breakout-page :focus-visible,
+.breakout-overlay :focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* ===== 响应式：768~481 中等屏（画布 360×480） ===== */
+@media (max-width: 767px) {
+  .breakout-hud {
+    max-width: 360px;
+  }
+  .breakout-board-wrap {
+    width: 360px;
+  }
+  .breakout-touch-tip {
+    display: block; /* 移动端显示操作提示（约束卡①） */
+  }
+  .breakout-score-value {
+    font-size: 18px;
+  }
+  .breakout-back {
+    font-size: 14px;
+    padding: 5px 10px;
+  }
+}
+
+/* ===== 响应式：<480 小屏（画布 min(94vw, 340px) 自适应） ===== */
+@media (max-width: 479px) {
+  .breakout-page {
+    padding: 16px 12px 32px;
+  }
+  .breakout-hud {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  .breakout-board-wrap {
+    width: min(94vw, 340px);
+  }
+  .breakout-back {
+    font-size: 13px;
+  }
+  .breakout-score-box {
+    padding: 5px 10px;
+    min-width: 56px;
+  }
+  .breakout-panel {
+    padding: 30px 22px;
+
+    h1 {
+      font-size: 30px;
+    }
+
+    .breakout-tip {
+      font-size: 13px;
+    }
+  }
+}
+
+/* ===== prefers-reduced-motion：禁用 bump 动画 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .breakout-score-value {
+    animation: none;
+  }
+}

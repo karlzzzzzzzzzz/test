@@ -314,7 +314,7 @@ export class SpaceShooter {
     // 清空残留对象
     this._clearEntities()
     this.score = 0
-    this.health = 2
+    this.health = 3 // 对齐 UI 文案"共 3 点生命"与 HUD 3 颗心（修正基线不一致点 1）
     this.elapsed = 0
     this.fireTimer = 0
     this.spawnTimer = 0.4
@@ -330,7 +330,7 @@ export class SpaceShooter {
     this.touchCounted = false // 新一局重置触摸计数标志
     this._resetClock()
     this.cb.onScore?.(0)
-    this.cb.onHealth?.(2)
+    this.cb.onHealth?.(3)
   }
 
   _gameOver() {

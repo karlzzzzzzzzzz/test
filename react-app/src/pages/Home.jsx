@@ -4,7 +4,6 @@ import MouseTrail from '../components/MouseTrail'
 import Weather, { useWeather } from '../components/Weather'
 import DragList from '../components/DragList'
 import CardLayout from '../components/CardLayout'
-import Loading from '../components/Loading'
 import './Home.css'
 
 const SKILLS = [
@@ -87,14 +86,13 @@ const ENTRIES = [
     footer: null,
   },
   {
-    title: '更多',
-    techTags: null,
-    keywords: [],
-    to: null,
+    title: '打砖块',
+    techTags: ['Canvas2D', 'Physics', 'React Hooks'],
+    keywords: ['Breakout', '打砖块', '物理', '弹射', '关卡', '街机'],
+    to: '/breakout',
     span: '3',
-    desc: '更多作品正在生成中，敬请期待',
-    practice: null,
-    content: <Loading />,
+    desc: '固定步长物理引擎驱动的打砖块：240Hz 定步积分防穿透，5 关布局 + 无尽挑战',
+    practice: '1/240s 固定步长积分 + 单 rAF 渲染循环；切后台自动暂停并快照，7 天内可续玩；砖块配色随 Open-Meteo 天气码切换。',
     footer: null,
   },
 ]
