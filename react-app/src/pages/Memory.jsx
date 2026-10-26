@@ -208,7 +208,7 @@ function MemoryPage() {
     }
   }
 
-  const rankList = useLeaderboard()
+  const rankList = useLeaderboard([submitState])
 
   // 开局按钮
   const handleStart = (difficulty) => {
@@ -447,8 +447,8 @@ function CardCell({ card, row, col, tabIndex, onActivate }) {
   )
 }
 
-/** 排行榜本地 hook：每次屏幕变 over 时 fetch 一次 */
-function useLeaderboard() {
+/** 排行榜本地 hook：每次依赖（如 submitState）变化时 fetch 一次 */
+function useLeaderboard(deps = []) {
   const [rows, setRows] = useState([])
   useEffect(() => {
     let mounted = true
@@ -456,7 +456,8 @@ function useLeaderboard() {
       if (mounted) setRows(items || [])
     })
     return () => { mounted = false }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps)
   return rows
 }
 
