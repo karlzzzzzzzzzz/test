@@ -54,24 +54,48 @@ const FOODS = [
 function Nanchang() {
   const [viewer, setViewer] = useState(null) // 当前灯箱图片索引
   const closeBtnRef = useRef(null)
+  const touchStartX = useRef(null) // 灯箱滑动手势起点
+
+  const nextImage = () => setViewer((v) => (v + 1) % GALLERY.length)
+  const prevImage = () => setViewer((v) => (v - 1 + GALLERY.length) % GALLERY.length)
 
   useEffect(() => {
     document.title = '南昌旅游介绍 - 天下英雄城'
     return () => { document.title = 'React App' }
   }, [])
 
-  // 灯箱打开时焦点落入关闭按钮，Esc 关闭
+  // 灯箱打开时焦点落入关闭按钮，Esc 关闭；同时锁定背景滚动（移动端尤为重要）
   useEffect(() => {
     if (viewer === null) return
     closeBtnRef.current?.focus()
     const onKey = (e) => {
       if (e.key === 'Escape') setViewer(null)
-      if (e.key === 'ArrowRight') setViewer((v) => (v + 1) % GALLERY.length)
-      if (e.key === 'ArrowLeft') setViewer((v) => (v - 1 + GALLERY.length) % GALLERY.length)
+      if (e.key === 'ArrowRight') nextImage()
+      if (e.key === 'ArrowLeft') prevImage()
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
   }, [viewer !== null]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 触摸滑动切换：水平位移 > 50px 且大于垂直位移时触发
+  const onLightboxTouchStart = (e) => {
+    touchStartX.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+  const onLightboxTouchEnd = (e) => {
+    if (!touchStartX.current) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current.x
+    const dy = e.changedTouches[0].clientY - touchStartX.current.y
+    touchStartX.current = null
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) nextImage()
+      else prevImage()
+    }
+  }
 
   return (
     <div className="nc-page">
@@ -226,6 +250,8 @@ function Nanchang() {
           aria-modal="true"
           aria-label={`攻略大图：${GALLERY[viewer].title}`}
           onClick={() => setViewer(null)}
+          onTouchStart={onLightboxTouchStart}
+          onTouchEnd={onLightboxTouchEnd}
         >
           <button
             type="button"
@@ -236,11 +262,27 @@ function Nanchang() {
           >
             ×
           </button>
+          <button
+            type="button"
+            className="nc-lightbox-nav nc-lightbox-prev"
+            onClick={(e) => { e.stopPropagation(); prevImage() }}
+            aria-label="上一张"
+          >
+            ‹
+          </button>
           <img
             src={GALLERY[viewer].src}
             alt={GALLERY[viewer].title}
             onClick={(e) => e.stopPropagation()}
           />
+          <button
+            type="button"
+            className="nc-lightbox-nav nc-lightbox-next"
+            onClick={(e) => { e.stopPropagation(); nextImage() }}
+            aria-label="下一张"
+          >
+            ›
+          </button>
           <p className="nc-lightbox-caption">{GALLERY[viewer].title}（{viewer + 1} / {GALLERY.length}）</p>
         </div>
       )}

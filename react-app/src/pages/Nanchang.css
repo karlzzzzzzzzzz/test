@@ -103,7 +103,8 @@
 /* 景点速览 */
 .nc-spots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* min() 兜底：视口内容宽不足 300px 时退化为单列，避免横向溢出 */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 16px;
 }
 .nc-spot {
@@ -132,7 +133,7 @@
 /* 美食 */
 .nc-foods {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 14px;
 }
 .nc-food {
@@ -164,7 +165,7 @@
 .nc-gallery-tip { color: #888; font-size: 13px; margin: -8px 0 14px; }
 .nc-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 14px;
 }
 .nc-gallery-item {
@@ -223,6 +224,7 @@
   justify-content: center;
   z-index: 1000;
   padding: 24px;
+  overscroll-behavior: contain; /* 阻止滚动穿透到页面 */
 }
 .nc-lightbox img {
   max-width: min(92vw, 760px);
@@ -232,8 +234,9 @@
 }
 .nc-lightbox-close {
   position: absolute;
-  top: 16px;
-  right: 20px;
+  /* 兼容刘海屏安全区 */
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: calc(20px + env(safe-area-inset-right, 0px));
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -245,7 +248,35 @@
   line-height: 1;
 }
 .nc-lightbox-close:hover { background: rgba(255, 255, 255, 0.3); }
-.nc-lightbox-caption { color: #eee; font-size: 14px; margin: 14px 0 0; }
+/* 左右切换按钮：移动端无键盘，提供触控可达的切换入口 */
+.nc-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 56px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 30px;
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+.nc-lightbox-prev { left: calc(8px + env(safe-area-inset-left, 0px)); }
+.nc-lightbox-next { right: calc(8px + env(safe-area-inset-right, 0px)); }
+.nc-lightbox-nav:hover { background: rgba(255, 255, 255, 0.3); }
+.nc-lightbox-caption {
+  color: #eee;
+  font-size: 14px;
+  margin: 14px 0 0;
+  text-align: center;
+  padding: 0 48px; /* 避免与切换按钮重叠 */
+}
 
 /* 焦点环（对齐项目统一规范） */
 .nc-page a:focus-visible,
@@ -260,15 +291,29 @@
 }
 @media (max-width: 767px) {
   .nc-page { padding: 12px 16px 48px; }
-  .nc-hero { padding: 32px 20px; }
+  .nc-hero { padding: 32px 20px; margin-bottom: 24px; }
   .nc-hero h1 { font-size: 30px; }
+  /* 大字号字距在窄屏易折行，收紧保证视觉居中 */
+  .nc-hero-kicker { letter-spacing: 3px; }
+  .nc-hero-sub { line-height: 1.7; }
   .nc-two-col { grid-template-columns: 1fr; }
+  .nc-section { margin-bottom: 32px; }
   .nc-section h2 { font-size: 20px; }
   .nc-gallery-item img { height: 160px; }
+  /* 移动端无 hover，卡片位移反馈无意义 */
+  .nc-spot:hover, .nc-gallery-item:hover { transform: none; }
+  .nc-lightbox { padding: 12px; }
+  .nc-lightbox img { max-height: 76vh; }
 }
 @media (max-width: 480px) {
   .nc-hero h1 { font-size: 26px; }
+  .nc-hero-tags li { font-size: 12px; padding: 3px 12px; }
   .nc-day, .nc-spot, .nc-panel { padding: 16px 14px; }
+}
+
+/* 触控反馈：去除 iOS 点击高亮灰块，改用自定义样式 */
+.nc-gallery-item, .nc-lightbox-nav, .nc-lightbox-close, .nc-back {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 减少动态偏好 */

@@ -501,10 +501,10 @@ Bento Grid 网格布局，自上而下：
 
 - **页面性质**：纯静态图文页（无存储键、无外部 API），手账纸感视觉风格（米白底 #f5f2ec、红色主题 #8f2f1d/#c94f2e、虚线边框卡片）。
 - **结构**：「← 返回首页」链接 → Hero（标题/简介/4 个城市关键词标签）→ 三日行程推荐（3 张卡片，Day1 寻味老城 / Day2 历史与现代交织 / Day3 地标打卡）→ 景点速览（12 张卡片：名称 + 标签 + 门票预约信息 + 描述，含滕王阁背序免票、海昏侯博物馆、绿地双子塔等）→ 网红打卡墙（4 项：万寿宫花墙 / 珠宝街晴天墙 / 大士院老巷文化墙 / 滕王阁序灯笼墙）→ 必吃美食（8 项，含老三样、打平伙/堂瓦里、蛤蟆街夜宵）→ 交通与住宿（双栏面板）→ 手绘攻略图集 → 页脚小贴士（背序免票 / 周一闭馆 / 喷泉场次 / 摩天轮末班等实用信息）。
-- **图集灯箱**：12 张素材图（`public/nanchang/nanchang-01~12.jpg`，由用户上传的 13 张手账风攻略图去重而来），`GALLERY` 常量数组驱动；图片 `loading="lazy"`，点击按钮打开灯箱，`role="dialog" aria-modal="true"`，Esc 关闭、←/→ 切换，打开时焦点落入关闭按钮，点击遮罩关闭、点击图片不关闭。
+- **图集灯箱**：12 张素材图（`public/nanchang/nanchang-01~12.jpg`，由用户上传的 13 张手账风攻略图去重而来），`GALLERY` 常量数组驱动；图片 `loading="lazy"`，点击按钮打开灯箱，`role="dialog" aria-modal="true"`，Esc 关闭、←/→ 切换，打开时焦点落入关闭按钮，点击遮罩关闭、点击图片不关闭；打开期间锁定 body 滚动（`overflow:hidden`，关闭恢复）。
 - **文档标题**：挂载时 `document.title = '南昌旅游介绍 - 天下英雄城'`，卸载恢复 'React App'。
 - **无障碍**：灯箱/链接/图集按钮统一 `:focus-visible` 紫色焦点环（2px #aa3bff）；图集按钮带 `aria-label`。
-- **移动端响应式**：断点对齐统一三级体系；行程卡 <1024 改单列；<768 hero padding 32px 20px、标题 30px、交通住宿改单列；<480 hero 标题 26px、卡片 padding 16px 14px；`prefers-reduced-motion` 禁用 hover 位移。
+- **移动端响应式**（2026-10-26 强化）：断点对齐统一三级体系；行程卡 <1024 改单列；<768 hero padding 32px 20px、标题 30px、交通住宿改单列、hero kicker 字距收紧 3px、禁用卡片 hover 位移；<480 hero 标题 26px、卡片 padding 16px 14px、标签 pill 缩小。景点/美食/图集三个 auto-fill 网格改用 `minmax(min(100%, N), 1fr)`，≤340px 窄屏不再横向溢出。灯箱移动端适配：新增 ‹ › 左右切换按钮（44×56 触控目标、safe-area 内边距）、水平滑动手势切换（位移 >50px 且水平占优）、`overscroll-behavior:contain` 防滚动穿透、说明文字避开按钮区。交互元素统一 `-webkit-tap-highlight-color: transparent`；`prefers-reduced-motion` 禁用 hover 位移。
 
 ## 4. 数据与存储一览
 
