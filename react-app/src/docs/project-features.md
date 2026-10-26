@@ -7,7 +7,7 @@
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、番茄时钟、在线简历、技术文档中心九大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十大功能模块。
 
 ### 1.2 技术栈
 
@@ -36,6 +36,7 @@ react-app/src/
 │   ├── Snake.jsx / .css         # 贪吃蛇页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Breakout.jsx / .css      # 打砖块页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
+│   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
 │   ├── Docs.jsx / .css          # 文档列表页
 │   ├── DocView.jsx              # 文档详情页
@@ -74,6 +75,7 @@ react-app/src/
 | `/snake` | Snake 贪吃蛇 | **lazy 懒加载**（输入缓冲引擎 + Canvas 2D，独立分包） |
 | `/breakout` | Breakout 打砖块 | **lazy 懒加载**（固定步长物理引擎 + Canvas 2D，独立分包） |
 | `/memory` | Memory 记忆翻牌 | **lazy 懒加载**（纯 DOM + 无障碍，独立分包） |
+| `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `*` | NotFound 404 | 直接引入 |
@@ -85,7 +87,7 @@ react-app/src/
 ### 2.1 导航栏（Navbar）
 
 - 左侧品牌区：Vite logo + "React App" 文字，点击跳转 `/`。
-- 右侧导航链接 6 项：首页（`/index.html`）、飞机大战（`/game`）、俄罗斯方块（`/tetris`）、番茄钟（`/pomodoro`）、简历（`/resume`）、技术文档（`/docs`）。
+- 右侧导航链接 7 项：首页（`/index.html`）、飞机大战（`/game`）、俄罗斯方块（`/tetris`）、番茄钟（`/pomodoro`）、简历（`/resume`）、南昌旅游（`/nanchang`）、技术文档（`/docs`）。
 - 当前路由高亮（NavLink active 态）。
 - 移动端：汉堡按钮（aria-expanded 无障碍标注）展开/收起菜单；点击任意链接自动收起菜单。
 - **移动端响应式**：断点对齐统一三级体系；汉堡菜单触发点 <768（767px）；收起态链接 <768 字号 15px、padding 10px 12px。
@@ -494,6 +496,15 @@ Bento Grid 网格布局，自上而下：
 #### 3.11.7 数据文档联动
 
 - 新增 `src/docs/memory-game.md`（含「玩法与计分」「键盘与 aria 实现」「存储结构」3 个二级标题），并在 `src/docs/registry.js` 登记 `{ slug: 'memory-game', title: '记忆翻牌：可访问性小游戏实现笔记', date: '2026-10', tags: ['Game','A11y','React'], readTime: '约 6 分钟' }`。
+
+### 3.12 南昌旅游介绍（/nanchang，2026-10-26 新增）
+
+- **页面性质**：纯静态图文页（无存储键、无外部 API），手账纸感视觉风格（米白底 #f5f2ec、红色主题 #8f2f1d/#c94f2e、虚线边框卡片）。
+- **结构**：「← 返回首页」链接 → Hero（标题/简介/4 个城市关键词标签）→ 三日行程推荐（3 张卡片，Day1 寻味老城 / Day2 历史与现代交织 / Day3 地标打卡）→ 景点速览（10 张卡片：名称 + 标签 + 门票预约信息 + 描述）→ 必吃美食（6 项）→ 交通与住宿（双栏面板）→ 手绘攻略图集 → 页脚小贴士。
+- **图集灯箱**：12 张素材图（`public/nanchang/nanchang-01~12.jpg`，由用户上传的 13 张手账风攻略图去重而来），`GALLERY` 常量数组驱动；图片 `loading="lazy"`，点击按钮打开灯箱，`role="dialog" aria-modal="true"`，Esc 关闭、←/→ 切换，打开时焦点落入关闭按钮，点击遮罩关闭、点击图片不关闭。
+- **文档标题**：挂载时 `document.title = '南昌旅游介绍 - 天下英雄城'`，卸载恢复 'React App'。
+- **无障碍**：灯箱/链接/图集按钮统一 `:focus-visible` 紫色焦点环（2px #aa3bff）；图集按钮带 `aria-label`。
+- **移动端响应式**：断点对齐统一三级体系；行程卡 <1024 改单列；<768 hero padding 32px 20px、标题 30px、交通住宿改单列；<480 hero 标题 26px、卡片 padding 16px 14px；`prefers-reduced-motion` 禁用 hover 位移。
 
 ## 4. 数据与存储一览
 

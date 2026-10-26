@@ -1,0 +1,278 @@
+/* 南昌旅游介绍页 — 手账纸感风格，断点对齐项目统一三级体系 */
+.nc-page {
+  min-height: 100vh;
+  background: #f5f2ec;
+  color: #333;
+  padding: 16px 24px 64px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+.nc-top { max-width: 1080px; margin: 0 auto; }
+.nc-back {
+  display: inline-block;
+  color: #b5502a;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 6px 2px;
+}
+.nc-back:hover { text-decoration: underline; }
+
+/* Hero */
+.nc-hero {
+  max-width: 1080px;
+  margin: 8px auto 32px;
+  background: #fff;
+  border: 1px dashed #d8c9a8;
+  border-radius: 16px;
+  padding: 48px 32px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(120, 90, 40, 0.08);
+}
+.nc-hero-kicker {
+  color: #b5502a;
+  letter-spacing: 6px;
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+.nc-hero h1 {
+  font-size: 40px;
+  margin: 0 0 16px;
+  color: #8f2f1d;
+}
+.nc-hero-sub {
+  max-width: 640px;
+  margin: 0 auto 20px;
+  line-height: 1.8;
+  color: #555;
+}
+.nc-hero-tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+.nc-hero-tags li {
+  border: 1px solid #c96f4a;
+  color: #b5502a;
+  background: rgba(201, 111, 74, 0.08);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+}
+
+/* 通用区块 */
+.nc-section { max-width: 1080px; margin: 0 auto 40px; }
+.nc-section h2 {
+  font-size: 24px;
+  color: #8f2f1d;
+  margin: 0 0 18px;
+  padding-left: 12px;
+  border-left: 4px solid #c96f4a;
+}
+
+/* 三日行程 */
+.nc-days {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.nc-day {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px dashed #d8c9a8;
+  box-shadow: 0 2px 8px rgba(120, 90, 40, 0.06);
+}
+.nc-day h3 { margin: 0 0 8px; font-size: 18px; color: #333; }
+.nc-day-badge {
+  display: inline-block;
+  background: #c94f2e;
+  color: #fff;
+  font-size: 13px;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin-right: 8px;
+  transform: rotate(-2deg);
+}
+.nc-day-route { color: #b5502a; font-size: 13px; margin: 0 0 10px; line-height: 1.6; }
+.nc-day ul { margin: 0; padding-left: 18px; line-height: 1.9; font-size: 14px; color: #555; }
+
+/* 景点速览 */
+.nc-spots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.nc-spot {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  border: 1px solid #ece2cd;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.nc-spot:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(143, 47, 29, 0.12);
+}
+.nc-spot-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nc-spot-head h3 { margin: 0; font-size: 17px; }
+.nc-spot-tag {
+  font-size: 12px;
+  color: #b5502a;
+  background: rgba(201, 111, 74, 0.1);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.nc-spot-ticket { color: #c94f2e; font-size: 13px; margin: 8px 0 6px; }
+.nc-spot-desc { color: #555; font-size: 14px; line-height: 1.7; margin: 0; }
+
+/* 美食 */
+.nc-foods {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.nc-food {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px dashed #d8c9a8;
+}
+.nc-food h3 { margin: 0 0 6px; font-size: 16px; color: #8f2f1d; }
+.nc-food p { margin: 0; font-size: 13px; color: #666; line-height: 1.6; }
+
+/* 交通住宿 */
+.nc-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.nc-panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #ece2cd;
+}
+.nc-panel h3 { margin: 0 0 10px; font-size: 17px; color: #333; }
+.nc-panel ul { margin: 0; padding-left: 18px; line-height: 2; font-size: 14px; color: #555; }
+.nc-panel strong { color: #8f2f1d; }
+
+/* 图集 */
+.nc-gallery-tip { color: #888; font-size: 13px; margin: -8px 0 14px; }
+.nc-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.nc-gallery-item {
+  padding: 0;
+  border: none;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: zoom-in;
+  box-shadow: 0 2px 8px rgba(120, 90, 40, 0.08);
+  transition: transform 0.2s;
+  text-align: left;
+  font-family: inherit;
+}
+.nc-gallery-item:hover { transform: translateY(-3px); }
+.nc-gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.nc-gallery-caption { display: block; padding: 10px 12px; }
+.nc-gallery-caption strong { display: block; font-size: 14px; color: #333; }
+.nc-gallery-caption em {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+/* 页脚 */
+.nc-footer {
+  max-width: 1080px;
+  margin: 0 auto;
+  background: rgba(201, 79, 46, 0.06);
+  border: 1px dashed #c96f4a;
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #7a5a3a;
+  line-height: 1.8;
+}
+.nc-footer p { margin: 0; }
+
+/* 灯箱 */
+.nc-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 12, 8, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+.nc-lightbox img {
+  max-width: min(92vw, 760px);
+  max-height: 82vh;
+  border-radius: 8px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+.nc-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+  line-height: 1;
+}
+.nc-lightbox-close:hover { background: rgba(255, 255, 255, 0.3); }
+.nc-lightbox-caption { color: #eee; font-size: 14px; margin: 14px 0 0; }
+
+/* 焦点环（对齐项目统一规范） */
+.nc-page a:focus-visible,
+.nc-page button:focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* 三级断点 */
+@media (max-width: 1023px) {
+  .nc-days { grid-template-columns: 1fr; }
+}
+@media (max-width: 767px) {
+  .nc-page { padding: 12px 16px 48px; }
+  .nc-hero { padding: 32px 20px; }
+  .nc-hero h1 { font-size: 30px; }
+  .nc-two-col { grid-template-columns: 1fr; }
+  .nc-section h2 { font-size: 20px; }
+  .nc-gallery-item img { height: 160px; }
+}
+@media (max-width: 480px) {
+  .nc-hero h1 { font-size: 26px; }
+  .nc-day, .nc-spot, .nc-panel { padding: 16px 14px; }
+}
+
+/* 减少动态偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .nc-spot, .nc-gallery-item { transition: none; }
+  .nc-spot:hover, .nc-gallery-item:hover { transform: none; }
+}

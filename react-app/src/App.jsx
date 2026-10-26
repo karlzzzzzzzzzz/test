@@ -20,6 +20,8 @@ const Snake = lazy(() => import('./pages/Snake'))
 const Breakout = lazy(() => import('./pages/Breakout'))
 // 记忆翻牌（纯 DOM + 无障碍 + 触控），按需加载（独立分包）
 const Memory = lazy(() => import('./pages/Memory'))
+// 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
+const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
 const Docs = lazy(() => import('./pages/Docs'))
 const DocView = lazy(() => import('./pages/DocView'))
@@ -80,6 +82,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Memory />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/nanchang"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Nanchang />
             </Suspense>
           }
         />

@@ -31,6 +31,7 @@ function Navbar() {
         <NavLink to="/tetris" onClick={close}>俄罗斯方块</NavLink>
         <NavLink to="/pomodoro" onClick={close}>番茄钟</NavLink>
         <NavLink to="/resume" onClick={close}>简历</NavLink>
+        <NavLink to="/nanchang" onClick={close}>南昌旅游</NavLink>
         <NavLink to="/docs" onClick={close}>技术文档</NavLink>
       </nav>
     </header>
