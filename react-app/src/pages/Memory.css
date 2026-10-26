@@ -1,0 +1,360 @@
+/* ===========================================================
+ * 记忆翻牌页面样式 —— 移动端约束卡① + 无障碍约束卡②
+ * =========================================================== */
+
+.mem-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  min-height: 100vh;
+  font-family: inherit;
+  color: var(--home-text, #e6e9f2);
+  background: radial-gradient(ellipse at 50% 0%, rgba(60, 80, 180, 0.25) 0%, transparent 60%) #0a0e1c;
+  overflow-x: hidden; /* 约束卡①：兜底防横向滚动 */
+}
+
+/* ---- 顶部 ---- */
+.mem-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.mem-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.mem-back {
+  color: var(--home-text-dim, #a9b0c5);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.mem-back:hover { background: rgba(255, 255, 255, 0.1); color: var(--home-text, #e6e9f2); }
+.mem-pause-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--home-text, #e6e9f2);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.mem-pause-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* ---- 控制面板 ---- */
+.mem-controls {
+  display: flex;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.mem-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 70px;
+}
+.mem-stat-label {
+  font-size: 0.72rem;
+  color: var(--home-text-dim, #a9b0c5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mem-stat-val {
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mem-timer { font-feature-settings: 'tnum'; }
+
+/* 难度选择（start 态） */
+.mem-diff-picker {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.mem-diff-picker button {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 59, 255, 0.35);
+  background: rgba(170, 59, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.mem-diff-picker button:hover { background: rgba(170, 59, 255, 0.22); transform: translateY(-1px); }
+
+/* ---- aria-live 播报区域（对视觉隐藏，仅读屏播报） ---- */
+.mem-live-region {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+/* ---- 棋盘 ---- */
+.mem-board-wrap {
+  display: flex;
+  justify-content: center;
+  touch-action: manipulation; /* 约束卡①：iOS 双击不缩放 */
+  user-select: none; /* 约束卡①：长按不弹菜单 */
+}
+.mem-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  width: min(94vw, 420px); /* 约束卡①：窄屏不溢出 */
+}
+.mem-board-hard {
+  width: min(94vw, 480px);
+}
+.mem-row {
+  display: grid;
+  gap: 10px;
+  flex: 1;
+}
+.mem-board-easy .mem-row { grid-template-columns: repeat(4, 1fr); }
+.mem-board-hard .mem-row { grid-template-columns: repeat(5, 1fr); }
+
+/* 单张牌 —— 约束卡①：触控区 ≥ 44×44 px（min-width/height 兜底） */
+.mem-card {
+  position: relative;
+  perspective: 800px;
+  aspect-ratio: 1 / 1;
+  min-width: 44px;
+  min-height: 44px;
+}
+.mem-card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: clamp(1rem, 3.8vw, 1.35rem);
+  font-weight: 600;
+  color: #fff;
+}
+.mem-card button.mem-card-inner { /* 显式指定选择器避免被 button 默认样式覆盖 */
+  line-height: 1;
+}
+.mem-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.mem-face-back {
+  background: linear-gradient(135deg, #2b2f4a 0%, #1a1d30 100%);
+  border: 2px solid rgba(170, 59, 255, 0.28);
+  color: #6a6f8a;
+}
+.mem-face-front {
+  background: linear-gradient(135deg, #3f2266 0%, #1f1133 100%);
+  border: 2px solid rgba(170, 59, 255, 0.5);
+  transform: rotateY(180deg);
+}
+.mem-card-flipped .mem-card-inner {
+  transform: rotateY(180deg);
+}
+.mem-card-matched .mem-face-front {
+  border-color: rgba(74, 222, 128, 0.8);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.25), inset 0 0 10px rgba(74, 222, 128, 0.12);
+}
+.mem-card-matched .mem-card-inner { cursor: default; }
+.mem-card-inner:disabled { cursor: default; opacity: 0.95; }
+
+/* 约束卡②：统一焦点环 —— 不用 border-radius 避免覆盖卡片圆角 */
+.mem-card-inner:focus-visible,
+.mem-back:focus-visible,
+.mem-pause-btn:focus-visible,
+.mem-diff-picker button:focus-visible,
+.mem-btn:focus-visible,
+.mem-btn-primary:focus-visible,
+#mem-name:focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* ---- 遮罩（start / paused / over） ---- */
+.mem-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 18, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+.mem-overlay-card {
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(40, 30, 70, 0.95) 0%, rgba(15, 15, 30, 0.95) 100%);
+  border: 1px solid rgba(170, 59, 255, 0.3);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.mem-overlay-card h2 { margin: 0 0 12px; font-size: 1.4rem; }
+.mem-overlay-card p { margin: 0 0 12px; color: #b4bbd3; font-size: 0.95rem; line-height: 1.5; }
+.mem-overlay-hint { font-size: 0.85rem !important; color: #8a91a8 !important; }
+
+.mem-start-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+.mem-btn, .mem-btn-primary {
+  padding: 11px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.mem-btn {
+  background: transparent;
+  color: var(--home-text, #e6e9f2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.mem-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.mem-btn-primary {
+  background: linear-gradient(135deg, #aa3bff 0%, #7a2de8 100%);
+  color: #fff;
+  border: 1px solid rgba(170, 59, 255, 0.7);
+  font-weight: 600;
+}
+.mem-btn-primary:hover { transform: translateY(-1px); }
+.mem-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ---- 结算 ---- */
+.mem-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 18px 0;
+}
+.mem-summary > div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mem-summary span { font-size: 0.7rem; color: #8a91a8; text-transform: uppercase; letter-spacing: 0.05em; }
+.mem-summary strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.mem-rank-msg { color: #b886ff; }
+
+.mem-submit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 10px 0 4px;
+}
+.mem-submit label { font-size: 0.85rem; color: #b4bbd3; margin-right: 4px; }
+#mem-name {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  width: 140px;
+}
+.mem-submit-err { color: #ff6b8a; font-size: 0.85rem; width: 100%; }
+
+.mem-leaderboard {
+  margin: 18px 0 8px;
+  text-align: left;
+}
+.mem-leaderboard h3 { margin: 0 0 10px; font-size: 0.95rem; color: #b886ff; letter-spacing: 0.02em; }
+.mem-leaderboard ol { list-style: none; padding: 0; margin: 0; }
+.mem-leaderboard li {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #c9cfdf;
+}
+.mem-leaderboard li:nth-child(odd) { background: rgba(255, 255, 255, 0.03); }
+.mem-rank-num { width: 22px; text-align: center; color: #8a91a8; font-variant-numeric: tabular-nums; }
+.mem-rank-name { color: #d7dbe9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mem-rank-score { color: #a7afcc; font-variant-numeric: tabular-nums; }
+.mem-top-1 { background: linear-gradient(90deg, rgba(255, 200, 50, 0.15), transparent) !important; }
+.mem-top-2 { background: linear-gradient(90deg, rgba(200, 210, 230, 0.12), transparent) !important; }
+.mem-top-3 { background: linear-gradient(90deg, rgba(200, 120, 50, 0.12), transparent) !important; }
+.mem-empty { text-align: center; color: #8a91a8; font-style: italic; padding: 12px; }
+
+/* ---- 约束卡①：移动端断点（<768 / <480） ---- */
+@media (max-width: 767px) {
+  .mem-page { padding: 16px 14px 48px; }
+  .mem-title { font-size: 1.15rem; }
+  .mem-board-hard { width: min(94vw, 420px); }
+}
+@media (max-width: 479px) {
+  .mem-page { padding: 14px 12px 32px; }
+  .mem-title { font-size: 1.05rem; }
+  .mem-controls { gap: 10px; padding: 10px 12px; }
+  .mem-stat { min-width: 58px; }
+  .mem-stat-val { font-size: 0.95rem; }
+  .mem-board { width: min(94vw, 380px); padding: 10px; gap: 8px; }
+  .mem-board-hard { width: min(94vw, 400px); }
+  .mem-row { gap: 8px; }
+  .mem-face { border-radius: 8px; }
+  .mem-card-inner { border-radius: 8px; font-size: 1rem; }
+  .mem-summary { grid-template-columns: repeat(2, 1fr); }
+  .mem-overlay-card { padding: 22px 18px; }
+  .mem-overlay-card h2 { font-size: 1.25rem; }
+}
+
+/* ---- 约束卡②：prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .mem-card-inner { transition: none !important; }
+  .mem-card-matched .mem-face-front {
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.8); /* 静态描边代替翻转动画 + 高亮 */
+  }
+  .mem-btn, .mem-btn-primary, .mem-btn:hover, .mem-btn-primary:hover { transition: none !important; transform: none !important; }
+}

@@ -7,7 +7,7 @@
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、番茄时钟、在线简历、技术文档中心八大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、番茄时钟、在线简历、技术文档中心九大功能模块。
 
 ### 1.2 技术栈
 
@@ -73,6 +73,7 @@ react-app/src/
 | `/tetris` | Tetris 俄罗斯方块 | **lazy 懒加载**（位运算引擎 + Canvas 2D，独立分包） |
 | `/snake` | Snake 贪吃蛇 | **lazy 懒加载**（输入缓冲引擎 + Canvas 2D，独立分包） |
 | `/breakout` | Breakout 打砖块 | **lazy 懒加载**（固定步长物理引擎 + Canvas 2D，独立分包） |
+| `/memory` | Memory 记忆翻牌 | **lazy 懒加载**（纯 DOM + 无障碍，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `*` | NotFound 404 | 直接引入 |
@@ -105,8 +106,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：8 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 3 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：9 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 9 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-10-26 由 3 修正为 9，与作品入口卡片数对齐）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -447,6 +448,53 @@ Bento Grid 网格布局，自上而下：
 - NotFound：404 标题 + "返回首页"链接（指向 `/index.html`）。
 - **移动端响应式**：断点对齐统一三级体系；`.page` <768 padding 降为 24px 16px；<480 `.page h1` 28px、`.card` padding 20px 16px。
 
+### 3.11 记忆翻牌（/memory，2026-10-26 新增）
+
+#### 3.11.1 架构
+
+- 页面壳 `Memory.jsx` 管理 UI 四态状态机（start / playing / paused / over 四屏）与 HUD；引擎 `MemoryEngine.js` 纯逻辑（不依赖 React），通过回调（onState / onGameOver / onPause）与 UI 通信；组件卸载时 `engine.dispose()` 清理定时器；引擎/页面壳解耦对齐 Snake/Tetris/Breakout 架构。
+
+#### 3.11.2 玩法规则
+
+- **难度**：4×4=16 张·8 对，5×4=20 张·10 对（图标池 10 个品牌词：React/Vite/LLM/Deploy/Debug/NPM/Cloud/Test/UI/Perf）。
+- **洗牌**：Fisher–Yates 算法开局时执行一次（每对图标复制后整体洗牌）。
+- **翻牌**：每次最多翻开 2 张；同一张牌重复点击、已翻开或已配对的牌点击、翻回窗口期（800ms）内额外翻牌一律忽略且不计步；800ms 锁定窗口内棋盘输入被引擎 `busy` 标志位禁锁。
+- **配对**：相同图标保持正面并标记 `matched: true`（绿色描边 + ✓），不同图标 800ms 后自动翻回。
+- **计时**：翻开第一张未配对的牌时启动（切后台/失焦不累积暂停时段，恢复时重置时钟基准——`elapsedBase` + `resumeAt` 双字段对齐 SnakeEngine 模式）。定时器精度 100ms，展示到秒。
+- **得分公式**：`max(100, 基准分 − (步数 − 最少步数) × 15 − 用时秒数 × 3)`；4×4 基准 800 / 最少步数 8，5×4 基准 1200 / 最少步数 10；用时跨过 600s 后分数锁定为 100 不再下探。
+- **结束**：全部配对自动进入结算屏，无手动结算入口。
+
+#### 3.11.3 暂停机制
+
+- `visibilitychange`（切后台）与 `window.blur`（失焦）双触发 + `pausedByVisibilityRef` 去重（对齐 3.3.6 番茄钟 / 3.6 贪吃蛇惯例）；仅 playing 态生效。
+- 暂停时计时冻结、棋盘通过 `aria-hidden` 遮罩 + `pointer-events: none` 禁用翻牌；遮罩文案区分自动暂停（检测到页面切走）与手动暂停（暂停中）。
+- 恢复时手动触发（引擎 `resume()` 重置 `resumeAt = Date.now()`），不按墙钟补算。
+
+#### 3.11.4 排行榜
+
+- 通过 `createLeaderboard('game-memory-leaderboard-v1')` 参数化绑定，不改 `leaderboard.js`。
+- 50 条上限、TOP 10 展示、昵称 `maxlength=12` 默认取 `game-player-name`（无值则「无名飞侠」），提交成功后自动写回 `game-player-name`。
+- **降级行为**：`localStorage` 配额满 / 不可用 → 榜单降级为内存数组 + 结算屏顶部红色提示条，不阻断游戏流程；JSON 损坏 → `loadRows()` 回退空数组，显示「虚位以待，等你上榜」空态。
+
+#### 3.11.5 键盘与 aria 无障碍（约束卡②）
+
+- 棋盘采用语义化 DOM（不使用 Canvas，Canvas 画面无法被读屏解释）：外层 `role="grid"`、行 `role="row"`、牌 `role="gridcell"` + 内层 `<button>`；按钮使用 **roving tabindex**（仅焦点所在的那一张 `tabIndex={0}`，其余 `-1`）。
+- **焦点导航**：↑↓←→ 按行列移动，Home/End 跳到本行首/尾，首末行/列不环绕；翻牌使用 Enter / Space；焦点环统一 `:focus-visible { outline: 2px solid #aa3bff; outline-offset: 2px }`（不覆盖卡片圆角）。
+- **配对后焦点管理**：当焦点所在的牌被配对成功后，自动跳到下一张未配对且未翻开的牌（同行优先，其次下一行循环）。
+- **读屏播报**：页面侧有 `aria-live="polite"` + `aria-atomic="true"` 的不可见 `<div>`；引擎触发 `onState` 时携带 `matchResult: 'match' | 'mismatch' | null` 字段，页面据此更新播报文案（配对成功 → "配对成功，还有 N 对"；未配对 → "未配对，已翻回"）。计时器单独加 `aria-live="off"`，避免每秒刷新打断读屏节奏。
+- 单张牌 `aria-label`：未翻开 → "第{r}行第{c}列，未翻开"；已翻开 → "第{r}行第{c}列，已翻开：{icon}"；已配对 → "第{r}行第{c}列，已配对：{icon}"。
+
+#### 3.11.6 移动端触控与断点（约束卡①）
+
+- 牌面最小触控区 44×44px（CSS `min-width/min-height` 兜底）。
+- 棋盘宽度 `min(94vw, 420px)` 居中，4×4 与 5×4 均不产生横向滚动；`touch-action: manipulation` 关闭 iOS 双击缩放；`user-select: none` 关闭长按菜单；`overflow-x: hidden` 兜底。
+- 断点沿用统一三级体系：<768 面板 padding 降为 16px 14px、棋盘宽度缩为 `min(94vw, 380px)`；<480 控制面板纵向堆叠、牌面圆角 8px、字号 1rem、结算 summary 改 2 列。
+- 触控坐标 → idx：`touchEnd` 事件取 `changedTouches[0]` 位置，按棋盘相对宽度 / 高度反算行列索引。
+
+#### 3.11.7 数据文档联动
+
+- 新增 `src/docs/memory-game.md`（含「玩法与计分」「键盘与 aria 实现」「存储结构」3 个二级标题），并在 `src/docs/registry.js` 登记 `{ slug: 'memory-game', title: '记忆翻牌：可访问性小游戏实现笔记', date: '2026-10', tags: ['Game','A11y','React'], readTime: '约 6 分钟' }`。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -460,6 +508,7 @@ Bento Grid 网格布局，自上而下：
 | `game-breakout-leaderboard-v1` | localStorage | 打砖块排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
 | `game-breakout-state` | localStorage | 打砖块局中快照（`{ v:1, level, score, lives, bricks, won, ts }`；版本校验、7 天 TTL 自动清理、>4000B 丢弃、配额满降级内存；5s 兜底写入） |
 | `game-breakout-touch-starts` | localStorage | 打砖块触摸操作启动累计次数（0~99999 封顶，每局 1 次） |
+| `game-memory-leaderboard-v1` | localStorage | 记忆翻牌排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |

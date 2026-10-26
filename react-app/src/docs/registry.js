@@ -2,6 +2,7 @@
 // 新增文档：把 .md 放入 src/docs/，用 Vite 的 ?raw 导入，然后在此登记一条
 import promptEngineering from './prompt-engineering.md?raw'
 import projectFeatures from './project-features.md?raw'
+import memoryGame from './memory-game.md?raw'
 
 export const docs = [
   {
@@ -23,6 +24,16 @@ export const docs = [
     tags: ['AI', 'Prompt', 'LLM'],
     readTime: '约 25 分钟',
     content: promptEngineering,
+  },
+  {
+    slug: 'memory-game',
+    title: '记忆翻牌：可访问性小游戏实现笔记',
+    summary:
+      '为纯键盘用户与读屏用户设计的记忆配对小游戏实现要点：玩法与计分公式、role=grid + roving tabindex + aria-live polite 的无障碍方案、localStorage 存储结构与降级行为。',
+    date: '2026-10',
+    tags: ['Game', 'A11y', 'React'],
+    readTime: '约 6 分钟',
+    content: memoryGame,
   },
 ]
 

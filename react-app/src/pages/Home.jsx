@@ -95,6 +95,16 @@ const ENTRIES = [
     practice: '1/240s 固定步长积分 + 单 rAF 渲染循环；切后台自动暂停并快照，7 天内可续玩；砖块配色随 Open-Meteo 天气码切换。',
     footer: null,
   },
+  {
+    title: '记忆翻牌',
+    techTags: ['React', 'Hooks', 'A11y'],
+    keywords: ['Memory', '翻牌', '配图', '无障碍', '键盘', 'aria'],
+    to: '/memory',
+    span: '3',
+    desc: '16 张牌 8 对图标，纯键盘也能玩的记忆配对',
+    practice: '引擎与页面壳解耦 + Fisher–Yates 洗牌 + 800ms 翻回锁定窗口；棋盘 role=grid + roving tabindex，方向键导航 + Enter/Space 翻牌，aria-live polite 播报配对结果。',
+    footer: { meta: ['2026-10-26', '4 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
@@ -380,7 +390,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={3} />
+            <AnimatedNumber value={9} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />

@@ -18,6 +18,8 @@ const Tetris = lazy(() => import('./pages/Tetris'))
 const Snake = lazy(() => import('./pages/Snake'))
 // 打砖块（固定步长物理引擎 + Canvas 2D），按需加载（独立分包）
 const Breakout = lazy(() => import('./pages/Breakout'))
+// 记忆翻牌（纯 DOM + 无障碍 + 触控），按需加载（独立分包）
+const Memory = lazy(() => import('./pages/Memory'))
 // 文档页依赖 marked 解析 markdown，按需加载
 const Docs = lazy(() => import('./pages/Docs'))
 const DocView = lazy(() => import('./pages/DocView'))
@@ -70,6 +72,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Breakout />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/memory"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Memory />
             </Suspense>
           }
         />
