@@ -1,6 +1,6 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-22 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-26 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
@@ -168,9 +168,9 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.2.4 屏幕与 HUD
 
-- **开始屏**：玩法说明 + "开始游戏"按钮 + 排行榜面板（TOP 10）。
-- **游戏中 HUD**：左上"← 返回首页"链接、得分实时显示、右上 3 颗红心生命值。
-- **暂停屏**：提示"检测到你切换了页面，游戏已自动暂停"+"继续游戏"按钮。
+- **开始屏**：玩法说明 + "开始游戏"按钮 + 排行榜面板（TOP 10）；若存在 30 分钟内的中断快照，额外展示"上次战斗中断"卡片（得分/生命/中断时间 + "继续上局"）。
+- **游戏中 HUD**：左上"← 返回首页"链接、得分实时显示、右侧 3 颗红心生命值 + "⏸ 暂停"按钮（仅 playing 态）。
+- **暂停屏**：按原因展示文案（手动/切后台/失焦/WebGL 上下文丢失），含本局数据条（得分/剩余生命/本局时长/已暂停时长，按真实时间差每秒刷新）、排行榜 TOP 3 三态摘要卡、"继续游戏（3s 倒计时）"/"重新开始"/"返回首页"，以及 Esc/P 与 Tab 键位提示。
 - **结束屏**：最终得分 + 排行榜提交（见 3.2.5）+ "再来一局"。
 
 #### 3.2.5 排行榜（api/leaderboard.js，localStorage 版）
@@ -182,16 +182,22 @@ Bento Grid 网格布局，自上而下：
 - 提交：昵称输入框（maxlength 12，空则默认"无名飞侠"），分数 > 0 才可提交；提交后显示"已上榜，当前排名：第 N 名"；昵称持久化到 `game-player-name`，下次自动填充。
 - 提交失败显示"提交失败，请重试"（本地版实际不会失败，接口为未来云函数版预留）。
 - 空榜单显示"虚位以待，等你上榜"。
+- 2026-10-26 新增 `loadTopScoresSafe({ timeout = 3000 })`：3s 超时包装、离线直读缓存、失败时读 `game-pause-board-cache-v1`（5 分钟 TTL）并返回 `{ items, source: 'remote'|'cache'|'error', cachedAt? }`；成功响应写缓存（TOP 10）。仅供暂停页使用，`fetchTopScores`/`submitScore` 签名与默认键不变。
 
 #### 3.2.6 后台与异常处理（重要设计）
 
-- **自动暂停**：`visibilitychange`（切后台）、`window.blur`（失焦）、`webglcontextlost`（WebGL 上下文丢失）三种情况触发暂停并清空按键状态与触摸跟踪态 `touchId`（防按键卡住、回前台需重新触摸），UI 切到暂停屏。
-- **恢复**：回前台时重置时钟基准（防 getDelta 超大步长跳帧）；上下文恢复后重建视口尺寸与像素比。
+- **暂停来源与优先级**：`visibilitychange`（切后台）、`window.blur`（失焦）、`webglcontextlost`（WebGL 上下文丢失）与手动（HUD 暂停按钮 / `Esc` / `P`）四类；自动源优先级 `contextlost(3) > visibility(2) > blur(1)`，首次触发即锁定原因，引擎 `pause(reason)` 在 `running && !over` 时才生效，重复调用幂等。暂停时清空 `keys` 与触摸跟踪态 `touchId`。
+- **暂停屏**：UI 依据 `onPause(reason)` 切 paused，展示对应原因文案、本局统计与排行榜摘要；每次暂停写入中断快照并累计 `game-pause-events-v1`（自动暂停同局累计 ≥3 次追加「建议使用 Esc 主动暂停」提示）。
+- **恢复**：不再自动恢复。玩家点击「继续游戏」/按 Enter 后进入 3→2→1 倒计时（再次切后台或上下文丢失会取消倒计时），归零后 `resume()`：清空输入态、指针回中心、重置时钟基准（防 getDelta 超大步长跳帧），并给予 0.3s 无敌缓冲。`document.hidden` 或 `glLost` 时 `resume()` 拒绝执行。
+- **WebGL 上下文**：丢失即 `onGlLost` + 暂停，恢复后重建视口尺寸与像素比并回调 `onGlRestored`，但不自动开战；UI 侧 5 秒未恢复显示「图形恢复失败，请重开一局」并禁用继续。
+- **中断快照**：暂停或 `pagehide` 时写入 `game-pause-snapshot-v1`（`{ v:1, score, health, elapsed, pausedAt, reason }`），30 分钟 TTL；开始屏据此展示「继续上局」，经 `engine.restore(snapshot)` 恢复得分/生命/时长（越界钳制）。存储失败时顶部提示「暂停快照无法保存，刷新后本局进度将丢失」，暂停流程不受影响。
+- **键盘与无障碍**：`Esc`/`P` 暂停或继续；暂停弹窗 `role="dialog" aria-modal="true"`，初始焦点落「继续游戏」，Tab/Shift+Tab 在弹窗内闭环，关闭后焦点回 HUD 暂停按钮；原因标题 `aria-live="assertive"`，倒计时与图形错误经 `aria-live="polite"` 播报。
 - 窗口 resize 自适应；容器尺寸为 0（隐藏态）时跳过避免画布塌陷。
 
 #### 3.2.7 移动端响应式
 
-- HUD 字号 <768 降为 14px、生命心 18px、padding 10px 14px；<480 返回链接 13px、得分 15px、`.game-panel` padding 32px 24px、`h1` 32px、`.game-tip` 14px。
+- HUD 字号 <768 降为 14px、生命心 18px、padding 10px 14px、暂停按钮 14px；<480 返回链接 13px、得分 15px、`.game-panel` padding 32px 24px、`h1` 32px、`.game-tip` 14px。
+- 暂停弹窗宽度 `min(92vw, 460px)`；<768 padding 26px 22px、标题 30px；<480 宽 `calc(100vw - 24px)`、标题 26px、操作按钮纵排占满整行。
 
 ### 3.3 2048 小游戏（/2048）
 
@@ -457,6 +463,9 @@ Bento Grid 网格布局，自上而下：
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |
+| `game-pause-snapshot-v1` | localStorage | 飞机大战中断快照（`{ v:1, score, health, elapsed, pausedAt, reason }`；30 分钟 TTL，新开局/结束/过期清除） |
+| `game-pause-board-cache-v1` | localStorage | 飞机大战暂停页排行榜降级缓存（`{ ts, items≤10 }`；TTL 5 分钟，成功响应覆盖） |
+| `game-pause-events-v1` | localStorage | 飞机大战暂停来源计数（`{ manual, visibility, blur, contextlost, total }`，0~999 封顶，仅本地累计） |
 | `mobile-layout-pref` | localStorage | 简历页移动端阅读偏好（`{ v:1, compact:boolean, fontScale:number(0.9~1.3), ts:number }`；30 天 TTL 自动清理；版本不符重置；fontScale 越界回退 1.0；>200B 截断；配额满降级内存） |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |

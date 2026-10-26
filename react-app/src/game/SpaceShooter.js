@@ -19,6 +19,10 @@ export class SpaceShooter {
     this.cb = callbacks
     this.running = false
     this.over = false
+    this.paused = false
+    this.pauseReason = null // manual | visibility | blur | contextlost
+    this.glLost = false
+    this.invulnTimer = 0 // 恢复后的短暂无敌缓冲（秒）
 
     // 游戏数据
     this.bullets = []
@@ -242,14 +246,15 @@ export class SpaceShooter {
 
     // 切到后台/窗口失焦：自动暂停；WebGL 上下文丢失/恢复处理
     this._onVisibilityChange = () => {
-      if (document.hidden) this.pause()
+      if (document.hidden) this.pause('visibility')
       else this._resetClock()
     }
-    this._onBlur = () => this.pause()
+    this._onBlur = () => this.pause('blur')
     this._onContextLost = (e) => {
       e.preventDefault()
       this.glLost = true
-      this.pause()
+      this.cb.onGlLost?.()
+      this.pause('contextlost')
     }
     this._onContextRestored = () => {
       this.glLost = false
@@ -263,6 +268,7 @@ export class SpaceShooter {
         this.renderer.setSize(w, h)
         this._updateBounds()
       }
+      this.cb.onGlRestored?.()
       this._resetClock()
     }
     document.addEventListener('visibilitychange', this._onVisibilityChange)
@@ -290,24 +296,62 @@ export class SpaceShooter {
     this.clock.start()
   }
 
-  /** 暂停（切后台 / 窗口失焦 / 上下文丢失时触发） */
-  pause() {
-    if (!this.running || this.over) return
+  /** 暂停（手动 / 切后台 / 窗口失焦 / 上下文丢失时触发） */
+  pause(reason = 'manual') {
+    if (!this.running || this.over) return false
     this.running = false
     this.paused = true
+    this.pauseReason = reason
     this.keys = {} // 防止按键卡住
     this.touchId = null // 清空触摸跟踪，回前台后需重新触摸（约束卡③）
-    this.cb.onPause?.()
+    this.cb.onPause?.(reason)
+    return true
   }
 
-  /** 从暂停恢复（玩家点击继续） */
+  /** 从暂停恢复（玩家确认后调用；上下文丢失或页面隐藏时拒绝） */
   resume() {
-    if (!this.paused || this.over) return
+    if (!this.paused || this.over || this.glLost || document.hidden) return false
     this.paused = false
     this.running = true
     this.keys = {}
+    this.touchId = null
+    // 恢复到玩家中心，避免暂停前的指针位置导致飞机瞬移
+    this.pointer.x = 0
+    this.pointer.y = 0
+    this.invulnTimer = 0.3
     this._resetClock()
-    this.cb.onResume?.()
+    const reason = this.pauseReason
+    this.pauseReason = null
+    this.cb.onResume?.(reason)
+    return true
+  }
+
+  /** 当前局数据快照（供暂停落盘使用） */
+  getSnapshot() {
+    return {
+      score: this.score,
+      health: this.health,
+      elapsed: Math.round(this.elapsed * 10) / 10,
+    }
+  }
+
+  /** 从暂停快照恢复（得分/生命/本局时长），返回是否成功 */
+  restore(snapshot) {
+    if (!snapshot || this.glLost) return false
+    const score = Number(snapshot.score)
+    const health = Number(snapshot.health)
+    const elapsed = Number(snapshot.elapsed)
+    if (!Number.isFinite(score) || !Number.isFinite(health)) return false
+    this.start()
+    this.score = Math.max(0, Math.min(999999, Math.floor(score)))
+    this.health = Math.max(1, Math.min(3, Math.floor(health)))
+    this.elapsed = Math.max(
+      0,
+      Math.min(86400, Number.isFinite(elapsed) ? elapsed : 0)
+    )
+    this.cb.onScore?.(this.score)
+    this.cb.onHealth?.(this.health)
+    return true
   }
 
   start() {
@@ -324,6 +368,8 @@ export class SpaceShooter {
     this.player.visible = true
     this.over = false
     this.paused = false
+    this.pauseReason = null
+    this.invulnTimer = 0
     this.running = true
     this.keys = {}
     this.touchId = null
@@ -499,6 +545,7 @@ export class SpaceShooter {
 
     if (this.running) {
       this.elapsed += dt
+      this.invulnTimer = Math.max(0, this.invulnTimer - dt)
       this._updatePlayer(dt)
       this._updateBullets(dt)
       this._updateEnemies(dt)
@@ -629,8 +676,8 @@ export class SpaceShooter {
       }
     }
 
-    // 敌机 vs 玩家
-    if (this.player.visible) {
+    // 敌机 vs 玩家（恢复后的 0.3s 无敌缓冲内跳过）
+    if (this.player.visible && this.invulnTimer <= 0) {
       const pp = this.player.position
       for (let i = this.enemies.length - 1; i >= 0; i--) {
         const ep = this.enemies[i].mesh.position

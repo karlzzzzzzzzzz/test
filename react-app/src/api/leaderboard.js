@@ -10,6 +10,9 @@
 
 const DEFAULT_STORAGE_KEY = 'game-leaderboard-v1'
 const MAX_ROWS = 50 // 本地最多保留 50 条
+const PAUSE_CACHE_KEY = 'game-pause-board-cache-v1'
+const PAUSE_CACHE_TTL = 5 * 60 * 1000 // 暂停页降级缓存有效期 5 分钟
+const SAFE_TIMEOUT = 3000
 
 /**
  * 创建一套绑定指定存储键的排行榜接口
@@ -75,4 +78,73 @@ export function fetchTopScores() {
 
 export function submitScore(name, score, elapsed) {
   return defaultLeaderboard.submitScore(name, score, elapsed)
+}
+
+/** 超时包装：本地版立即返回，为未来云函数版预留 3s 超时能力 */
+function withTimeout(promise, timeout) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('leaderboard-timeout')), timeout)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timer)
+        reject(error)
+      }
+    )
+  })
+}
+
+function readPauseCache() {
+  try {
+    const raw = localStorage.getItem(PAUSE_CACHE_KEY)
+    if (!raw) return { items: [], source: 'error' }
+    const data = JSON.parse(raw)
+    const valid =
+      data &&
+      Array.isArray(data.items) &&
+      Number.isFinite(data.ts) &&
+      Date.now() - data.ts <= PAUSE_CACHE_TTL
+    if (!valid) return { items: [], source: 'error' }
+    return { items: data.items.slice(0, 10), source: 'cache', cachedAt: data.ts }
+  } catch {
+    try {
+      localStorage.removeItem(PAUSE_CACHE_KEY)
+    } catch {
+      // localStorage 不可用：忽略清理
+    }
+    return { items: [], source: 'error' }
+  }
+}
+
+function writePauseCache(items) {
+  try {
+    localStorage.setItem(
+      PAUSE_CACHE_KEY,
+      JSON.stringify({ ts: Date.now(), items: items.slice(0, 10) })
+    )
+  } catch {
+    // 配额不足或不可用时跳过缓存，不影响排行榜读取
+  }
+}
+
+/**
+ * 暂停页专用安全读取：3s 超时 + 5 分钟缓存降级
+ * @returns {Promise<{items: Array, source: 'remote'|'cache'|'error', cachedAt?: number}>}
+ */
+export async function loadTopScoresSafe({ timeout = SAFE_TIMEOUT } = {}) {
+  // 离线时直接读缓存，避免等待超时
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return readPauseCache()
+  }
+  try {
+    const items = await withTimeout(defaultLeaderboard.fetchTopScores(), timeout)
+    if (!Array.isArray(items)) return readPauseCache()
+    writePauseCache(items)
+    return { items, source: 'remote' }
+  } catch {
+    return readPauseCache()
+  }
 }
