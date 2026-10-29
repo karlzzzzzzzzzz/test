@@ -4,8 +4,10 @@ import './Resume.css'
 
 const PREF_KEY = 'mobile-layout-pref'
 const PREF_TTL = 30 * 24 * 3600 * 1000 // 30 天过期
+// 浏览器不支持 window.print 时不渲染打印入口
+const CAN_PRINT = typeof window !== 'undefined' && typeof window.print === 'function'
 
-/* 读取移动端阅读偏好：含版本校验、过期清理、fontScale 范围回退 */
+/* 读取移动端阅读偏好：含版本校验、过期清理、fontScale 步长归一与范围回退 */
 function readPref() {
   try {
     const raw = localStorage.getItem(PREF_KEY)
@@ -16,16 +18,23 @@ function readPref() {
       localStorage.removeItem(PREF_KEY)
       return { compact: false, fontScale: 1.0 }
     }
-    // 过期（ts 超 30 天）→ 静默清理
-    if (data.ts && Date.now() - data.ts > PREF_TTL) {
+    // ts 缺失/非法 或 超 30 天 → 静默清理（缺 ts 的脏数据不能永久驻留）
+    const ts = Number(data.ts)
+    if (!isFinite(ts) || ts <= 0 || Date.now() - ts > PREF_TTL) {
       localStorage.removeItem(PREF_KEY)
       return { compact: false, fontScale: 1.0 }
     }
-    // 校验 fontScale 范围（0.9~1.3），越界回退 1.0
-    let fontScale = Number(data.fontScale)
+    // fontScale 先按 0.1 步长四舍五入归一（0.95→1.0），再做 0.9~1.3 越界回退
+    let fontScale = Math.round(Number(data.fontScale) * 10) / 10
     if (!isFinite(fontScale) || fontScale < 0.9 || fontScale > 1.3) fontScale = 1.0
     return { compact: data.compact === true, fontScale }
   } catch {
+    // JSON 损坏 → 移除脏键后回默认
+    try {
+      localStorage.removeItem(PREF_KEY)
+    } catch {
+      /* localStorage 不可用时忽略 */
+    }
     return { compact: false, fontScale: 1.0 }
   }
 }
@@ -50,6 +59,7 @@ function Resume() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [sessionOnly, setSessionOnly] = useState(false)
   const rafRef = useRef(0)
+  const prefDirtyRef = useRef(false)
 
   useEffect(() => {
     const prevTitle = document.title
@@ -59,19 +69,31 @@ function Resume() {
     }
   }, [])
 
-  // 字体缩放：通过 CSS 变量 --resume-fs 驱动根 font-size
+  // 字体缩放：通过 CSS 变量 --resume-fs 驱动根 font-size；打印期间摘除变量，保证纸面恒为 16px
   useEffect(() => {
     const el = document.querySelector('.resume-page')
-    if (el) el.style.setProperty('--resume-fs', `${16 * pref.fontScale}px`)
+    if (!el) return undefined
+    const apply = () => el.style.setProperty('--resume-fs', `${16 * pref.fontScale}px`)
+    const removeForPrint = () => el.style.removeProperty('--resume-fs')
+    apply()
+    // Safari 旧版不派发 beforeprint，由 @media print 的字号兜底
+    window.addEventListener('beforeprint', removeForPrint)
+    window.addEventListener('afterprint', apply)
+    return () => {
+      window.removeEventListener('beforeprint', removeForPrint)
+      window.removeEventListener('afterprint', apply)
+    }
   }, [pref.fontScale])
 
+  // 偏好持久化：写入移出 state updater，且只在用户改动后落盘（挂载不刷新 ts，保留 30 天 TTL 语义）
+  useEffect(() => {
+    if (!prefDirtyRef.current) return
+    setSessionOnly(!writePref(pref))
+  }, [pref])
+
   const updatePref = useCallback((next) => {
-    setPref((prev) => {
-      const merged = { ...prev, ...next }
-      const ok = writePref(merged)
-      setSessionOnly(!ok)
-      return merged
-    })
+    prefDirtyRef.current = true
+    setPref((prev) => ({ ...prev, ...next }))
   }, [])
 
   // 字体缩放滑块：rAF 节流防重排抖动
@@ -96,6 +118,19 @@ function Resume() {
               <p className="en">MOBILE：( +86 ) 137-7771-5532</p>
               <p className="en">E-MAIL：k13777715532@163.com</p>
             </div>
+            {/* ===== 打印适配：打印 / 导出 PDF 入口（仅桌面端显示，打印视图隐藏） ===== */}
+            {CAN_PRINT && (
+              <div className="resume-print-bar">
+                <button
+                  type="button"
+                  className="resume-print-btn"
+                  aria-label="打印简历"
+                  onClick={() => window.print()}
+                >
+                  打印 / 导出 PDF
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="qr">
@@ -151,8 +186,8 @@ function Resume() {
             </ul>
           </section>
 
-          {/* ===== 技术简介 ===== */}
-          <section className="sec">
+          {/* ===== 技术简介（长章节：打印时允许断页，逐条避断） ===== */}
+          <section className="sec long">
             <h2>技术简介</h2>
             <ul className="dot">
               <li>
@@ -194,8 +229,8 @@ function Resume() {
             </div>
           </section>
 
-          {/* ===== 项目经验 ===== */}
-          <section className="sec">
+          {/* ===== 项目经验（长章节：打印时允许断页，单项目避断） ===== */}
+          <section className="sec long">
             <h2>项目经验</h2>
             <div className="proj">
               <div>

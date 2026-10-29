@@ -112,6 +112,31 @@
   letter-spacing: 0.5px;
 }
 
+/* ===== 打印 / 导出 PDF 入口（桌面端显示，<768 与打印视图隐藏） ===== */
+.resume-page .resume-print-bar {
+  margin-top: 14px;
+}
+.resume-page .resume-print-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--navy);
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  touch-action: manipulation;
+}
+.resume-page .resume-print-btn:hover {
+  background: var(--strip);
+  border-color: var(--navy);
+}
+.resume-page .resume-print-btn:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
 .resume-page .qr {
   grid-area: qr;
   text-align: center;
@@ -461,6 +486,10 @@
     align-items: center;
     justify-content: center;
   }
+  /* 打印入口：移动端隐藏 */
+  .resume-page .resume-print-bar {
+    display: none;
+  }
 }
 
 /* <480 超小屏：进一步压缩 */
@@ -526,29 +555,75 @@
 }
 
 /* ===== 打印适配 ===== */
+/* 版心：A4 210×297mm，页边距上下 12mm / 左右 10mm → 单页正文宽 190mm */
 @page {
   size: A4;
-  margin: 10mm;
+  margin: 12mm 10mm;
 }
 
 @media print {
+  .resume-page,
+  .resume-page .resume-sheet {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   .resume-page {
     background: #fff;
     padding: 0;
+    /* 纸面字号固定 16px，忽略移动端字体缩放 */
+    font-size: 16px;
+    line-height: 1.7;
   }
   .resume-page .resume-sheet {
-    box-shadow: none;
-    width: auto;
-    min-height: auto;
+    width: 190mm;
     max-width: 100%;
+    min-height: 273mm;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
   }
+  /* 水平边距交由 @page 承担，分页后每页都保留页边距 */
+  .resume-page .hero {
+    padding: 0 0 16px;
+  }
+  .resume-page main {
+    padding: 0;
+  }
+  /* 紧凑模式仅屏幕生效，打印还原正常行距与内边距 */
+  .resume-page.compact {
+    padding: 0;
+    line-height: 1.7;
+  }
+  .resume-page.compact .hero {
+    padding: 0 0 16px;
+  }
+  .resume-page.compact main {
+    padding: 0;
+    row-gap: 16px;
+  }
+  .resume-page.compact .sec {
+    row-gap: 10px;
+  }
+  /* 分页：普通章节整体避断；长章节允许断页，但单条内容不拆分 */
   .resume-page h2 {
     break-after: avoid;
   }
-  .resume-page .proj,
+  .resume-page .sec {
+    break-inside: avoid;
+  }
+  .resume-page .sec.long {
+    break-inside: auto;
+  }
+  .resume-page .proj > div,
   .resume-page .row4,
   .resume-page .row3,
   .resume-page ul.dot li {
     break-inside: avoid;
+  }
+  /* 打印按钮、偏好浮动按钮与面板不进入纸面 */
+  .resume-print-bar,
+  .resume-pref-btn,
+  .resume-pref-panel {
+    display: none !important;
   }
 }

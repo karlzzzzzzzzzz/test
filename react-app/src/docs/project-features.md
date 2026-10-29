@@ -1,6 +1,6 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-26 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-29 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
@@ -15,7 +15,7 @@
 |------|------|
 | 框架 | React 18（函数组件 + Hooks） |
 | 构建工具 | Vite |
-| 路由 | React Router v6（BrowserRouter） |
+| 路由 | React Router v6（HashRouter） |
 | 3D 渲染 | Three.js（游戏引擎自研封装 `SpaceShooter` 类） |
 | Markdown 渲染 | marked（GFM 模式） |
 | 特效 | 原生 Canvas 2D（鼠标轨迹） |
@@ -65,7 +65,7 @@ react-app/src/
 
 | 路由 | 页面 | 加载方式 |
 |------|------|----------|
-| `/index.html` | Home 首页 | 直接引入 |
+| `/` | Home 首页 | 直接引入 |
 | `/about` | About 关于 | 直接引入 |
 | `/resume` | Resume 简历 | 直接引入 |
 | `/pomodoro` | Pomodoro 番茄钟 | 直接引入 |
@@ -82,24 +82,26 @@ react-app/src/
 
 懒加载统一使用 `<Suspense fallback="加载中…">`。
 
+路由使用 `HashRouter`（URL 形如 `/index.html#/game`），路由状态保存在 hash 中，刷新深链不会丢失当前页面，适配不支持 rewrite 的静态托管。
+
 ## 2. 全局功能
 
 ### 2.1 导航栏（Navbar）
 
 - 左侧品牌区：Vite logo + "React App" 文字，点击跳转 `/`。
-- 右侧导航链接 7 项：首页（`/index.html`）、飞机大战（`/game`）、俄罗斯方块（`/tetris`）、番茄钟（`/pomodoro`）、简历（`/resume`）、南昌旅游（`/nanchang`）、技术文档（`/docs`）。
+- 右侧导航链接 7 项：首页（`/`）、飞机大战（`/game`）、俄罗斯方块（`/tetris`）、番茄钟（`/pomodoro`）、简历（`/resume`）、南昌旅游（`/nanchang`）、技术文档（`/docs`）。
 - 当前路由高亮（NavLink active 态）。
 - 移动端：汉堡按钮（aria-expanded 无障碍标注）展开/收起菜单；点击任意链接自动收起菜单。
 - **移动端响应式**：断点对齐统一三级体系；汉堡菜单触发点 <768（767px）；收起态链接 <768 字号 15px、padding 10px 12px。
 
-### 2.2 已知路由怪癖
+### 2.2 路由模式
 
-- 根路径 `/` **没有**对应路由，会命中 `*` 通配符显示 404 页；首页实际挂载在 `/index.html`。
-- 导航栏品牌 Logo 链接指向 `/`，因此点击 Logo 会进入 404 页（与首页文案中的跳转行为不一致）。
+- 使用 `HashRouter`，URL 形如 `/index.html#/game`；hash 变化不触发服务端请求，因此刷新任意页面都能停留在当前路由。
+- 根路径 `/` 对应首页，导航栏品牌 Logo 与「首页」链接均指向 `/`。
 
 ## 3. 页面功能明细
 
-### 3.1 首页（/index.html）
+### 3.1 首页（/）
 
 Bento Grid 网格布局，自上而下：
 
@@ -228,7 +230,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.3.4 屏幕与 HUD
 
-- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右两个得分框（当前得分 + 最高分，最高分金色高亮）。
+- **顶部 HUD**：左「← 返回首页」（指向 `/`）、右两个得分框（当前得分 + 最高分，最高分金色高亮）。
 - **工具条**：重新开始按钮、撤销按钮（角标显示剩余次数）、玩法说明折叠按钮（点击展开说明 panel）。
 - **暂停遮罩**（切后台触发）：提示"检测到你切换了页面，游戏已自动暂停并保存进度" + 继续按钮 + 返回首页链接。
 - **胜利遮罩**：标题"达成 2048！" + 当前得分 + 「继续挑战」/「重新开始」。
@@ -288,7 +290,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.4.5 屏幕与 HUD
 
-- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右三个数据框（得分 / 等级 / 消行数，得分 bump 动画 300ms，`prefers-reduced-motion` 禁用）。
+- **顶部 HUD**：左「← 返回首页」（指向 `/`）、右三个数据框（得分 / 等级 / 消行数，得分 bump 动画 300ms，`prefers-reduced-motion` 禁用）。
 - **开始屏**：玩法说明（含位运算技术标注）+「开始游戏」+ 排行榜面板（TOP 10）。
 - **暂停屏**（切后台/失焦/P 键触发）：提示"检测到你切换了页面，游戏已自动暂停" +「继续游戏」+ 返回首页链接。
 - **结束屏**：最终得分 + 排行榜提交（见 3.4.7）+「再来一局」+ 排行榜面板。
@@ -340,7 +342,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.6.4 屏幕与 HUD
 
-- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右三个数据框（得分 / 最高分 / 长度）；得分 bump 动画 300ms（`prefers-reduced-motion` 禁用）；**最高分 = 排行榜第一名分数**（不单设存储键），排行榜空时显示 0。
+- **顶部 HUD**：左「← 返回首页」（指向 `/`）、右三个数据框（得分 / 最高分 / 长度）；得分 bump 动画 300ms（`prefers-reduced-motion` 禁用）；**最高分 = 排行榜第一名分数**（不单设存储键），排行榜空时显示 0。
 - **开始屏**：玩法说明（含输入缓冲技术标注）+「开始游戏」+ 排行榜面板（TOP 10）。
 - **暂停屏**：切后台/失焦触发显示"检测到你切换了页面，游戏已自动暂停"；P 键/点按手动暂停显示"游戏已暂停"；均配「继续游戏」。
 - **结束屏**：标题（通关显示"通关！"）+ 最终得分 + 排行榜提交（见 3.6.5，分数 >0 才显示提交表单）+「再来一局」+ 排行榜面板。
@@ -385,7 +387,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.7.5 屏幕与 HUD
 
-- **顶部 HUD**：左「← 返回首页」（指向 `/index.html`）、右数据框（得分 bump 动画 300ms / 关卡 / 3 颗红心 / 天气主题标签——仅主题非默认时显示）；`aria-live="polite"` 播报。
+- **顶部 HUD**：左「← 返回首页」（指向 `/`）、右数据框（得分 bump 动画 300ms / 关卡 / 3 颗红心 / 天气主题标签——仅主题非默认时显示）；`aria-live="polite"` 播报。
 - **开始屏**：玩法说明（含固定步长物理技术标注）+「开始游戏」+ 条件显示「继续游戏（第 N 关）」（存在合法快照时）+ 排行榜面板（TOP 10）。
 - **暂停屏**：切后台/失焦显示"检测到你切换了页面，游戏已自动暂停"；P 键手动暂停显示"游戏已暂停"；均配「继续游戏」。
 - **通关屏**：标题"通关！"+ 当前得分 +「继续挑战」/「重新开始」。
@@ -431,6 +433,13 @@ Bento Grid 网格布局，自上而下：
   - 紧凑模式（`.resume-page.compact`）将移动端 `--content-padding` 与 `.resume-page` padding 降为 8px 4px、行高 1.6；不影响 ≥768 桌面端。
   - `prefers-reduced-motion` 时禁用面板过渡动画。
   - 持久化键 `mobile-layout-pref`（见第 4 节），含版本校验 `v:1`、30 天 TTL 自动清理、`fontScale` 越界回退 1.0、`JSON.stringify` 长度 >200B 时截断、`QuotaExceededError` 降级内存（面板顶部显示"偏好仅本次会话有效"提示条）。
+  - 2026-10-29 修正：`ts` 缺失/非正数的脏数据视为过期直接清理；`fontScale` 先按 0.1 步长四舍五入归一（0.95→1.0）再范围校验；写入从 `setState` updater 移出到 `useEffect`，且仅用户改动后才落盘（挂载不刷新 `ts`，保留 TTL 语义）。
+- **打印适配模块（2026-10-29 新增）**：
+  - 打印入口 `.resume-print-bar`（位于 hero 内联系方式下方）：按钮「打印 / 导出 PDF」`aria-label="打印简历"`，点击调用 `window.print()`；`min-width:768px` 显示，<768 与 `@media print` 隐藏；不支持 `window.print` 时不渲染。
+  - 版心：`@page { size:A4; margin:12mm 10mm }`，打印时 `.resume-sheet` 宽 190mm、`min-height:273mm`、去阴影；`.hero`/`main` 水平内边距归零，页边距交由 `@page` 承担（分页后每页保留边距）。
+  - 偏好隔离：打印固定 `font-size:16px`、行高 1.7，忽略 `--resume-fs`；`beforeprint` 移除内联 `--resume-fs`、`afterprint` 按当前 `fontScale` 恢复；`.resume-page.compact` 在打印下 padding 归零、行高还原。
+  - 分页：`.sec` 整体 `break-inside: avoid`，`.sec.long`（技术简介 / 项目经验）允许断页但 `li` 与 `.proj > div` 逐条避断；`h2` 保持 `break-after: avoid`。
+  - 打印色彩：`.resume-page`/`resume-sheet` 使用 `print-color-adjust: exact`（含 `-webkit-` 前缀）；打印按钮、浮动齿轮与偏好面板 `display:none`。
 
 ### 3.9 技术文档中心（/docs 与 /docs/:slug）
 
@@ -447,7 +456,7 @@ Bento Grid 网格布局，自上而下：
 ### 3.10 关于页（/about）与 404 页
 
 - About：Vite / React / React Router 三卡片技术栈介绍 + 返回首页链接。
-- NotFound：404 标题 + "返回首页"链接（指向 `/index.html`）。
+- NotFound：404 标题 + "返回首页"链接（指向 `/`）。
 - **移动端响应式**：断点对齐统一三级体系；`.page` <768 padding 降为 24px 16px；<480 `.page h1` 28px、`.card` padding 20px 16px。
 
 ### 3.11 记忆翻牌（/memory，2026-10-26 新增）
@@ -526,7 +535,7 @@ Bento Grid 网格布局，自上而下：
 | `game-pause-snapshot-v1` | localStorage | 飞机大战中断快照（`{ v:1, score, health, elapsed, pausedAt, reason }`；30 分钟 TTL，新开局/结束/过期清除） |
 | `game-pause-board-cache-v1` | localStorage | 飞机大战暂停页排行榜降级缓存（`{ ts, items≤10 }`；TTL 5 分钟，成功响应覆盖） |
 | `game-pause-events-v1` | localStorage | 飞机大战暂停来源计数（`{ manual, visibility, blur, contextlost, total }`，0~999 封顶，仅本地累计） |
-| `mobile-layout-pref` | localStorage | 简历页移动端阅读偏好（`{ v:1, compact:boolean, fontScale:number(0.9~1.3), ts:number }`；30 天 TTL 自动清理；版本不符重置；fontScale 越界回退 1.0；>200B 截断；配额满降级内存） |
+| `mobile-layout-pref` | localStorage | 简历页移动端阅读偏好（`{ v:1, compact:boolean, fontScale:number(0.9~1.3), ts:number }`；30 天 TTL 自动清理；版本不符重置；`ts` 缺失/非正数视为过期清理；`fontScale` 按 0.1 步长归一后越界回退 1.0；>200B 截断；配额满降级内存；仅用户改动后落盘） |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |
@@ -536,8 +545,7 @@ Bento Grid 网格布局，自上而下：
 这些是源码中实际存在的"实现与文案不一致"，生成/评审需求文档时应作为已确认的现状：
 
 1. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
-2. **根路径 404**：访问 `/` 显示 404，首页实际在 `/index.html`；导航 Logo 点击会落到 404。
-3. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
+2. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
 
 ## 6. 基线对比使用方式
 
