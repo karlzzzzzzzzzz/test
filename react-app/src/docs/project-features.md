@@ -1,13 +1,13 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-10-29 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-10-30 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十一大功能模块。
 
 ### 1.2 技术栈
 
@@ -35,6 +35,8 @@ react-app/src/
 │   ├── Tetris.jsx / .css        # 俄罗斯方块页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Snake.jsx / .css         # 贪吃蛇页面壳（UI + 状态 + Canvas 2D 渲染）
 │   ├── Breakout.jsx / .css      # 打砖块页面壳（UI + 状态 + Canvas 2D 渲染）
+│   ├── Memory.jsx / .css       # 记忆翻牌页面壳（语义化 DOM + roving tabindex + 触控）
+│   ├── Whack.jsx / .css         # 打地鼠页面壳（DOM 3×3 洞位 + 方向键无障碍 + 触控）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -47,7 +49,8 @@ react-app/src/
 │   ├── Game2048Engine.js         # 2048 引擎（纯逻辑：滑动/合并/撤销/持久化）
 │   ├── TetrisEngine.js           # 俄罗斯方块引擎（位运算核心：10bit 行棋盘 + 16bit 方块查表）
 │   ├── SnakeEngine.js            # 贪吃蛇引擎（纯逻辑：固定节拍 + 容量 2 方向输入缓冲队列）
-│   └── BreakoutEngine.js         # 打砖块引擎（纯逻辑：1/240s 固定步长物理 + 关卡布局 + 持久化）
+│   ├── BreakoutEngine.js         # 打砖块引擎（纯逻辑：1/240s 固定步长物理 + 关卡布局 + 持久化）
+│   └── WhackEngine.js            # 打地鼠引擎（纯逻辑：结束时间戳计时 + 出鼠节奏 + 连击 + 统计持久化）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -75,6 +78,7 @@ react-app/src/
 | `/snake` | Snake 贪吃蛇 | **lazy 懒加载**（输入缓冲引擎 + Canvas 2D，独立分包） |
 | `/breakout` | Breakout 打砖块 | **lazy 懒加载**（固定步长物理引擎 + Canvas 2D，独立分包） |
 | `/memory` | Memory 记忆翻牌 | **lazy 懒加载**（纯 DOM + 无障碍，独立分包） |
+| `/whack` | Whack 打地鼠 | **lazy 懒加载**（纯 DOM + 键盘无障碍，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -110,8 +114,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：9 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 9 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-10-26 由 3 修正为 9，与作品入口卡片数对齐）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：10 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 10 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-10-26 由 3 修正为 9，2026-10-30 由 9 修正为 10，与作品入口卡片数对齐）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -515,6 +519,46 @@ Bento Grid 网格布局，自上而下：
 - **无障碍**：灯箱/链接/图集按钮统一 `:focus-visible` 紫色焦点环（2px #aa3bff）；图集按钮带 `aria-label`。
 - **移动端响应式**（2026-10-26 强化）：断点对齐统一三级体系；行程卡 <1024 改单列；<768 hero padding 32px 20px、标题 30px、交通住宿改单列、hero kicker 字距收紧 3px、禁用卡片 hover 位移；<480 hero 标题 26px、卡片 padding 16px 14px、标签 pill 缩小。景点/美食/图集三个 auto-fill 网格改用 `minmax(min(100%, N), 1fr)`，≤340px 窄屏不再横向溢出。灯箱移动端适配：新增 ‹ › 左右切换按钮（44×56 触控目标、safe-area 内边距）、水平滑动手势切换（位移 >50px 且水平占优）、`overscroll-behavior:contain` 防滚动穿透、说明文字避开按钮区。交互元素统一 `-webkit-tap-highlight-color: transparent`；`prefers-reduced-motion` 禁用 hover 位移。
 
+### 3.13 打地鼠（/whack，2026-10-30 新增）
+
+#### 3.13.1 架构
+
+- 页面壳 `Whack.jsx` 管理 UI 四态状态机（ready / playing（含 1000ms 准备期）/ paused / over）与 HUD；引擎 `WhackEngine.js` 纯逻辑（不依赖 React / DOM / Canvas），通过回调（onState / onFeedback / onGameOver / onPause / onPersistError）与 UI 通信；组件卸载时 `engine.dispose()` 清理定时器并落盘统计。架构模式参照记忆翻牌 3.11.1。
+- 渲染：3×3 共 9 个洞位为**语义化 DOM**（不用 Canvas，保证读屏可解释），地鼠节点在洞位内切换显隐，不增删 DOM。
+
+#### 3.13.2 玩法规则
+
+- **洞位**：3 行 × 3 列，共 9 个。
+- **单局时长**：固定 30 秒；开局先有 1000ms 准备期（出「准备…」遮罩、不出鼠、点击全部忽略且不计 miss）。
+- **出鼠节奏**：准备期后首个地鼠延迟 300ms；可见窗口初始 600ms，每经过 5s 递减 50ms，下限 350ms；地鼠消失后空窗 250ms；随机洞位且不与上一只同洞。
+- **金鼠**：出现概率 10%，命中 +30 分（普通鼠 +10 分）。
+- **连击**：相邻命中间隔 ≤1200ms 计入连击；连击 ≥4 时每次命中额外 +5 分（单次最高 35 分 = 金鼠 30 + 加成 5）；击空或断档 >1200ms 连击归零。
+- **击空与忽略**：点按无鼠洞位记 miss +1、不计分、连击归零；地鼠被命中或自然消失后，同一洞位 800ms 内点击一律忽略（不重复计分、不计 miss）。
+- **得分与结算**：时间归零进入 over，展示得分、最佳分、命中率（`hits/(hits+misses)`，分母 0 显示 0%）、最高连击；得分超过历史最佳时标记「新纪录！」并覆盖最佳分。本页不接排行榜（避免第二个存储键）。
+
+#### 3.13.3 计时与暂停
+
+- 计时基于结束时间戳（`startedAt + 30000`）驱动，100ms 轮询刷新剩余时间（显示 1 位小数），不使用 setInterval 累减，切后台恢复不跳秒。
+- 暂停：`visibilitychange`（切后台）与 `window.blur`（失焦）双触发 + `pausedByVisibilityRef` 去重（对齐 3.3.6）；手动暂停同路径，`pause()` 幂等且仅 playing 生效；暂停冻结剩余时间与地鼠可见窗口，落盘统计。
+- 恢复：手动点击「继续游戏」，重置时钟基准（`endAt = now + remainingMs`）、重建地鼠剩余窗口，并给 300ms 无输入缓冲（缓冲期点击忽略）；`document.hidden` 时页面拒绝恢复。
+
+#### 3.13.4 键盘与无障碍
+
+- 棋盘 `role="grid"` / 行 `role="row"` / 洞位 `role="gridcell"` + 内层 `<button>`，roving tabindex（仅焦点洞位 `tabIndex=0`）。
+- ↑↓←→ 按行列移动焦点、Home/End 跳行首/行尾、首末不环绕；Enter/Space 由按钮原生触发 click，与点按语义一致；`:focus-visible` 2px #aa3bff 焦点环。
+- `aria-live="polite"` 播报命中分数（含连击数）与击空；剩余时间 `role="timer" aria-live="off"` 避免每秒打断读屏；洞位 `aria-label` 为「第 R 行第 C 列，地鼠 / 金鼠 / 空洞」。
+
+#### 3.13.5 移动端与断点
+
+- 棋盘 `min(92vw, 420px)`；<768 `min(94vw, 380px)`、HUD 字号降档；<480 宽 `min(92vw, 340px)`、HUD 纵向压缩、结算信息改 2 列；洞位最小 44×44px 触控区。
+- 棋盘 `touch-action: manipulation` 关闭 iOS 双击缩放、`user-select: none` 关闭长按菜单；`.wh-page` `overflow-x: hidden` 兜底；`prefers-reduced-motion` 禁用出鼠弹跳与浮动数字上移动画（浮动数字改为纯淡出）。
+
+#### 3.13.6 统计持久化（约束卡② 对应实现）
+
+- **存储键 `game-whack-stats-v1`**：`{ v:1, starts, hits, misses, games, best, maxCombo, ts }`，各计数 0~99999 封顶，`best` 单调递增。
+- 写入策略：脏标记延迟持久化，在开局 / 结算 / 暂停 / `pagehide` / 卸载时落盘，运行中 30s 兜底写一次（不在每次命中同步写）。
+- 容错：`v` 不符或 JSON 损坏 → 清旧值回退零值；`QuotaExceededError` 或 localStorage 不可用 → `storageOk=false` + 页面顶部红色提示条「战绩仅本次会话有效（本地存储不可用）」，游戏不中断。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -529,6 +573,7 @@ Bento Grid 网格布局，自上而下：
 | `game-breakout-state` | localStorage | 打砖块局中快照（`{ v:1, level, score, lives, bricks, won, ts }`；版本校验、7 天 TTL 自动清理、>4000B 丢弃、配额满降级内存；5s 兜底写入） |
 | `game-breakout-touch-starts` | localStorage | 打砖块触摸操作启动累计次数（0~99999 封顶，每局 1 次） |
 | `game-memory-leaderboard-v1` | localStorage | 记忆翻牌排行榜记录（≤50 条，`createLeaderboard` 参数化绑定，结构对齐 `game-leaderboard-v1`） |
+| `game-whack-stats-v1` | localStorage | 打地鼠行为统计与最佳分（`{ v:1, starts, hits, misses, games, best, maxCombo, ts }`；计数 0~99999 封顶，`best` 单调递增；版本不符/损坏回退清零；配额满降级内存 + 顶部提示条；30s 兜底写入） |
 | `pomo-completed` | localStorage | 番茄钟累计完成数 |
 | `home-entry-clicks` | localStorage | 首页各作品入口点击次数（JSON，轻量行为统计，0~99999 封顶） |
 | `game-touch-starts` | localStorage | 飞机大战触摸操作启动累计次数（0~99999 封顶，每局1次） |

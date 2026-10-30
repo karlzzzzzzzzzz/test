@@ -25,7 +25,7 @@ function About() {
           <p>React 应用的声明式路由库，支持嵌套路由与动态参数。</p>
         </div>
       </div>
-      <Link to="/index.html" className="cta-link">
+      <Link to="/" className="cta-link">
         ← 返回首页
       </Link>
     </section>

@@ -415,7 +415,7 @@ function TetrisPage() {
     <div className="tetris-page">
       {/* 顶部 HUD */}
       <div className="tetris-hud">
-        <Link to="/index.html" className="tetris-back">
+        <Link to="/" className="tetris-back">
           ← 返回首页
         </Link>
         <div className="tetris-scores">
@@ -504,7 +504,7 @@ function TetrisPage() {
             <button type="button" className="tetris-btn" onClick={handleResume}>
               继续游戏
             </button>
-            <Link to="/index.html" className="tetris-home-link">
+            <Link to="/" className="tetris-home-link">
               返回首页
             </Link>
           </div>
@@ -549,7 +549,7 @@ function TetrisPage() {
               <button type="button" className="tetris-btn" onClick={handleStart}>
                 再来一局
               </button>
-              <Link to="/index.html" className="tetris-home-link">
+              <Link to="/" className="tetris-home-link">
                 返回首页
               </Link>
             </div>

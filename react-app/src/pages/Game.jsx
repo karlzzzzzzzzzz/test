@@ -552,7 +552,7 @@ function Game() {
 
       {/* 顶部 HUD */}
       <div className="game-hud">
-        <Link to="/index.html" className="game-back">
+        <Link to="/" className="game-back">
           ← 返回首页
         </Link>
         <div className="game-score">得分：{score}</div>
@@ -761,7 +761,7 @@ function Game() {
               >
                 重新开始
               </button>
-              <Link to="/index.html" className="game-home-link">
+              <Link to="/" className="game-home-link">
                 返回首页
               </Link>
             </div>
@@ -820,7 +820,7 @@ function Game() {
               <button type="button" className="game-btn" onClick={handleStart}>
                 再来一局
               </button>
-              <Link to="/index.html" className="game-home-link">
+              <Link to="/" className="game-home-link">
                 返回首页
               </Link>
             </div>

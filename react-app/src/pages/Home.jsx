@@ -105,6 +105,16 @@ const ENTRIES = [
     practice: '引擎与页面壳解耦 + Fisher–Yates 洗牌 + 800ms 翻回锁定窗口；棋盘 role=grid + roving tabindex，方向键导航 + Enter/Space 翻牌，aria-live polite 播报配对结果。',
     footer: { meta: ['2026-10-26', '4 min'], link: '开始挑战' },
   },
+  {
+    title: '打地鼠',
+    techTags: ['DOM', 'React Hooks', 'A11y'],
+    keywords: ['Whack', '地鼠', '连击', '30秒', '点按', '街机'],
+    to: '/whack',
+    span: '3',
+    desc: '30 秒限时打地鼠：3×3 洞位随机出鼠，金鼠翻倍，连击 4 次起额外加分',
+    practice: '纯 DOM 实现（不用 Canvas，读屏可解释）：结束时间戳驱动倒计时，切后台冻结；棋盘 role=grid + roving tabindex，方向键导航 + Enter/Space 敲击；统计与最佳分脏标记延迟落盘。',
+    footer: { meta: ['2026-10-30', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
@@ -390,7 +400,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={9} />
+            <AnimatedNumber value={10} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />

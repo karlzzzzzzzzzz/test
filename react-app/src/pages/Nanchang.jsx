@@ -100,7 +100,7 @@ function Nanchang() {
   return (
     <div className="nc-page">
       <div className="nc-top">
-        <Link to="/index.html" className="nc-back">← 返回首页</Link>
+        <Link to="/" className="nc-back">← 返回首页</Link>
       </div>
 
       <header className="nc-hero">

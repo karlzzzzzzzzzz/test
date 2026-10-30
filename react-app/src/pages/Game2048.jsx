@@ -171,7 +171,7 @@ function Game2048Page() {
     <div className="g2048-page">
       {/* 顶部 HUD */}
       <div className="g2048-hud">
-        <Link to="/index.html" className="g2048-back">
+        <Link to="/" className="g2048-back">
           ← 返回首页
         </Link>
         <div className="g2048-scores">
@@ -307,7 +307,7 @@ function Game2048Page() {
               <button type="button" className="g2048-btn" onClick={handleResume}>
                 继续游戏
               </button>
-              <Link to="/index.html" className="g2048-home-link">
+              <Link to="/" className="g2048-home-link">
                 返回首页
               </Link>
             </div>
@@ -340,7 +340,7 @@ function Game2048Page() {
               <button type="button" className="g2048-btn" onClick={handleReset}>
                 再来一局
               </button>
-              <Link to="/index.html" className="g2048-home-link">
+              <Link to="/" className="g2048-home-link">
                 返回首页
               </Link>
             </div>

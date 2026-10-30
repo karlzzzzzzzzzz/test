@@ -307,7 +307,7 @@ function SnakePage() {
     <div className="snake-page">
       {/* 顶部 HUD */}
       <div className="snake-hud">
-        <Link to="/index.html" className="snake-back">
+        <Link to="/" className="snake-back">
           ← 返回首页
         </Link>
         <div className="snake-scores">
@@ -390,7 +390,7 @@ function SnakePage() {
             <button type="button" className="snake-btn" onClick={handleResume}>
               继续游戏
             </button>
-            <Link to="/index.html" className="snake-home-link">
+            <Link to="/" className="snake-home-link">
               返回首页
             </Link>
           </div>
@@ -437,7 +437,7 @@ function SnakePage() {
               <button type="button" className="snake-btn" onClick={handleStart}>
                 再来一局
               </button>
-              <Link to="/index.html" className="snake-home-link">
+              <Link to="/" className="snake-home-link">
                 返回首页
               </Link>
             </div>

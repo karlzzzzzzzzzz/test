@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import About from './pages/About'
@@ -20,6 +20,8 @@ const Snake = lazy(() => import('./pages/Snake'))
 const Breakout = lazy(() => import('./pages/Breakout'))
 // 记忆翻牌（纯 DOM + 无障碍 + 触控），按需加载（独立分包）
 const Memory = lazy(() => import('./pages/Memory'))
+// 打地鼠（纯 DOM + 键盘无障碍 + 触控），按需加载（独立分包）
+const Whack = lazy(() => import('./pages/Whack'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -30,10 +32,10 @@ const pageLoading = <div className="game-loading">加载中…</div>
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Navbar />
       <Routes>
-        <Route path="/index.html" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/resume" element={<Resume />} />
         <Route path="/pomodoro" element={<Pomodoro />} />
@@ -86,6 +88,14 @@ function App() {
           }
         />
         <Route
+          path="/whack"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Whack />
+            </Suspense>
+          }
+        />
+        <Route
           path="/nanchang"
           element={
             <Suspense fallback={pageLoading}>
@@ -111,7 +121,7 @@ function App() {
         />
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

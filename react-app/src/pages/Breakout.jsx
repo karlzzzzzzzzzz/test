@@ -464,7 +464,7 @@ function BreakoutPage() {
 
       {/* 顶部 HUD */}
       <div className="breakout-hud">
-        <Link to="/index.html" className="breakout-back">
+        <Link to="/" className="breakout-back">
           ← 返回首页
         </Link>
         <div className="breakout-scores" aria-live="polite">
@@ -569,7 +569,7 @@ function BreakoutPage() {
             <button type="button" className="breakout-btn" onClick={handleResume}>
               继续游戏
             </button>
-            <Link to="/index.html" className="breakout-home-link">
+            <Link to="/" className="breakout-home-link">
               返回首页
             </Link>
           </div>
@@ -592,7 +592,7 @@ function BreakoutPage() {
             >
               重新开始
             </button>
-            <Link to="/index.html" className="breakout-home-link">
+            <Link to="/" className="breakout-home-link">
               返回首页
             </Link>
           </div>
@@ -637,7 +637,7 @@ function BreakoutPage() {
               <button type="button" className="breakout-btn" onClick={handleStart}>
                 再来一局
               </button>
-              <Link to="/index.html" className="breakout-home-link">
+              <Link to="/" className="breakout-home-link">
                 返回首页
               </Link>
             </div>

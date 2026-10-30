@@ -232,13 +232,13 @@ function MemoryPage() {
   }
   const handleBackHome = () => {
     engineRef.current?.pause()
-    window.location.href = '/index.html'
+    window.location.href = '/'
   }
 
   return (
     <div className="mem-page" role="application" aria-label="记忆翻牌小游戏">
       <header className="mem-top">
-        <Link to="/index.html" className="mem-back" onClick={handleBackHome} aria-label="返回首页">← 首页</Link>
+        <Link to="/" className="mem-back" onClick={handleBackHome} aria-label="返回首页">← 首页</Link>
         <h1 className="mem-title">记忆翻牌</h1>
         {screen !== 'start' && (
           <button type="button" className="mem-pause-btn" onClick={screen === 'paused' ? handleResume : handlePause}
