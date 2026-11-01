@@ -115,6 +115,16 @@ const ENTRIES = [
     practice: '纯 DOM 实现（不用 Canvas，读屏可解释）：结束时间戳驱动倒计时，切后台冻结；棋盘 role=grid + roving tabindex，方向键导航 + Enter/Space 敲击；统计与最佳分脏标记延迟落盘。',
     footer: { meta: ['2026-10-30', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '数字华容道',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['Puzzle', '华容道', '滑块', '触控', '计时', '益智'],
+    to: '/puzzle',
+    span: '3',
+    desc: '3×3 数字滑块拼图：点按空格相邻方块或滑动换位，排好 1~8 记录步数与用时',
+    practice: '打乱从完成态随机合法移动 80 次保证可解，禁止即时反向撤回；计时首次有效移动启动、Date.now 双字段驱动，切后台冻结不跳秒；本页不写任何存储键。',
+    footer: { meta: ['2026-11-01', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
@@ -400,7 +410,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={10} />
+            <AnimatedNumber value={11} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />

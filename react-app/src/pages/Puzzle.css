@@ -1,0 +1,295 @@
+/* ===========================================================
+ * 数字华容道页面样式 —— 约束卡① 移动端兼容（触控与窄屏）
+ * =========================================================== */
+
+.pz-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  min-height: 100vh;
+  font-family: inherit;
+  color: var(--home-text, #e6e9f2);
+  background: radial-gradient(ellipse at 50% 0%, rgba(150, 110, 255, 0.18) 0%, transparent 60%) #0a0e1c;
+  overflow-x: hidden; /* 窄屏兜底，不横向滚动 */
+}
+
+/* ---- 顶部 ---- */
+.pz-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.pz-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.pz-back {
+  color: var(--home-text-dim, #a9b0c5);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.pz-back:hover { background: rgba(255, 255, 255, 0.1); color: var(--home-text, #e6e9f2); }
+.pz-pause-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--home-text, #e6e9f2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.pz-pause-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* ---- HUD ---- */
+.pz-hud {
+  display: flex;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.pz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 72px;
+  flex: 1;
+}
+.pz-stat-label {
+  font-size: 0.72rem;
+  color: var(--home-text-dim, #a9b0c5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pz-stat-val {
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pz-timer { font-feature-settings: 'tnum'; }
+
+/* aria-live 播报区（视觉隐藏，仅读屏） */
+.pz-live-region {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+/* ---- 棋盘 ---- */
+.pz-board-wrap {
+  display: flex;
+  justify-content: center;
+}
+.pz-board {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  width: min(92vw, 420px);
+  touch-action: none; /* 滑动换位时不滚动 / 不缩放页面 */
+  user-select: none; /* 关闭长按菜单 */
+}
+.pz-locked { pointer-events: none; }
+
+.pz-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.pz-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-width: 44px; /* 触控区 ≥44×44 */
+  min-height: 44px;
+}
+.pz-tile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(160deg, #f4f5ff 0%, #d9dcf2 100%);
+  color: #1c1e2b;
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.pz-tile:hover { box-shadow: 0 4px 14px rgba(170, 59, 255, 0.35); }
+.pz-tile:active { transform: scale(0.97); }
+.pz-tile-moved { animation: pz-pop 180ms ease-out; }
+.pz-blank {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 2px dashed rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* 全部归位：棋盘整体绿色描边，保持到「再来一局」 */
+.pz-board-done {
+  border-color: #16a34a;
+  box-shadow: 0 0 18px rgba(22, 163, 74, 0.35);
+}
+
+.pz-hint {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--home-text-dim, #a9b0c5);
+}
+
+/* 焦点环统一 2px #aa3bff，不用 border-radius 覆盖元素圆角 */
+.pz-tile:focus-visible,
+.pz-back:focus-visible,
+.pz-pause-btn:focus-visible,
+.pz-btn:focus-visible,
+.pz-btn-primary:focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* ---- 遮罩 ---- */
+.pz-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 18, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+.pz-overlay-card {
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(58, 40, 92, 0.95) 0%, rgba(15, 15, 30, 0.95) 100%);
+  border: 1px solid rgba(170, 59, 255, 0.32);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.pz-overlay-card h2 { margin: 0 0 12px; font-size: 1.4rem; }
+.pz-overlay-card p { margin: 0 0 12px; color: #c9c4d6; font-size: 0.95rem; line-height: 1.55; }
+.pz-overlay-hint { font-size: 0.85rem !important; color: #8a91a8 !important; }
+.pz-best { color: #d7dbe9 !important; }
+.pz-best strong { color: #d0a2ff; }
+.pz-record { color: #ffd75e !important; font-weight: 600; }
+
+.pz-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+.pz-btn, .pz-btn-primary {
+  padding: 11px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.pz-btn {
+  background: transparent;
+  color: var(--home-text, #e6e9f2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.pz-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.pz-btn-primary {
+  background: linear-gradient(135deg, #c084ff 0%, #8d3bff 100%);
+  color: #12081f;
+  border: 1px solid rgba(192, 132, 255, 0.7);
+  font-weight: 700;
+}
+.pz-btn-primary:hover { transform: translateY(-1px); }
+
+/* ---- 结算 ---- */
+.pz-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+.pz-summary > div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pz-summary span { font-size: 0.7rem; color: #8a91a8; text-transform: uppercase; letter-spacing: 0.05em; }
+.pz-summary strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+@keyframes pz-pop {
+  from { transform: scale(0.94); }
+  to { transform: scale(1); }
+}
+
+/* ---- 移动端断点（<768 / <480） ---- */
+@media (max-width: 767px) {
+  .pz-page { padding: 16px 14px 48px; }
+  .pz-title { font-size: 1.15rem; }
+  .pz-hud { gap: 12px; padding: 12px 14px; }
+  .pz-stat-val { font-size: 1.05rem; }
+  .pz-board { width: min(94vw, 380px); gap: 10px; padding: 12px; }
+  .pz-row { gap: 10px; }
+}
+@media (max-width: 479px) {
+  .pz-page { padding: 14px 12px 32px; }
+  .pz-title { font-size: 1.05rem; }
+  .pz-back { font-size: 13px; padding: 7px 10px; }
+  .pz-hud { gap: 8px; padding: 10px 12px; }
+  .pz-stat { min-width: 58px; }
+  .pz-stat-val { font-size: 0.95rem; }
+  .pz-board { width: min(92vw, 340px); gap: 8px; padding: 10px; }
+  .pz-row { gap: 8px; }
+  .pz-tile { font-size: 1.35rem; }
+  .pz-summary { grid-template-columns: repeat(3, 1fr); }
+  .pz-overlay-card { padding: 22px 18px; }
+  .pz-overlay-card h2 { font-size: 1.25rem; }
+  .pz-btns { flex-direction: column; }
+  .pz-btn, .pz-btn-primary { width: 100%; justify-content: center; }
+}
+
+/* ---- prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .pz-tile-moved { animation: none !important; }
+  .pz-tile, .pz-btn, .pz-btn-primary { transition: none !important; }
+  .pz-btn-primary:hover { transform: none !important; }
+}
