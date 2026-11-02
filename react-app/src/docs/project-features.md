@@ -1,6 +1,6 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-01 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-02 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
@@ -139,6 +139,12 @@ Bento Grid 网格布局，自上而下：
 - 天气代码：WMO 标准码映射为中文描述 + 白天/夜间两套 emoji 图标，未知码显示"未知 🌡️"。
 - 刷新：每 10 分钟自动刷新；右上角 ↻ 按钮手动刷新（**30s 节流**，节流命中时 title 提示"刷新过于频繁，请稍后再试"；节流时间戳为模块级变量，页面刷新即重置）。
 - 状态：loading 骨架屏 / error 显示"天气获取失败 + 重试按钮" / 成功展示数据；卸载时通过 mountedRef 防止内存泄漏 setState。
+- **移动端适配检测（2026-11-02 新增）**：`Weather` 组件内 `useAdaptiveProbe()` 只读检测，不改数据流——
+  - 视口按 ≥1024 / 768~1023 / 480~767 / <480 映射 `data-adapt-tier`（desktop/tablet/mobile/compact），`ResizeObserver` 记录卡片实测宽度到 `data-adapt-width`，变化后 300ms 防抖检测。
+  - 检查页面横向滚动（`documentElement.scrollWidth - clientWidth > 2px`）与 `.weather-body` / `.weather-meta` / `.weather-place` / `.weather-error` 越过卡片内边距（容差 2px），异常需间隔 200ms 两次复检确认，结果写入 `data-adapt-overflow`。
+  - 确认溢出时卡片底部渲染「适配异常：N 处横向溢出」+「重新检测」按钮（跳过防抖）；提示行 `role="status" aria-live="polite"`，按钮 `aria-label="重新检测天气卡片移动端适配"`、`:focus-visible` 2px #aa3bff 焦点环。
+  - 状态变化派发 `weather:adapt:report` 自定义事件（`{ viewportTier, viewportWidth, cardWidth, overflowCount, clippedElements, observer, ts }`），签名去重 + 500ms 节流；`window.__weatherAdaptStats` 内存级计数（count / lastTier / lastOverflowCount / lastTs / observer），不写 localStorage。
+  - `ResizeObserver` 不可用时降级 `window.resize` 监听并标记 `observer:false`；卡片宽度 <100px（隐藏态）时跳过检测；loading 态不做溢出判定，加载结束 200ms 后补一次完整检测。
 
 #### 3.1.3 拖拽列表（DragList）
 

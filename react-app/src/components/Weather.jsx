@@ -57,6 +57,242 @@ function describeWeather(code, isDay) {
   return { desc, icon: isDay ? dayIcon : nightIcon }
 }
 
+// ===== 移动端适配检测 =====
+// 断点对齐首页统一体系：≥1024 / 768~1023 / 480~767 / <480
+const ADAPT_DESKTOP_MIN = 1024
+const ADAPT_TABLET_MIN = 768
+const ADAPT_MOBILE_MIN = 480
+const ADAPT_TOLERANCE = 2 // 取整与亚像素容差
+const ADAPT_DEBOUNCE = 300
+const ADAPT_RECHECK_DELAY = 200
+const ADAPT_REPORT_THROTTLE = 500
+const ADAPT_HIDDEN_WIDTH = 100
+const ADAPT_PADDING_X = 24 // 与 .bento-weather 左右 padding 一致
+const ADAPT_WATCHED = ['.weather-body', '.weather-meta', '.weather-place', '.weather-error']
+
+function getAdaptTier(viewportWidth) {
+  if (viewportWidth >= ADAPT_DESKTOP_MIN) return 'desktop'
+  if (viewportWidth >= ADAPT_TABLET_MIN) return 'tablet'
+  if (viewportWidth >= ADAPT_MOBILE_MIN) return 'mobile'
+  return 'compact'
+}
+
+// 检查已渲染子元素是否横向溢出卡片（scrollWidth 超出或越过卡片内边距）
+function findClippedElements(card) {
+  const cardRect = card.getBoundingClientRect()
+  const leftLimit = cardRect.left + ADAPT_PADDING_X - ADAPT_TOLERANCE
+  const rightLimit = cardRect.right - ADAPT_PADDING_X + ADAPT_TOLERANCE
+  const clipped = []
+  // 页面级横向滚动：卡片被内容撑宽时自身不会越界，溢出会体现在文档宽度上
+  const docEl = card.ownerDocument.documentElement
+  if (docEl.scrollWidth - docEl.clientWidth > ADAPT_TOLERANCE) clipped.push('page')
+  ADAPT_WATCHED.forEach((selector) => {
+    const el = card.querySelector(selector)
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const scrollOverflow = el.scrollWidth - el.clientWidth
+    if (
+      scrollOverflow > ADAPT_TOLERANCE ||
+      rect.right > rightLimit ||
+      rect.left < leftLimit
+    ) {
+      clipped.push(selector.slice(1))
+    }
+  })
+  return clipped
+}
+
+/**
+ * 适配检测 hook：视口断点 + 卡片实测宽度 + 子元素溢出检测
+ * - 尺寸变化 300ms 防抖；异常需间隔 200ms 两次确认
+ * - 状态变化通过 data-adapt-* 落到卡片根节点，并派发 weather:adapt:report 埋点
+ * - 只读 DOM 尺寸，不发请求、不写存储
+ */
+function useAdaptiveProbe(cardRef, status) {
+  const [tier, setTier] = useState(() => getAdaptTier(window.innerWidth))
+  const [cardWidth, setCardWidth] = useState(0)
+  const [overflowCount, setOverflowCount] = useState(0)
+
+  const statusRef = useRef(status)
+  const mountedRef = useRef(true)
+  const observerModeRef = useRef(true)
+  const checkTimerRef = useRef(null)
+  const recheckTimerRef = useRef(null)
+  const reportTimerRef = useRef(null)
+  const pendingResultRef = useRef(null)
+  const pendingReportRef = useRef(null)
+  const lastReportAtRef = useRef(0)
+  const lastSignatureRef = useRef('')
+
+  // 派发埋点：签名去重 + 500ms 节流（节流期内保留最后一次状态）
+  const flushReport = useCallback(() => {
+    reportTimerRef.current = null
+    const entry = pendingReportRef.current
+    pendingReportRef.current = null
+    if (!entry || !mountedRef.current) return
+    if (entry.signature === lastSignatureRef.current) return
+    lastSignatureRef.current = entry.signature
+    lastReportAtRef.current = Date.now()
+    window.dispatchEvent(new CustomEvent('weather:adapt:report', { detail: entry.payload }))
+    const prev = window.__weatherAdaptStats || {}
+    window.__weatherAdaptStats = {
+      count: Math.min(99999, (Number(prev.count) || 0) + 1),
+      lastTier: entry.payload.viewportTier,
+      lastOverflowCount: entry.payload.overflowCount,
+      lastTs: entry.payload.ts,
+      observer: entry.payload.observer,
+    }
+  }, [])
+
+  const enqueueReport = useCallback((result) => {
+    const signature = `${result.tier}|${result.clipped.length}|${result.clipped.join(',')}`
+    if (signature === lastSignatureRef.current) return
+    pendingReportRef.current = {
+      signature,
+      payload: {
+        viewportTier: result.tier,
+        viewportWidth: window.innerWidth,
+        cardWidth: result.width,
+        overflowCount: result.clipped.length,
+        clippedElements: result.clipped.slice(0, 4),
+        observer: observerModeRef.current,
+        ts: Date.now(),
+      },
+    }
+    if (reportTimerRef.current) return
+    const delay = Math.max(0, ADAPT_REPORT_THROTTLE - (Date.now() - lastReportAtRef.current))
+    if (delay === 0) flushReport()
+    else reportTimerRef.current = setTimeout(flushReport, delay)
+  }, [flushReport])
+
+  const applyResult = useCallback((result) => {
+    if (!mountedRef.current) return
+    setTier(result.tier)
+    setCardWidth(result.width)
+    setOverflowCount(result.clipped.length)
+    enqueueReport(result)
+  }, [enqueueReport])
+
+  const runCheck = useCallback(() => {
+    const card = cardRef.current
+    if (!card) return
+    const rect = card.getBoundingClientRect()
+    if (rect.width < ADAPT_HIDDEN_WIDTH) {
+      // 卡片隐藏 / 未完成布局：跳过本轮，保留上次状态
+      clearTimeout(recheckTimerRef.current)
+      recheckTimerRef.current = null
+      pendingResultRef.current = null
+      return
+    }
+
+    const result = {
+      tier: getAdaptTier(window.innerWidth),
+      width: Math.round(rect.width),
+      clipped: statusRef.current === 'loading' ? [] : findClippedElements(card),
+    }
+
+    if (!result.clipped.length) {
+      // 一次正常检测即恢复，清除待确认异常
+      clearTimeout(recheckTimerRef.current)
+      recheckTimerRef.current = null
+      pendingResultRef.current = null
+      applyResult(result)
+      return
+    }
+
+    // 首次异常：200ms 后复检，两次均异常才确认
+    pendingResultRef.current = result
+    clearTimeout(recheckTimerRef.current)
+    recheckTimerRef.current = setTimeout(() => {
+      recheckTimerRef.current = null
+      const cardNow = cardRef.current
+      if (!cardNow || !mountedRef.current) return
+      const rectNow = cardNow.getBoundingClientRect()
+      if (rectNow.width < ADAPT_HIDDEN_WIDTH) return
+      pendingResultRef.current = null
+      applyResult({
+        tier: getAdaptTier(window.innerWidth),
+        width: Math.round(rectNow.width),
+        clipped: statusRef.current === 'loading' ? [] : findClippedElements(cardNow),
+      })
+    }, ADAPT_RECHECK_DELAY)
+  }, [applyResult, cardRef])
+
+  const scheduleCheck = useCallback(() => {
+    clearTimeout(checkTimerRef.current)
+    checkTimerRef.current = setTimeout(() => {
+      checkTimerRef.current = null
+      runCheck()
+    }, ADAPT_DEBOUNCE)
+  }, [runCheck])
+
+  // 手动重新检测：跳过 300ms 防抖
+  const recheck = useCallback(() => {
+    clearTimeout(checkTimerRef.current)
+    checkTimerRef.current = null
+    runCheck()
+  }, [runCheck])
+
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
+
+  useEffect(() => {
+    mountedRef.current = true
+    const card = cardRef.current
+    if (!card) return
+
+    const supported = 'ResizeObserver' in window
+    observerModeRef.current = supported
+    const prevStats = window.__weatherAdaptStats
+    window.__weatherAdaptStats = {
+      count: Number(prevStats?.count) || 0,
+      lastTier: prevStats?.lastTier ?? null,
+      lastOverflowCount: Number(prevStats?.lastOverflowCount) || 0,
+      lastTs: prevStats?.lastTs ?? 0,
+      observer: supported,
+    }
+
+    let observer = null
+    if (supported) {
+      observer = new ResizeObserver(scheduleCheck)
+      observer.observe(card)
+    }
+    // 视口断点可能先于卡片宽度变化，始终补充窗口 resize 监听
+    window.addEventListener('resize', scheduleCheck)
+    runCheck()
+
+    return () => {
+      mountedRef.current = false
+      if (observer) observer.disconnect()
+      window.removeEventListener('resize', scheduleCheck)
+      clearTimeout(checkTimerRef.current)
+      clearTimeout(recheckTimerRef.current)
+      clearTimeout(reportTimerRef.current)
+      checkTimerRef.current = null
+      recheckTimerRef.current = null
+      reportTimerRef.current = null
+      pendingResultRef.current = null
+      pendingReportRef.current = null
+    }
+  }, [cardRef, runCheck, scheduleCheck])
+
+  // 加载结束（成功或失败）200ms 后补一次完整检测
+  const prevStatusRef = useRef(status)
+  useEffect(() => {
+    const prev = prevStatusRef.current
+    prevStatusRef.current = status
+    if (prev === 'loading' && status !== 'loading') {
+      const timer = setTimeout(() => {
+        if (mountedRef.current) runCheck()
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [status, runCheck])
+
+  return { tier, cardWidth, overflowCount, recheck }
+}
+
 // 获取坐标：浏览器定位 → 拒绝/失败回退默认城市（denied 标记是否为用户拒绝授权）
 function getCoords() {
   return new Promise((resolve) => {
@@ -200,6 +436,8 @@ export function useWeather() {
 
 function Weather({ weather }) {
   const { data, place, status, refreshing, geoDeniedTip, throttleTip, refresh, retryGeo } = weather
+  const cardRef = useRef(null)
+  const { tier, cardWidth, overflowCount, recheck } = useAdaptiveProbe(cardRef, status)
 
   const current = data?.current
   const daily = data?.daily
@@ -208,7 +446,15 @@ function Weather({ weather }) {
     : { desc: '', icon: '🌡️' }
 
   return (
-    <section className="bento-card bento-weather" id="weather-card" tabIndex={-1}>
+    <section
+      ref={cardRef}
+      className="bento-card bento-weather"
+      id="weather-card"
+      tabIndex={-1}
+      data-adapt-tier={tier}
+      data-adapt-width={cardWidth}
+      data-adapt-overflow={overflowCount}
+    >
       <div className="weather-head">
         <p className="weather-title">本地天气</p>
         <button
@@ -293,6 +539,21 @@ function Weather({ weather }) {
             </a>
           </p>
         </>
+      )}
+
+      {/* 适配异常提示：仅在有横向溢出时渲染，重新检测跳过 300ms 防抖 */}
+      {overflowCount > 0 && (
+        <p className="weather-adapt-tip" role="status" aria-live="polite">
+          <span>适配异常：{overflowCount} 处横向溢出</span>
+          <button
+            type="button"
+            className="weather-adapt-retry"
+            onClick={recheck}
+            aria-label="重新检测天气卡片移动端适配"
+          >
+            重新检测
+          </button>
+        </p>
       )}
     </section>
   )
