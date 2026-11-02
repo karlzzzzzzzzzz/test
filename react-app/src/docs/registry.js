@@ -3,6 +3,7 @@
 import promptEngineering from './prompt-engineering.md?raw'
 import projectFeatures from './project-features.md?raw'
 import memoryGame from './memory-game.md?raw'
+import lightsoutGame from './lightsout-game.md?raw'
 
 export const docs = [
   {
@@ -34,6 +35,16 @@ export const docs = [
     tags: ['Game', 'A11y', 'React'],
     readTime: '约 6 分钟',
     content: memoryGame,
+  },
+  {
+    slug: 'lightsout-game',
+    title: '关灯挑战（Lights Out）需求文档与实现说明',
+    summary:
+      '第 12 款小游戏的需求文档：玩法规则、点按翻转与可解性打乱、三档难度与倒计时计分、页面结构与交互、移动端适配与键盘无障碍要求、验收标准，以及最佳记录与埋点的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 8 分钟',
+    content: lightsoutGame,
   },
 ]
 

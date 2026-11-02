@@ -24,6 +24,8 @@ const Memory = lazy(() => import('./pages/Memory'))
 const Whack = lazy(() => import('./pages/Whack'))
 // 数字华容道（纯 DOM + 触控滑动 + 时间戳计时），按需加载（独立分包）
 const Puzzle = lazy(() => import('./pages/Puzzle'))
+// 关灯挑战（纯 DOM + 触控点按 + 可解性打乱），按需加载（独立分包）
+const LightsOut = lazy(() => import('./pages/LightsOut'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -102,6 +104,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Puzzle />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/lightsout"
+          element={
+            <Suspense fallback={pageLoading}>
+              <LightsOut />
             </Suspense>
           }
         />

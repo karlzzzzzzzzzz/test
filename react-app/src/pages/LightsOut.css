@@ -1,0 +1,353 @@
+/* ===========================================================
+ * 关灯挑战页面样式 —— Lights Out（纯 DOM + 触控）
+ * 断点沿用项目三级体系：≥1024 / 768~1023 / <768 / <480
+ * =========================================================== */
+
+.lo-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  min-height: 100svh; /* iOS Safari：避免 100vh 含工具栏导致底部内容被遮挡 */
+  font-family: inherit;
+  color: var(--home-text, #e6e9f2);
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 199, 79, 0.14) 0%, transparent 62%) #0a0e1c;
+  overflow-x: hidden; /* 窄屏兜底，不横向滚动 */
+}
+
+/* ---- 顶部 ---- */
+.lo-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.lo-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.lo-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px; /* 触控热区 ≥40px */
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--home-text-dim, #a9b0c5);
+  text-decoration: none;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.lo-back:hover { background: rgba(255, 255, 255, 0.1); color: var(--home-text, #e6e9f2); }
+.lo-pause-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--home-text, #e6e9f2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.lo-pause-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* ---- HUD ---- */
+.lo-hud {
+  display: flex;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.lo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.lo-stat-label {
+  font-size: 0.75rem;
+  color: var(--home-text-dim, #a9b0c5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.lo-stat-val {
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.lo-timer { font-feature-settings: 'tnum'; }
+
+/* aria-live 播报区（视觉隐藏，仅读屏） */
+.lo-live-region {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+/* ---- 棋盘 ---- */
+.lo-board-wrap {
+  display: flex;
+  justify-content: center;
+  touch-action: manipulation; /* 关闭 iOS 双击缩放 */
+  user-select: none; /* 关闭长按菜单 */
+}
+.lo-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  /* 宽度跟随容器 + 上限，不用 vw：vw 会与页面 min-content 互相推高造成横向溢出 */
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box; /* 宽度含 padding/border */
+}
+.lo-row {
+  display: grid;
+  /* 轨道用 minmax(0,1fr)，避免 6 列在 320px 下被内容 min-content 撑破 */
+  grid-template-columns: repeat(var(--lo-cols, 4), minmax(0, 1fr));
+  gap: 8px;
+}
+.lo-cell {
+  position: relative;
+  min-width: 0;
+}
+
+/* 格子：亮/灭两态；最小热区 40×40 */
+.lo-tile {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #121829;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+/* 亮灯：暖金 + 光晕 */
+.lo-tile-on {
+  border-color: rgba(255, 210, 120, 0.65);
+  background: radial-gradient(circle at 35% 30%, #fff8de 0%, #ffd75e 45%, #e08b1f 100%);
+  box-shadow: 0 0 14px rgba(255, 199, 79, 0.55), 0 0 34px rgba(255, 170, 40, 0.22);
+}
+.lo-tile:active { transform: scale(0.96); }
+.lo-lamp {
+  width: 34%;
+  height: 34%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.18s ease;
+}
+.lo-tile-on .lo-lamp { background: rgba(120, 70, 10, 0.35); }
+
+/* ---- 底部动作区 ---- */
+.lo-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+.lo-btn, .lo-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px; /* 触控热区 */
+  padding: 11px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+  text-decoration: none;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.lo-btn {
+  background: transparent;
+  color: var(--home-text, #e6e9f2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.lo-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); }
+.lo-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.lo-btn-primary {
+  background: linear-gradient(135deg, #ffd75e 0%, #e08b1f 100%);
+  color: #1a1206;
+  border: 1px solid rgba(255, 210, 120, 0.7);
+  font-weight: 700;
+}
+.lo-btn-primary:hover { transform: translateY(-1px); }
+
+.lo-hint {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--home-text-dim, #a9b0c5);
+}
+
+/* 焦点环统一 2px #aa3bff */
+.lo-tile:focus-visible,
+.lo-back:focus-visible,
+.lo-pause-btn:focus-visible,
+.lo-btn:focus-visible,
+.lo-btn-primary:focus-visible,
+.lo-diff-btn:focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* ---- 遮罩 ---- */
+.lo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 18, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+.lo-overlay-card {
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(84, 62, 24, 0.95) 0%, rgba(15, 15, 30, 0.95) 100%);
+  border: 1px solid rgba(255, 199, 79, 0.3);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.lo-overlay-card h2 { margin: 0 0 12px; font-size: 1.4rem; }
+.lo-overlay-card p { margin: 0 0 12px; color: #d6cbb4; font-size: 0.95rem; line-height: 1.55; }
+.lo-overlay-hint { font-size: 0.85rem !important; color: #8a91a8 !important; }
+
+/* 难度选择 */
+.lo-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.lo-diff-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  min-height: 52px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 210, 120, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--home-text, #e6e9f2);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.lo-diff-btn:hover { background: rgba(255, 215, 94, 0.12); border-color: rgba(255, 210, 120, 0.6); }
+.lo-diff-name { font-size: 0.98rem; font-weight: 600; }
+.lo-diff-meta { font-size: 0.75rem; color: #b9b09a; }
+
+/* 结算数据 */
+.lo-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+.lo-summary > div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lo-summary span { font-size: 0.75rem; color: #8a91a8; text-transform: uppercase; letter-spacing: 0.05em; }
+.lo-summary strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+.lo-best { color: #d7dbe9 !important; }
+.lo-best strong { color: #ffd75e; }
+.lo-save-err {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #ff9a9a;
+}
+
+.lo-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.lo-overlay-win { border-color: rgba(255, 210, 120, 0.55); }
+
+/* ---- 移动端断点（<768 / <480） ---- */
+@media (max-width: 767px) {
+  .lo-page { padding: 16px 14px 48px; }
+  .lo-title { font-size: 1.15rem; }
+  .lo-hud { gap: 10px; padding: 12px 14px; }
+  .lo-stat-val { font-size: 1.05rem; }
+  .lo-board { max-width: 380px; gap: 8px; padding: 12px; }
+  .lo-row { gap: 8px; }
+}
+@media (max-width: 479px) {
+  /* 12 + 10 + 6 的取值保证 6×6 在 320px 下格子仍 ≥40px */
+  .lo-page { padding: 14px 12px 32px; }
+  .lo-title { font-size: 1.05rem; }
+  .lo-back { padding: 7px 10px; font-size: 13px; }
+  .lo-pause-btn { padding: 7px 12px; font-size: 13px; }
+  .lo-hud { gap: 8px; padding: 10px 12px; }
+  .lo-stat-val { font-size: 0.95rem; }
+  .lo-board { max-width: 340px; gap: 6px; padding: 10px; }
+  .lo-row { gap: 6px; }
+  .lo-cell .lo-tile { border-radius: 10px; }
+  .lo-actions { flex-direction: column; }
+  .lo-actions .lo-btn { width: 100%; }
+  .lo-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lo-overlay-card { padding: 22px 18px; }
+  .lo-overlay-card h2 { font-size: 1.25rem; }
+  .lo-btns { flex-direction: column; }
+  .lo-btns .lo-btn, .lo-btns .lo-btn-primary { width: 100%; }
+}
+
+/* ---- prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .lo-tile, .lo-lamp, .lo-btn, .lo-btn-primary, .lo-diff-btn { transition: none !important; }
+  .lo-tile:active { transform: none !important; }
+  .lo-btn-primary:hover { transform: none !important; }
+}

@@ -125,6 +125,16 @@ const ENTRIES = [
     practice: '打乱从完成态随机合法移动 80 次保证可解，禁止即时反向撤回；计时首次有效移动启动、Date.now 双字段驱动，切后台冻结不跳秒；本页不写任何存储键。',
     footer: { meta: ['2026-11-01', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '关灯挑战',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['LightsOut', '关灯', '翻转', '解谜', '触控', '逻辑'],
+    to: '/lightsout',
+    span: '3',
+    desc: '点按一格翻转它和上下左右的灯，把所有灯熄灭即过关，4×4 / 5×5 / 6×6 三档限时挑战',
+    practice: '从「全灭」态施加 N 次合法翻转生成棋盘，因此必然可解；限时倒计时由页面 tick 驱动、切后台冻结；撤销回退灯态但不返还步数，每局 3 次；最佳记录与累计埋点脏标记延迟落盘。',
+    footer: { meta: ['2026-11-02', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
@@ -410,7 +420,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={11} />
+            <AnimatedNumber value={12} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />
