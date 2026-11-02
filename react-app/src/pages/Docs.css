@@ -1,6 +1,10 @@
 /* ========== 技术文档中心 ========== */
 .docs-page {
   max-width: 860px;
+  width: 100%;
+  box-sizing: border-box;
+  /* 覆盖 .page 的 align-items: center：否则文档正文按 max-content 撑开，窄屏横向溢出 */
+  align-items: stretch;
   margin: 0 auto;
   padding: 48px 24px 96px;
   text-align: left;

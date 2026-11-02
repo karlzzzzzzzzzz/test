@@ -465,6 +465,7 @@ Bento Grid 网格布局，自上而下：
   - slug 不存在显示"文档未找到"空态 + 返回列表链接。
 - 现有文档：`prompt-engineering`（提示词工程实战手册，2026-09）。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
+- **移动端横向溢出修复（2026-11-02）**：根因是 `.docs-page` 同时继承全局 `.page` 的 `align-items: center`，在 flex 纵向布局下正文按 max-content 宽度撑开（375px 视口下详情页实测宽 863px、横向溢出 504px）。修复为 `.docs-page` 显式 `width: 100%` + `box-sizing: border-box` + `align-items: stretch`，正文宽度跟随 `.docs-page` 上限；超宽表格与代码块改为在自身 `overflow-x: auto` 容器内横向滚动，不再撑破页面。实测 320/360/375/414/480/600/768/820/1024 九档宽度下列表页与详情页均无页面级横向溢出。
 
 ### 3.10 关于页（/about）与 404 页
 
