@@ -5,6 +5,7 @@ import projectFeatures from './project-features.md?raw'
 import memoryGame from './memory-game.md?raw'
 import lightsoutGame from './lightsout-game.md?raw'
 import connect4Game from './connect4-game.md?raw'
+import lianliankanGame from './lianliankan-game.md?raw'
 
 export const docs = [
   {
@@ -56,6 +57,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Board Game'],
     readTime: '约 9 分钟',
     content: connect4Game,
+  },
+  {
+    slug: 'lianliankan-game',
+    title: '连连看（Link-Link）需求文档与实现说明',
+    summary:
+      '第 14 款小游戏的需求文档：≤2 转弯连通判定（支持绕出棋盘边界）、成对牌面生成与可解性校验、提示/洗牌次数、三档难度与限时计分、页面结构与交互、移动端适配与键盘无障碍要求、验收标准，以及最佳记录与埋点的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 8 分钟',
+    content: lianliankanGame,
   },
 ]
 

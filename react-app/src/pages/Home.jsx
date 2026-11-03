@@ -136,13 +136,13 @@ const ENTRIES = [
     footer: { meta: ['2026-11-02', '3 min'], link: '开始挑战' },
   },
   {
-    title: '四连棋',
-    techTags: ['DOM', 'React Hooks', 'Board Game'],
-    keywords: ['Connect4', '四连棋', '棋盘', 'AI', '触控', '策略'],
-    to: '/connect4',
+    title: '连连看',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['LinkLink', '连连看', '配对', '连通', '触控', '消除'],
+    to: '/lianliankan',
     span: '3',
-    desc: '6×7 棋盘四连棋：点按一列落子，横竖斜先连成四子获胜，三档 AI 对手限时 3 分钟',
-    practice: '引擎与页面壳解耦：落子重力、四方向成四判定、1 层评估与 alpha-beta 极小化极大三档 AI；玩家与电脑回合由页面延迟调度，切后台冻结倒计时；最佳记录与累计埋点脏标记延迟落盘。',
+    desc: '点两张相同的图案，路径不超过两次转弯即可消除，6×6 / 6×7 / 6×8 三档限时清盘',
+    practice: '引擎与页面壳解耦：BFS 判定 ≤2 转弯连通（支持绕出棋盘边界）、成对生成与可解性校验、无解自动洗牌；倒计时由页面 tick 驱动、切后台冻结；最佳记录与累计埋点脏标记延迟落盘。',
     footer: { meta: ['2026-11-03', '3 min'], link: '开始挑战' },
   },
 ]
@@ -430,7 +430,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={13} />
+            <AnimatedNumber value={14} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />
