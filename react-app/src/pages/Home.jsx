@@ -135,6 +135,16 @@ const ENTRIES = [
     practice: '从「全灭」态施加 N 次合法翻转生成棋盘，因此必然可解；限时倒计时由页面 tick 驱动、切后台冻结；撤销回退灯态但不返还步数，每局 3 次；最佳记录与累计埋点脏标记延迟落盘。',
     footer: { meta: ['2026-11-02', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '四连棋',
+    techTags: ['DOM', 'React Hooks', 'Board Game'],
+    keywords: ['Connect4', '四连棋', '棋盘', 'AI', '触控', '策略'],
+    to: '/connect4',
+    span: '3',
+    desc: '6×7 棋盘四连棋：点按一列落子，横竖斜先连成四子获胜，三档 AI 对手限时 3 分钟',
+    practice: '引擎与页面壳解耦：落子重力、四方向成四判定、1 层评估与 alpha-beta 极小化极大三档 AI；玩家与电脑回合由页面延迟调度，切后台冻结倒计时；最佳记录与累计埋点脏标记延迟落盘。',
+    footer: { meta: ['2026-11-03', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
@@ -420,7 +430,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={12} />
+            <AnimatedNumber value={13} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />

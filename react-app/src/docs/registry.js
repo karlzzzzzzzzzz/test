@@ -4,6 +4,7 @@ import promptEngineering from './prompt-engineering.md?raw'
 import projectFeatures from './project-features.md?raw'
 import memoryGame from './memory-game.md?raw'
 import lightsoutGame from './lightsout-game.md?raw'
+import connect4Game from './connect4-game.md?raw'
 
 export const docs = [
   {
@@ -45,6 +46,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 8 分钟',
     content: lightsoutGame,
+  },
+  {
+    slug: 'connect4-game',
+    title: '四连棋（Connect Four）需求文档与实现说明',
+    summary:
+      '第 13 款小游戏的需求文档：6×7 棋盘与落子重力、四方向成四判定、三档 AI（随机/1 层评估/alpha-beta 搜索）、限时 180 秒的计分规则、页面结构与交互、移动端适配与键盘无障碍要求、验收标准，以及最佳记录与埋点的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Board Game'],
+    readTime: '约 9 分钟',
+    content: connect4Game,
   },
 ]
 

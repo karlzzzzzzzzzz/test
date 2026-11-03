@@ -1,0 +1,394 @@
+/* ===========================================================
+ * 四连棋页面样式 —— Connect Four（纯 DOM + 触控点按）
+ * 断点沿用项目三级体系：≥1024 / 768~1023 / <768 / <480
+ * =========================================================== */
+
+.c4-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  min-height: 100svh; /* iOS Safari：避免 100vh 含工具栏导致底部内容被遮挡 */
+  font-family: inherit;
+  color: var(--home-text, #e6e9f2);
+  background: radial-gradient(ellipse at 50% 0%, rgba(122, 162, 255, 0.16) 0%, transparent 62%) #0a0e1c;
+  overflow-x: hidden; /* 窄屏兜底，不横向滚动 */
+}
+
+/* ---- 顶部 ---- */
+.c4-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.c4-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.c4-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px; /* 触控热区 ≥40px */
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--home-text-dim, #a9b0c5);
+  text-decoration: none;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.c4-back:hover { background: rgba(255, 255, 255, 0.1); color: var(--home-text, #e6e9f2); }
+.c4-pause-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--home-text, #e6e9f2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.c4-pause-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* ---- HUD ---- */
+.c4-hud {
+  display: flex;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.c4-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.c4-stat-label {
+  font-size: 0.75rem;
+  color: var(--home-text-dim, #a9b0c5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.c4-stat-val {
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.c4-stat-small { font-size: 1rem; }
+.c4-timer { font-feature-settings: 'tnum'; }
+
+/* 轮到谁 */
+.c4-turn {
+  min-height: 22px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #9fb4e8;
+  letter-spacing: 0.02em;
+}
+
+/* aria-live 播报区（视觉隐藏，仅读屏） */
+.c4-live-region {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+/* ---- 棋盘 ---- */
+.c4-board-wrap {
+  display: flex;
+  justify-content: center;
+  touch-action: manipulation; /* 关闭 iOS 双击缩放 */
+  user-select: none; /* 关闭长按菜单 */
+}
+.c4-board {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(37, 52, 92, 0.85) 0%, rgba(19, 26, 47, 0.9) 100%);
+  border: 1px solid rgba(122, 162, 255, 0.22);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  /* 宽度跟随容器 + 上限，不用 vw：vw 会与页面 min-content 互相推高造成横向溢出 */
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box; /* 宽度含 padding/border */
+}
+.c4-row {
+  display: grid;
+  /* 6 列在 320px 下每格仍 ≥40px；minmax(0,1fr) 防止内容撑破 */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.c4-cell-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+/* 格子：空位/玩家/电脑三态；最小热区 40×40 */
+.c4-cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #0d1326;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.7);
+  transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.c4-cell[aria-disabled="true"] { cursor: default; }
+.c4-cell:active { transform: scale(0.97); }
+.c4-disc {
+  width: 76%;
+  height: 76%;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 玩家：暖金（沿用关灯挑战的主色） */
+.c4-cell.c4-player {
+  border-color: rgba(255, 210, 120, 0.55);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 199, 79, 0.22);
+}
+.c4-player .c4-disc {
+  background: radial-gradient(circle at 35% 28%, #fff5cf 0%, #ffd75e 46%, #d8841a 100%);
+  box-shadow: 0 0 12px rgba(255, 199, 79, 0.45);
+}
+
+/* 电脑：冷蓝 */
+.c4-cell.c4-ai {
+  border-color: rgba(140, 180, 255, 0.55);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45), 0 0 12px rgba(122, 162, 255, 0.22);
+}
+.c4-ai .c4-disc {
+  background: radial-gradient(circle at 35% 28%, #e8f0ff 0%, #8cb4ff 46%, #3b5bb5 100%);
+  box-shadow: 0 0 12px rgba(122, 162, 255, 0.45);
+}
+
+/* 最后一枚棋子：落下动画 */
+.c4-cell.c4-last .c4-disc { animation: c4-drop 0.24s ease-out; }
+@keyframes c4-drop {
+  from { transform: translateY(-26%); opacity: 0.35; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* 获胜四连：高亮描边 */
+.c4-cell.c4-win {
+  border-color: #ffd75e;
+  box-shadow: 0 0 16px rgba(255, 215, 94, 0.7), inset 0 0 0 2px rgba(255, 215, 94, 0.55);
+}
+
+/* ---- 底部动作区 ---- */
+.c4-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+.c4-btn, .c4-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px; /* 触控热区 */
+  padding: 11px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+  text-decoration: none;
+  box-sizing: border-box; /* 窄屏 width:100% 时不因 padding 撑出容器 */
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.c4-btn {
+  background: transparent;
+  color: var(--home-text, #e6e9f2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.c4-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); }
+.c4-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.c4-btn-primary {
+  background: linear-gradient(135deg, #ffd75e 0%, #e08b1f 100%);
+  color: #1a1206;
+  border: 1px solid rgba(255, 210, 120, 0.7);
+  font-weight: 700;
+}
+.c4-btn-primary:hover { transform: translateY(-1px); }
+
+.c4-hint {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--home-text-dim, #a9b0c5);
+}
+
+/* 焦点环统一 2px #aa3bff */
+.c4-cell:focus-visible,
+.c4-back:focus-visible,
+.c4-pause-btn:focus-visible,
+.c4-btn:focus-visible,
+.c4-btn-primary:focus-visible,
+.c4-diff-btn:focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* ---- 遮罩 ---- */
+.c4-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 18, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+.c4-overlay-card {
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(32, 46, 84, 0.95) 0%, rgba(15, 15, 30, 0.95) 100%);
+  border: 1px solid rgba(122, 162, 255, 0.32);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.c4-overlay-card h2 { margin: 0 0 12px; font-size: 1.4rem; }
+.c4-overlay-card p { margin: 0 0 12px; color: #c3cde4; font-size: 0.95rem; line-height: 1.55; }
+.c4-overlay-hint { font-size: 0.85rem !important; color: #8a91a8 !important; }
+
+/* 难度选择 */
+.c4-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.c4-diff-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  min-height: 52px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(122, 162, 255, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--home-text, #e6e9f2);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.c4-diff-btn:hover { background: rgba(122, 162, 255, 0.14); border-color: rgba(140, 180, 255, 0.6); }
+.c4-diff-name { font-size: 0.98rem; font-weight: 600; }
+.c4-diff-meta { font-size: 0.75rem; color: #aeb9d6; }
+
+/* 结算数据 */
+.c4-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+.c4-summary > div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.c4-summary span { font-size: 0.75rem; color: #8a91a8; text-transform: uppercase; letter-spacing: 0.05em; }
+.c4-summary strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+.c4-best { color: #d7dbe9 !important; }
+.c4-best strong { color: #ffd75e; }
+.c4-save-err {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #ff9a9a;
+}
+
+.c4-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.c4-overlay-win { border-color: rgba(255, 210, 120, 0.55); }
+
+/* ---- 移动端断点（<768 / <480） ---- */
+@media (max-width: 767px) {
+  .c4-page { padding: 16px 14px 48px; }
+  .c4-title { font-size: 1.15rem; }
+  .c4-hud { gap: 10px; padding: 12px 14px; }
+  .c4-stat-val { font-size: 1.05rem; }
+  .c4-board { max-width: 380px; gap: 7px; padding: 12px; }
+  .c4-row { gap: 7px; }
+}
+@media (max-width: 479px) {
+  /* 12 + 10 + 5 的取值保证 6 列在 320px 下格子仍 ≥40px */
+  .c4-page { padding: 14px 12px 32px; }
+  .c4-title { font-size: 1.05rem; }
+  .c4-back { padding: 7px 10px; font-size: 13px; }
+  .c4-pause-btn { padding: 7px 12px; font-size: 13px; }
+  .c4-hud { gap: 8px; padding: 10px 12px; }
+  .c4-stat-val { font-size: 0.95rem; }
+  .c4-board { max-width: 340px; gap: 5px; padding: 10px; }
+  .c4-row { gap: 5px; }
+  .c4-turn { font-size: 13px; }
+  .c4-actions { flex-direction: column; }
+  .c4-actions .c4-btn { width: 100%; }
+  .c4-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .c4-overlay-card { padding: 22px 18px; }
+  .c4-overlay-card h2 { font-size: 1.25rem; }
+  .c4-btns { flex-direction: column; }
+  .c4-btns .c4-btn, .c4-btns .c4-btn-primary { width: 100%; }
+}
+
+/* ---- prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .c4-cell, .c4-disc, .c4-btn, .c4-btn-primary, .c4-diff-btn { transition: none !important; }
+  .c4-cell:active { transform: none !important; }
+  .c4-btn-primary:hover { transform: none !important; }
+  .c4-cell.c4-last .c4-disc { animation: none !important; }
+}
