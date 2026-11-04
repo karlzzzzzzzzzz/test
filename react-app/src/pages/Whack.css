@@ -6,7 +6,7 @@
   max-width: 640px;
   margin: 0 auto;
   padding: 24px 20px 64px;
-  min-height: 100vh;
+  min-height: 100svh;
   font-family: inherit;
   color: var(--home-text, #e6e9f2);
   background: radial-gradient(ellipse at 50% 0%, rgba(180, 120, 60, 0.18) 0%, transparent 60%) #0a0e1c;
@@ -79,7 +79,7 @@
   flex: 1;
 }
 .wh-stat-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--home-text-dim, #a9b0c5);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -117,7 +117,9 @@
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  width: min(92vw, 420px);
+  width: 100%; /* 跟随容器内容宽，不再用 vw（vw 与页面 min-content 互相推高，320px 下溢出 14px） */
+  max-width: 420px;
+  box-sizing: border-box; /* 宽度含 padding/border，避免 vw 宽度把页面撑出横向滚动 */
 }
 .wh-row {
   display: grid;
@@ -298,7 +300,7 @@
   .wh-page { padding: 16px 14px 48px; }
   .wh-title { font-size: 1.15rem; }
   .wh-hud { gap: 12px; padding: 12px 14px; }
-  .wh-board { width: min(94vw, 380px); gap: 10px; padding: 12px; }
+  .wh-board { max-width: 380px; gap: 10px; padding: 12px; }
   .wh-row { gap: 10px; }
 }
 @media (max-width: 479px) {
@@ -307,7 +309,7 @@
   .wh-hud { gap: 8px; padding: 10px 12px; }
   .wh-stat { min-width: 58px; }
   .wh-stat-val { font-size: 0.95rem; }
-  .wh-board { width: min(92vw, 340px); gap: 8px; padding: 10px; }
+  .wh-board { max-width: 340px; gap: 8px; padding: 10px; }
   .wh-row { gap: 8px; }
   .wh-summary { grid-template-columns: repeat(2, 1fr); }
   .wh-overlay-card { padding: 22px 18px; }

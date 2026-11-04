@@ -15,11 +15,14 @@
 .home-page {
   --home-accent: #aa3bff;
   --home-accent-2: #6a5cff;
+  /* 文本专用强调色：12~13px 小字需 ≥4.5:1；品牌主色仅用于装饰与大字号 */
+  --home-accent-text: #9333ea;
   --home-bg: var(--bg);
   --home-surface: var(--social-bg);
   --home-border: var(--border);
   --home-text: var(--text);
   --home-text-h: var(--text-h);
+  --home-muted: var(--text); /* 曾漏定义，导致 .bento-pipeline-desc 的 color 声明失效 */
 
   position: relative;
   min-height: 100svh;
@@ -44,6 +47,11 @@
 @media (prefers-color-scheme: dark) {
   .mouse-trail {
     mix-blend-mode: screen;
+  }
+
+  .home-page {
+    /* 深色下沿用主题亮紫，对深色卡片背景 ≥4.5:1 */
+    --home-accent-text: var(--accent);
   }
 }
 
@@ -110,13 +118,15 @@
 .bento-about {
   min-height: 320px;
   justify-content: center;
+  /* 装饰光圈定位在 right:-40px，hidden 会留下 40px 可滚动溢出区；clip 不产生滚动容器 */
+  overflow: clip;
 }
 
 .bento-about::before {
   content: '';
   position: absolute;
   top: -40px;
-  right: -40px;
+  right: 0; /* 原 -40px 会把滚动溢出区撑出 40px（卡片内部可横向滚动/审计越界） */
   width: 300px;
   height: 300px;
   background: radial-gradient(
@@ -134,7 +144,7 @@
   font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--home-accent);
+  color: var(--home-accent-text);
   margin: 0;
   font-weight: 600;
   position: relative;
@@ -235,7 +245,7 @@
 .bento-card-num {
   font-family: var(--mono);
   font-size: 12px;
-  color: var(--home-accent);
+  color: var(--home-accent-text);
 }
 
 .bento-skill-list {
@@ -272,7 +282,7 @@
 }
 
 .bento-skill:hover {
-  color: var(--home-accent);
+  color: var(--home-accent-text);
   border-color: var(--home-accent);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--home-accent) 25%, transparent);
@@ -296,6 +306,24 @@
   flex: 0 0 auto;
   padding: 22px 24px;
   gap: 12px;
+  /* 天气三态（加载/成功/失败）共用同一高度，切换时不推动下方布局 */
+  box-sizing: border-box;
+  min-height: 251px; /* ≥1040px：正常态实测 247px */
+}
+
+/* 1024~1039：卡片变窄，天气正文/指标换行，正常态实测 279~290px */
+@media (max-width: 1039px) {
+  .bento-weather { min-height: 294px; }
+}
+
+/* 344~1023：正常态实测 241px */
+@media (max-width: 1023px) {
+  .bento-weather { min-height: 245px; }
+}
+
+/* ≤343：指示项换行，正常态实测 270~290px */
+@media (max-width: 343px) {
+  .bento-weather { min-height: 294px; }
 }
 
 .weather-head {
@@ -308,19 +336,19 @@
   font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--home-accent);
+  color: var(--home-accent-text);
   font-weight: 600;
   margin: 0;
 }
 
 .weather-refresh {
-  width: 28px;
-  height: 28px;
+  width: 40px; /* 触控热区 ≥40px（含 iPad 竖屏 768/820 触控场景） */
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--home-border);
   background: var(--home-bg);
   color: var(--home-text);
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1;
   cursor: pointer;
   transition: transform 0.25s ease, color 0.25s ease, border-color 0.25s ease;
@@ -332,7 +360,14 @@
   transform: rotate(90deg);
 }
 
-.weather-refresh.is-spinning {
+/* 只旋转内部图标：整按钮旋转会让 40×40 方框的外接矩形超出右边界，
+   在 weather-head 内产生瞬时横向溢出（审计会判定越界） */
+.weather-refresh-icon {
+  display: block;
+  line-height: 1;
+}
+
+.weather-refresh.is-spinning .weather-refresh-icon {
   animation: weather-spin 1s linear infinite;
 }
 
@@ -403,10 +438,15 @@
 
 .weather-source {
   font-family: var(--mono);
-  font-size: 11px;
-  color: var(--home-accent);
+  font-size: 12px;
+  color: var(--home-accent-text);
   text-decoration: none;
   flex: none;
+  /* 触控热区补足到 ≥40px，负外边距保持原行高不跳动（不加横向内边距，避免撑出父级） */
+  padding: 9px 0;
+  margin: -9px 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .weather-source:hover {
@@ -429,6 +469,12 @@
 
 .weather-adapt-retry {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 40px; /* 触控热区 ≥40px */
+  margin: -6px 0; /* 负外边距抵消增高的 12px，行高与视觉位置不变 */
   padding: 4px 12px;
   border-radius: 999px;
   border: 1px solid var(--home-border);
@@ -440,7 +486,7 @@
 }
 
 .weather-adapt-retry:hover {
-  color: var(--home-accent);
+  color: var(--home-accent-text);
   border-color: var(--home-accent);
 }
 
@@ -491,6 +537,12 @@
 }
 
 .weather-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 40px; /* 触控热区 ≥40px */
+  margin: -6px 0; /* 抵消增高，错误/拒权提示行高度不变 */
   padding: 5px 14px;
   border-radius: 999px;
   border: 1px solid var(--home-border);
@@ -502,7 +554,7 @@
 }
 
 .weather-retry:hover {
-  color: var(--home-accent);
+  color: var(--home-accent-text);
   border-color: var(--home-accent);
 }
 
@@ -522,9 +574,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .weather-refresh.is-spinning,
-  .weather-skeleton {
+  .weather-refresh.is-spinning .weather-refresh-icon,
+  .weather-skeleton,
+  .bento-card {
     animation: none;
+  }
+
+  .bento-card,
+  .bento-skill,
+  .bento-btn {
+    transition: none;
   }
 }
 
@@ -539,6 +598,7 @@
   text-transform: uppercase;
   color: var(--home-text);
   padding: 8px 4px 0;
+  margin: 0; /* 区块标题由 h2 承载，去掉浏览器默认外边距 */
 }
 
 .bento-section-title::after {
@@ -643,7 +703,8 @@
   gap: 6px;
   background: none;
   border: none;
-  padding: 0;
+  padding: 6px 0; /* 热区 28→40px；与同排文字基线仍对齐 */
+  margin: -6px 0;
   font: inherit;
   color: inherit;
   cursor: pointer;
@@ -698,7 +759,7 @@
 }
 
 .bento-stat-mail:hover {
-  color: var(--home-accent);
+  color: var(--home-accent-text);
   border-color: var(--home-accent);
   box-shadow: 0 4px 14px color-mix(in srgb, var(--home-accent) 22%, transparent);
 }
@@ -756,6 +817,13 @@
   }
   .bento-stat-num {
     font-size: 24px;
+  }
+  .bento-stats {
+    flex-wrap: wrap; /* 480~767：统计项放不下时换行，防居中 flex 两侧溢出裁切 */
+    row-gap: 12px;
+  }
+  .bento-stat-contact {
+    margin-left: 0; /* 换行后不再用 auto 把联系按钮顶到最右 */
   }
 }
 

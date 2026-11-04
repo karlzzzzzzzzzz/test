@@ -90,7 +90,7 @@
   line-height: 14px;
   padding: 2px 6px;
   border-radius: 999px;
-  color: var(--home-accent, #aa3bff);
+  color: var(--home-accent-text, #9333ea);
   font-family: var(--mono, "SF Mono", monospace);
   font-weight: 600;
   background: color-mix(in srgb, var(--home-accent, #aa3bff) 10%, transparent);
@@ -142,13 +142,18 @@
 }
 
 .cl-link {
-  color: var(--home-accent, #aa3bff);
+  color: var(--home-accent-text, #9333ea);
   text-decoration: none;
   font-weight: 600;
   font-size: 13px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  /* 触控热区补足到 ≥40px；负外边距让 footer 行高与卡片高度保持不变 */
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 9px 6px;
+  margin: -9px -6px;
   transition: text-decoration 0.2s ease;
 }
 

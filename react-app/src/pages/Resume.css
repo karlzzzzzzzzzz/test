@@ -51,6 +51,7 @@
   background: #fff;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: grid;
+  grid-template-columns: minmax(0, 1fr); /* 单列可收缩：防止子项 min-content 把 sheet 撑出横向滚动 */
   grid-template-rows: auto 1fr;
   text-align: left;
 }
@@ -112,12 +113,19 @@
   letter-spacing: 0.5px;
 }
 
-/* ===== 打印 / 导出 PDF 入口（桌面端显示，<768 与打印视图隐藏） ===== */
+/* ===== 打印 / 导出 PDF 工具栏：位于 .resume-sheet 之外，右对齐到纸张边缘 ===== */
 .resume-page .resume-print-bar {
-  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  width: 794px;
+  max-width: 100%;
+  margin: 0 auto 12px;
 }
 .resume-page .resume-print-btn {
-  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 16px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: #fff;
@@ -574,20 +582,37 @@
     font-size: 16px;
     line-height: 1.7;
   }
+  /* 打印下纸张改为块级流式排版：Grid 容器跨页时 Chrome 会把后续章节项叠印到上一项上 */
   .resume-page .resume-sheet {
-    width: 190mm;
-    max-width: 100%;
-    min-height: 273mm;
+    display: block;
+    width: auto;
+    max-width: none;
+    min-height: 0;
     margin: 0;
     box-shadow: none;
     border-radius: 0;
   }
-  /* 水平边距交由 @page 承担，分页后每页都保留页边距 */
+  /* 水平边距交由 @page 承担，分页后每页都保留页边距；容器宽度随版心自适应 */
   .resume-page .hero {
     padding: 0 0 16px;
   }
+  .resume-page main,
+  .resume-page .sec,
+  .resume-page .proj {
+    display: block;
+  }
   .resume-page main {
     padding: 0;
+  }
+  /* 用外边距还原 Grid 的 row-gap */
+  .resume-page .sec + .sec {
+    margin-top: 16px;
+  }
+  .resume-page .sec > * + * {
+    margin-top: 10px;
+  }
+  .resume-page .proj > div + div {
+    margin-top: 14px;
   }
   /* 紧凑模式仅屏幕生效，打印还原正常行距与内边距 */
   .resume-page.compact {
@@ -604,9 +629,10 @@
   .resume-page.compact .sec {
     row-gap: 10px;
   }
-  /* 分页：普通章节整体避断；长章节允许断页，但单条内容不拆分 */
+  /* 分页：h2 与紧随内容不分离；短章节整体避断；长章节可断页，但项目标题与首条、单条列表不拆 */
   .resume-page h2 {
     break-after: avoid;
+    break-inside: avoid;
   }
   .resume-page .sec {
     break-inside: avoid;
@@ -614,16 +640,49 @@
   .resume-page .sec.long {
     break-inside: auto;
   }
-  .resume-page .proj > div,
+  .resume-page .proj > div {
+    break-inside: auto;
+  }
+  .resume-page .proj h3 {
+    break-after: avoid;
+  }
   .resume-page .row4,
   .resume-page .row3,
+  .resume-page .grid3,
   .resume-page ul.dot li {
     break-inside: avoid;
   }
-  /* 打印按钮、偏好浮动按钮与面板不进入纸面 */
+  /* 打印按钮、偏好浮动按钮与面板、全站导航不进入纸面 */
+  .navbar,
   .resume-print-bar,
   .resume-pref-btn,
   .resume-pref-panel {
     display: none !important;
+  }
+  /* 纸张外观：去阴影、去底色装饰，只留文字与结构 */
+  body,
+  #root:has(.resume-page) {
+    background: #fff;
+  }
+  .resume-page .hero-bg {
+    display: none !important;
+  }
+  .resume-page h2 {
+    background: none;
+    padding: 2px 0 2px 10px;
+  }
+  .resume-page h2::before {
+    width: 3px;
+  }
+  /* 长 URL / 长英文串在 A4 内换行，避免横向溢出 */
+  .resume-page .proj li,
+  .resume-page .proj a,
+  .resume-page .hero-contact p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .resume-page li {
+    orphans: 2;
+    widows: 2;
   }
 }

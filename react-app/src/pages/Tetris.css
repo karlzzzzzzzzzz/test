@@ -1,11 +1,11 @@
-/* ===== 俄罗斯方块页面 =====
+﻿/* ===== 俄罗斯方块页面 =====
  * 风格：深色游戏页（对齐基线 Game.jsx / Game2048.jsx）
  * 断点：≥768 / 768~481 / <480 三级（对齐基线统一体系）
  * 棋盘：Canvas 内部 240×480 逻辑像素，CSS 控制显示尺寸
  */
 
 .tetris-page {
-  min-height: 100vh;
+  min-height: 100svh;
   background: #05060f;
   color: #eaf4ff;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -59,7 +59,7 @@
 }
 
 .tetris-score-label {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #9db4d6;
   text-transform: uppercase;
@@ -435,8 +435,8 @@
     font-size: 13px;
   }
   .tetris-score-box {
-    padding: 5px 10px;
-    min-width: 62px;
+    padding: 5px 6px;
+    min-width: 56px;
   }
   .tetris-panel {
     padding: 30px 22px;

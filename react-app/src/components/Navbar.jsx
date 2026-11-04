@@ -10,7 +10,7 @@ function Navbar() {
   return (
     <header className="navbar">
       <Link to="/" className="brand" onClick={close}>
-        <img src={viteLogo} alt="Vite logo" />
+        <img src={viteLogo} alt="" />
         <span>React App</span>
       </Link>
 

@@ -1,4 +1,4 @@
-/* ===========================================================
+﻿/* ===========================================================
  * 记忆翻牌页面样式 —— 移动端约束卡① + 无障碍约束卡②
  * =========================================================== */
 
@@ -6,7 +6,7 @@
   max-width: 640px;
   margin: 0 auto;
   padding: 24px 20px 64px;
-  min-height: 100vh;
+  min-height: 100svh;
   font-family: inherit;
   color: var(--home-text, #e6e9f2);
   background: radial-gradient(ellipse at 50% 0%, rgba(60, 80, 180, 0.25) 0%, transparent 60%) #0a0e1c;

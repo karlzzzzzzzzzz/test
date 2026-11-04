@@ -6,7 +6,7 @@
   max-width: 640px;
   margin: 0 auto;
   padding: 24px 20px 64px;
-  min-height: 100vh;
+  min-height: 100svh;
   font-family: inherit;
   color: var(--home-text, #e6e9f2);
   background: radial-gradient(ellipse at 50% 0%, rgba(150, 110, 255, 0.18) 0%, transparent 60%) #0a0e1c;
@@ -68,7 +68,7 @@
   flex: 1;
 }
 .pz-stat-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--home-text-dim, #a9b0c5);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -104,7 +104,9 @@
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  width: min(92vw, 420px);
+  width: 100%; /* 跟随容器内容宽，不再用 vw（vw 与页面 min-content 互相推高，320px 下溢出 14px） */
+  max-width: 420px;
+  box-sizing: border-box; /* 宽度含 padding/border，避免 vw 宽度把页面撑出横向滚动 */
   touch-action: none; /* 滑动换位时不滚动 / 不缩放页面 */
   user-select: none; /* 关闭长按菜单 */
 }
@@ -267,7 +269,7 @@
   .pz-title { font-size: 1.15rem; }
   .pz-hud { gap: 12px; padding: 12px 14px; }
   .pz-stat-val { font-size: 1.05rem; }
-  .pz-board { width: min(94vw, 380px); gap: 10px; padding: 12px; }
+  .pz-board { max-width: 380px; gap: 10px; padding: 12px; }
   .pz-row { gap: 10px; }
 }
 @media (max-width: 479px) {
@@ -277,7 +279,7 @@
   .pz-hud { gap: 8px; padding: 10px 12px; }
   .pz-stat { min-width: 58px; }
   .pz-stat-val { font-size: 0.95rem; }
-  .pz-board { width: min(92vw, 340px); gap: 8px; padding: 10px; }
+  .pz-board { max-width: 340px; gap: 8px; padding: 10px; }
   .pz-row { gap: 8px; }
   .pz-tile { font-size: 1.35rem; }
   .pz-summary { grid-template-columns: repeat(3, 1fr); }

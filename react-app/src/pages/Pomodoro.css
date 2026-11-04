@@ -1,7 +1,7 @@
-/* 番茄钟页面：全部作用域隔离在 .pomo-page 下 */
+﻿/* 番茄钟页面：全部作用域隔离在 .pomo-page 下 */
 .pomo-page {
   --accent: #e2554c;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100svh - 60px);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -169,6 +169,9 @@ function Game2048Page() {
 
   return (
     <div className="g2048-page">
+      {/* 语义化页面标题：视觉隐藏，读屏可读，保证 h1 层级 */}
+      <h1 className="sr-only">2048 小游戏</h1>
+
       {/* 顶部 HUD */}
       <div className="g2048-hud">
         <Link to="/" className="g2048-back">

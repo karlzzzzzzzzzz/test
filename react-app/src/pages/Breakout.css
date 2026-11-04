@@ -5,7 +5,7 @@
  */
 
 .breakout-page {
-  min-height: 100vh;
+  min-height: 100svh;
   background: #05060f;
   color: #eaf4ff;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -74,7 +74,7 @@
 }
 
 .breakout-score-label {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #9db4d6;
   text-transform: uppercase;
@@ -401,6 +401,11 @@
 @media (max-width: 767px) {
   .breakout-hud {
     max-width: 360px;
+    flex-wrap: wrap; /* 返回链接与分数盒放不下时换行，防横向溢出 */
+  }
+  .breakout-score-box {
+    padding: 5px 10px;
+    min-width: 56px;
   }
   .breakout-board-wrap {
     width: 360px;
@@ -432,9 +437,9 @@
   .breakout-back {
     font-size: 13px;
   }
-  .breakout-score-box {
-    padding: 5px 10px;
-    min-width: 56px;
+  .breakout-scores {
+    flex-wrap: wrap; /* <480：4 个分数盒可折成两行 */
+    justify-content: flex-end;
   }
   .breakout-panel {
     padding: 30px 22px;

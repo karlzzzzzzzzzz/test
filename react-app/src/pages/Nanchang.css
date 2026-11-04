@@ -1,6 +1,6 @@
-/* 南昌旅游介绍页 — 手账纸感风格，断点对齐项目统一三级体系 */
+﻿/* 南昌旅游介绍页 — 手账纸感风格，断点对齐项目统一三级体系 */
 .nc-page {
-  min-height: 100vh;
+  min-height: 100svh;
   background: #f5f2ec;
   color: #333;
   padding: 16px 24px 64px;

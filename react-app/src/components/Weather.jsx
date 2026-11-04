@@ -2,14 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * 天气卡片：数据来自 Open-Meteo 免费 API（无需 API Key）
- * - 优先使用浏览器定位，拒绝/失败时回退到北京（拒绝授权时显示提示条）
+ * - 优先使用浏览器定位，拒绝/失败时回退到杭州（拒绝授权时显示提示条）
  * - 当前实况 + 今日最高/最低温
  * - 地名通过 BigDataCloud 免费逆地理接口补全（失败时静默降级）
  * - 每 10 分钟自动刷新一次；手动刷新 30s 节流防刷
  * - 数据状态通过 useWeather 提升至 Home，供统计条天气摘要格共享
  */
 
-// 定位失败时的默认坐标（北京）
+// 定位失败时的默认坐标（杭州）
 const FALLBACK = { lat: 30.2809, lon: 120.0267, label: '杭州（默认）' }
 const REFRESH_INTERVAL = 10 * 60 * 1000
 // 手动刷新节流窗口
@@ -456,7 +456,7 @@ function Weather({ weather }) {
       data-adapt-overflow={overflowCount}
     >
       <div className="weather-head">
-        <p className="weather-title">本地天气</p>
+        <h3 className="weather-title">本地天气</h3>
         <button
           type="button"
           className={`weather-refresh${refreshing ? ' is-spinning' : ''}`}
@@ -466,14 +466,14 @@ function Weather({ weather }) {
           title={throttleTip ? '刷新过于频繁，请稍后再试' : '刷新'}
           disabled={status === 'loading'}
         >
-          ↻
+          <span className="weather-refresh-icon" aria-hidden="true">↻</span>
         </button>
       </div>
 
       {/* 定位被拒绝：提示条 + 重试定位（每会话自动提示最多 1 次，手动重试被拒总是复现） */}
       {geoDeniedTip && status === 'ok' && (
         <div className="weather-denied-tip" role="status">
-          <span>已使用北京默认位置</span>
+          <span>已使用杭州默认位置</span>
           <button type="button" className="weather-retry" onClick={retryGeo}>
             重试定位
           </button>

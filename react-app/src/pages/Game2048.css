@@ -1,10 +1,10 @@
-/* ===== 2048 小游戏页面 =====
+﻿/* ===== 2048 小游戏页面 =====
  * 风格：深色页面框架（与基线 Game.jsx 一致）+ 经典 2048 浅色棋盘
  * 断点：≥768 / 768~481 / <480 三级（对齐基线首页三级体系）
  */
 
 .g2048-page {
-  min-height: 100vh;
+  min-height: 100svh;
   background: #05060f;
   color: #eaf4ff;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -63,7 +63,7 @@
 }
 
 .g2048-score-label {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #9db4d6;
   text-transform: uppercase;
@@ -439,7 +439,11 @@
     padding: 16px 12px 32px;
   }
   .g2048-grid {
-    --g2048-cell: calc((min(90vw, 320px) - var(--g2048-pad) * 2 - var(--g2048-gap) * 3) / 4);
+    /* 宽度含 padding/border，且不超过页面内容宽；格子用 1fr 均分自适应 */
+    box-sizing: border-box;
+    max-width: 100%;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
     width: min(90vw, 320px);
     height: min(90vw, 320px);
   }

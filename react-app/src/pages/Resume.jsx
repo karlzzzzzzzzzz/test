@@ -107,6 +107,20 @@ function Resume() {
 
   return (
     <div className={`resume-page${pref.compact ? ' compact' : ''}`}>
+      {/* ===== 操作工具栏：纸张之外的独立区域（仅桌面端显示，打印视图隐藏） ===== */}
+      {CAN_PRINT && (
+        <div className="resume-print-bar" role="toolbar" aria-label="简历操作">
+          <button
+            type="button"
+            className="resume-print-btn"
+            aria-label="打印简历"
+            onClick={() => window.print()}
+          >
+            打印 / 导出 PDF
+          </button>
+        </div>
+      )}
+
       <div className="resume-sheet">
         {/* ===== 顶部（Grid 区域：info / qr / meta） ===== */}
         <header className="hero">
@@ -118,19 +132,6 @@ function Resume() {
               <p className="en">MOBILE：( +86 ) 137-7771-5532</p>
               <p className="en">E-MAIL：k13777715532@163.com</p>
             </div>
-            {/* ===== 打印适配：打印 / 导出 PDF 入口（仅桌面端显示，打印视图隐藏） ===== */}
-            {CAN_PRINT && (
-              <div className="resume-print-bar">
-                <button
-                  type="button"
-                  className="resume-print-btn"
-                  aria-label="打印简历"
-                  onClick={() => window.print()}
-                >
-                  打印 / 导出 PDF
-                </button>
-              </div>
-            )}
           </div>
 
           <div className="qr">

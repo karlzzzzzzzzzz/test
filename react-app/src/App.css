@@ -26,6 +26,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    min-height: 40px; /* 首页 logo 链接触控热区 ≥40px */
     text-decoration: none;
     color: var(--text-h);
     font-weight: 600;
@@ -45,6 +46,10 @@
       color: var(--text);
       font-size: 16px;
       padding: 6px 14px;
+      box-sizing: border-box;
+      min-height: 40px; /* 触控热区 ≥40px（原行高约 32px 不达标） */
+      display: inline-flex;
+      align-items: center;
       border-radius: 6px;
       transition:
         color 0.2s,
@@ -67,12 +72,16 @@
 .nav-toggle {
   display: none;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 4px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
+  min-width: 40px; /* 触控热区 ≥40px（原 34×26 过小） */
+  min-height: 40px;
 }
 
 .nav-toggle-bar {

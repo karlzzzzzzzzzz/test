@@ -47,13 +47,23 @@ const ENTRIES = [
     footer: null,
   },
   {
+    title: '南昌旅游',
+    techTags: ['React', 'Gallery', 'A11y'],
+    keywords: ['Nanchang', '南昌', '旅游', '攻略', '灯箱', '行程'],
+    to: '/nanchang',
+    span: '3',
+    desc: '三日行程 + 景点速查 + 交通住宿攻略，12 张手账风攻略图支持灯箱浏览',
+    practice: '图集由 GALLERY 常量驱动，图片 loading="lazy"；灯箱 role="dialog" aria-modal="true"，Esc 关闭、←/→ 切换、打开时焦点落入关闭按钮并按需锁定背景滚动。',
+    footer: { meta: ['2026-10-26', '图文页'], link: '查看攻略' },
+  },
+  {
     title: '提示词工程文档',
-    techTags: ['Markdown', 'Docs', 'Vite'],
+    techTags: ['Markdown', 'Docs', 'Prompt'],
     keywords: ['Prompt', 'Markdown', 'Docs', '手册', 'LLM', '实战'],
     to: '/docs',
     span: '3',
     desc: 'Agent 检索网络资料后撰写并渲染的 Prompt Engineering 实战手册',
-    practice: '从零搭建基于 Vite + React 18 的工程化脚手架，含路由懒加载、代码分割与环境变量注入。构建产物分包优化，首屏加载 < 1.2s（4G 网络）。',
+    practice: '围绕角色设定、结构化输出、上下文管理与提示链组织实战示例，每类手法配可复用的模板；文档以 Markdown 维护，经 React 19 + Vite 的 raw 导入通道渲染，与本站示例同一套构建流程。',
     footer: { meta: ['2026-10-12', '5 min'], link: '阅读全文' },
   },
   {
@@ -112,7 +122,7 @@ const ENTRIES = [
     keywords: ['Whack', '地鼠', '连击', '30秒', '点按', '街机'],
     to: '/whack',
     span: '3',
-    desc: '30 秒限时打地鼠：3×3 洞位随机出鼠，金鼠翻倍，连击 4 次起额外加分',
+    desc: '30 秒限时打地鼠：3×3 洞位随机出鼠，金鼠 3 倍分，连击 4 次起额外加分',
     practice: '纯 DOM 实现（不用 Canvas，读屏可解释）：结束时间戳驱动倒计时，切后台冻结；棋盘 role=grid + roving tabindex，方向键导航 + Enter/Space 敲击；统计与最佳分脏标记延迟落盘。',
     footer: { meta: ['2026-10-30', '3 min'], link: '开始挑战' },
   },
@@ -146,6 +156,16 @@ const ENTRIES = [
     practice: '引擎与页面壳解耦：BFS 判定 ≤2 转弯连通（支持绕出棋盘边界）、成对生成与可解性校验、无解自动洗牌；倒计时由页面 tick 驱动、切后台冻结；最佳记录与累计埋点脏标记延迟落盘。',
     footer: { meta: ['2026-11-03', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '四连棋',
+    techTags: ['DOM', 'React Hooks', 'AI'],
+    keywords: ['Connect4', '四连棋', '棋盘', 'AI', '连子', '对战'],
+    to: '/connect4',
+    span: '3',
+    desc: '6×7 棋盘轮流落子，先连成四子一线者获胜；轻松 / 挑战 / 专家三档 AI，3 分钟限时',
+    practice: '引擎与页面壳解耦：每步在 6×7 棋盘上枚举 69 个四连窗口判胜负，AI 按难度分级决策（专家档向前算 4 步），电脑落子前有思考延迟；倒计时由页面 tick 驱动、切后台冻结；最佳记录按难度分别落盘。',
+    footer: { meta: ['2026-11-03', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
@@ -156,6 +176,9 @@ const PIPELINE = [
 ]
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
+
+// 站点标题：品牌名取自导航栏，后缀为站点定位
+const SITE_TITLE = 'React App · 前端作品集'
 
 /**
  * 统计条数字滚动：50% 进入视口时 800ms ease-out 从 0 滚至目标值，仅触发 1 次
@@ -271,6 +294,11 @@ function WeatherStatCell({ weather }) {
 function Home() {
   const weather = useWeather()
 
+  // 首页标题（与 index.html 保持一致，返回首页时覆盖其他页面留下的 title）
+  useEffect(() => {
+    document.title = SITE_TITLE
+  }, [])
+
   // 入口点击计数（约束卡①：localStorage 轻量行为统计，脏标记 + 隐藏/卸载/1s 兜底延迟写入）
   const clicksRef = useRef({})
   const dirtyRef = useRef(false)
@@ -355,9 +383,9 @@ function Home() {
         </div>
 
         {/* Agent 工作流 */}
-        <div className="bento-section-title bento-span-12">
+        <h2 className="bento-section-title bento-span-12">
           <span className="bento-card-num">01</span> Agent 工作流
-        </div>
+        </h2>
 
         {PIPELINE.map((p) => (
           <div
@@ -374,9 +402,9 @@ function Home() {
         ))}
 
         {/* 作品入口标题（原「精选作品」+「技术实践」两区块合并，路由去重，统一用 CardLayout） */}
-        <div className="bento-section-title bento-span-12">
+        <h2 className="bento-section-title bento-span-12">
           <span className="bento-card-num">02</span> Agent 生成的作品
-        </div>
+        </h2>
 
         {/* 作品入口卡片（data-keywords 供 MouseTrail hover/聚焦时切换粒子主题词；
             footer Link 点击计数写入 home-entry-clicks，约束卡①） */}
@@ -419,9 +447,9 @@ function Home() {
         ))}
 
         {/* 今日游戏挑战：按日期确定性从已有小游戏轮换一款 + 一言今日一句 */}
-        <div className="bento-section-title bento-span-12">
+        <h2 className="bento-section-title bento-span-12">
           <span className="bento-card-num">03</span> 今日游戏挑战
-        </div>
+        </h2>
         <DailyChallenge />
 
         {/* 统计条 */}
@@ -437,7 +465,7 @@ function Home() {
           </div>
           <div className="bento-stat-divider" />
           <div className="bento-stat">
-            <AnimatedNumber value={14} />
+            <AnimatedNumber value={ENTRIES.length} />
             <span className="bento-stat-label">个功能模块</span>
           </div>
           <div className="bento-stat-divider" />
