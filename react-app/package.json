@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "test": "node --test \"src/**/*.test.js\"",
+    "verify": "npm run lint && npm run test && npm run build",
+    "audit:mobile": "node scripts/mobile-audit.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
