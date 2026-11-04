@@ -6,6 +6,7 @@ import memoryGame from './memory-game.md?raw'
 import lightsoutGame from './lightsout-game.md?raw'
 import connect4Game from './connect4-game.md?raw'
 import lianliankanGame from './lianliankan-game.md?raw'
+import dailyChallenge from './daily-challenge.md?raw'
 
 export const docs = [
   {
@@ -67,6 +68,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 8 分钟',
     content: lianliankanGame,
+  },
+  {
+    slug: 'daily-challenge',
+    title: '首页「今日游戏挑战」需求文档与实现说明',
+    summary:
+      '首页新增每日挑战区块的需求文档：按日期确定性从 11 款小游戏轮换一款（连续两天不重复）、一言 API 今日一句（10s 超时 + 本地降级池）、加载/成功/降级三态、切后台暂停换日检查、键盘与 aria 无障碍，以及两个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['首页', 'Daily', 'A11y'],
+    readTime: '约 8 分钟',
+    content: dailyChallenge,
   },
 ]
 

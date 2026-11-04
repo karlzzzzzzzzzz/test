@@ -4,6 +4,7 @@ import MouseTrail from '../components/MouseTrail'
 import Weather, { useWeather } from '../components/Weather'
 import DragList from '../components/DragList'
 import CardLayout from '../components/CardLayout'
+import DailyChallenge from '../components/DailyChallenge'
 import './Home.css'
 
 const SKILLS = [
@@ -416,6 +417,12 @@ function Home() {
             {c.content}
           </CardLayout>
         ))}
+
+        {/* 今日游戏挑战：按日期确定性从已有小游戏轮换一款 + 一言今日一句 */}
+        <div className="bento-section-title bento-span-12">
+          <span className="bento-card-num">03</span> 今日游戏挑战
+        </div>
+        <DailyChallenge />
 
         {/* 统计条 */}
         <footer className="bento-card bento-stats bento-span-12">
