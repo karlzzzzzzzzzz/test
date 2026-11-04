@@ -89,6 +89,9 @@ export class WhackEngine {
     this.nextSpawnAt = 0
     this.ignoreUntil = new Array(WHACK.HOLES).fill(0)
     this.graceUntil = 0
+    this._frozenPrepRemaining = 0
+    this._frozenMoleRemaining = 0
+    this._nextSpawnIn = 0
     this.remainingMs = WHACK.GAME_MS
     this.tickTimer = null
     this.dirty = false
@@ -118,6 +121,9 @@ export class WhackEngine {
     this.nextSpawnAt = this.startedAt + WHACK.FIRST_DELAY_MS
     this.ignoreUntil = new Array(WHACK.HOLES).fill(0)
     this.graceUntil = 0
+    this._frozenPrepRemaining = 0
+    this._frozenMoleRemaining = 0
+    this._nextSpawnIn = 0
     this.result = null
 
     this.stats.starts = safeInt(this.stats.starts + 1)
@@ -138,10 +144,9 @@ export class WhackEngine {
     const now = Date.now()
     // 准备期 / 恢复缓冲期：全部忽略，不计 miss
     if (now < this.startedAt || now < this.graceUntil) return 'ignored'
-    // 命中或消失后的忽略窗口
-    if (this.ignoreUntil[idx] > now) return 'ignored'
 
     const m = this.mole
+    // 命中判定优先于忽略窗口：若该洞位已有新地鼠（即使仍在 800ms 忽略期内），应判命中
     if (m && m.idx === idx && now < m.until) {
       // 先推进连击，再按本次连击数判定加成（连击 ≥4 起每次额外 +5）
       this.combo = this.lastHitAt && now - this.lastHitAt <= WHACK.COMBO_WINDOW_MS
@@ -164,6 +169,9 @@ export class WhackEngine {
       return 'hit'
     }
 
+    // 命中或消失后的忽略窗口（仅拦截击空，活地鼠已在上方命中）
+    if (this.ignoreUntil[idx] > now) return 'ignored'
+
     this.misses += 1
     this.combo = 0
     this.stats.misses = safeInt(this.stats.misses + 1)
@@ -178,6 +186,7 @@ export class WhackEngine {
     if (this.state !== 'playing') return
     const now = Date.now()
     this.remainingMs = Math.max(0, this.endAt - now)
+    this._frozenPrepRemaining = Math.max(0, this.startedAt - now)
     this._frozenMoleRemaining = this.mole ? Math.max(0, this.mole.until - now) : 0
     this._nextSpawnIn = Math.max(0, this.nextSpawnAt - now)
     this.state = 'paused'
@@ -188,15 +197,21 @@ export class WhackEngine {
     this._emit()
   }
 
-  /** 恢复：重置时钟基准，给 300ms 无输入缓冲 */
+  /** 恢复：重置时钟基准（含准备期基准），给 300ms 无输入缓冲 */
   resume() {
     if (this.state !== 'paused') return
     const now = Date.now()
     this.state = 'playing'
     this.endAt = now + this.remainingMs
     this.graceUntil = now + WHACK.RESUME_GRACE_MS
+    // 准备期内被暂停：剩余准备期保留，恢复后重新倒数
+    this.startedAt = now + this._frozenPrepRemaining
     if (this.mole && this._frozenMoleRemaining > 0) {
       this.mole.until = now + this._frozenMoleRemaining
+      this.nextSpawnAt = now + this._nextSpawnIn
+    } else if (this._frozenPrepRemaining > 0) {
+      // 仍在准备期：按原出鼠计划恢复
+      this.mole = null
       this.nextSpawnAt = now + this._nextSpawnIn
     } else {
       this.mole = null
@@ -332,10 +347,13 @@ export class WhackEngine {
 
   getSnapshot() {
     const now = Date.now()
-    const remain = this.state === 'paused'
-      ? this.remainingMs
+    const remain = this.state === 'paused' || this.state === 'ready'
+      // 准备期内暂停时 remainingMs 含准备期余量（>GAME_MS），HUD 显示封顶为完整时长
+      // （仅显示口径；resume 仍用原始 remainingMs 重建 endAt，实际游戏时长不受影响）
+      ? Math.min(this.remainingMs, WHACK.GAME_MS)
       : this.state === 'playing'
-        ? Math.max(0, this.endAt - now)
+        // 准备期不走倒计时：以 startedAt 为计时起点
+        ? Math.max(0, this.endAt - Math.max(now, this.startedAt))
         : 0
     const remainingSec = tickOf(remain)
     return {
