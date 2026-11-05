@@ -6,6 +6,7 @@ import memoryGame from './memory-game.md?raw'
 import lightsoutGame from './lightsout-game.md?raw'
 import connect4Game from './connect4-game.md?raw'
 import lianliankanGame from './lianliankan-game.md?raw'
+import sokobanGame from './sokoban-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
 
 export const docs = [
@@ -68,6 +69,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 8 分钟',
     content: lianliankanGame,
+  },
+  {
+    slug: 'sokoban-game',
+    title: '推箱子（Sokoban）需求文档与实现说明',
+    summary:
+      '第 16 款小游戏的需求文档：12 个手工关卡与三档限时、网格推箱与目标点判定、无限撤销与重开、计分公式、四态页面与双路暂停、触控/键盘无障碍、一言通关寄语降级，以及三个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: sokobanGame,
   },
   {
     slug: 'daily-challenge',

@@ -1,13 +1,13 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」新增页，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十二大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十六大功能模块。
 
 ### 1.2 技术栈
 
@@ -20,7 +20,7 @@
 | Markdown 渲染 | marked（GFM 模式） |
 | 特效 | 原生 Canvas 2D（鼠标轨迹） |
 | 数据持久化 | localStorage（无后端数据库） |
-| 外部 API | Open-Meteo（天气）、BigDataCloud（逆地理编码），均免费无 Key |
+| 外部 API | Open-Meteo（天气）、BigDataCloud（逆地理编码）、一言 Hitokoto（每日一句 / 推箱子通关寄语），均免费无 Key |
 
 ### 1.3 目录结构
 
@@ -38,6 +38,7 @@ react-app/src/
 │   ├── Memory.jsx / .css       # 记忆翻牌页面壳（语义化 DOM + roving tabindex + 触控）
 │   ├── Whack.jsx / .css         # 打地鼠页面壳（DOM 3×3 洞位 + 方向键无障碍 + 触控）
 │   ├── Puzzle.jsx / .css        # 数字华容道页面壳（DOM 3×3 滑块 + 点按/滑动 + 触控）
+│   ├── Sokoban.jsx / .css       # 推箱子页面壳（DOM 网格 + 相邻格点按/方向键/滑动 + 撤销）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -52,7 +53,8 @@ react-app/src/
 │   ├── SnakeEngine.js            # 贪吃蛇引擎（纯逻辑：固定节拍 + 容量 2 方向输入缓冲队列）
 │   ├── BreakoutEngine.js         # 打砖块引擎（纯逻辑：1/240s 固定步长物理 + 关卡布局 + 持久化）
 │   ├── WhackEngine.js            # 打地鼠引擎（纯逻辑：结束时间戳计时 + 出鼠节奏 + 连击 + 统计持久化）
-│   └── PuzzleEngine.js           # 数字华容道引擎（纯逻辑：随机合法移动打乱 + 步数/计时 + 完成判定，无持久化）
+│   ├── PuzzleEngine.js           # 数字华容道引擎（纯逻辑：随机合法移动打乱 + 步数/计时 + 完成判定，无持久化）
+│   └── SokobanEngine.js          # 推箱子引擎（纯逻辑：12 关地图解析 + 推箱规则 + 撤销栈 + 限时计分）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -60,7 +62,8 @@ react-app/src/
 │   ├── Weather.jsx              # 天气卡片
 │   └── CardLayout.jsx / .css   # 通用卡片布局组件（三段结构 + 技术标签）
 ├── api/
-│   └── leaderboard.js           # 排行榜 API（localStorage 版，接口对齐未来云函数版）
+│   ├── leaderboard.js           # 排行榜 API（localStorage 版，接口对齐未来云函数版）
+│   └── sokobanQuote.js          # 推箱子通关寄语（一言 API + 超时降级本地句子池 + 按日缓存）
 └── docs/
     ├── registry.js              # 文档注册表（slug / 标题 / 摘要 / 标签 / 内容）
     └── *.md                     # Markdown 文档源文件（Vite ?raw 导入）
@@ -82,6 +85,7 @@ react-app/src/
 | `/memory` | Memory 记忆翻牌 | **lazy 懒加载**（纯 DOM + 无障碍，独立分包） |
 | `/whack` | Whack 打地鼠 | **lazy 懒加载**（纯 DOM + 键盘无障碍，独立分包） |
 | `/puzzle` | Puzzle 数字华容道 | **lazy 懒加载**（纯 DOM + 触控滑动，独立分包） |
+| `/sokoban` | Sokoban 推箱子 | **lazy 懒加载**（纯 DOM + 撤销栈，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -117,8 +121,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：11 张由 `CardLayout` 渲染的卡片（飞机大战→/game、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、番茄时钟→/pomodoro、在线简历→/resume、提示词工程文档→/docs），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 11 个功能模块（进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-10-26 由 3 修正为 9，2026-10-30 由 9 修正为 10，2026-11-01 由 10 修正为 11，与作品入口卡片数对齐）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：16 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 16 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-05 随作品入口增至 16）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -463,7 +467,7 @@ Bento Grid 网格布局，自上而下：
   - 面包屑导航；页头设置 `document.title`。
   - 切换文档自动回顶；URL 带 `#锚点` 时延迟 50ms 平滑滚动到对应章节（等待渲染完成）。
   - slug 不存在显示"文档未找到"空态 + 返回列表链接。
-- 现有文档：`prompt-engineering`（提示词工程实战手册，2026-09）。
+- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`daily-challenge`。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 - **移动端横向溢出修复（2026-11-02）**：根因是 `.docs-page` 同时继承全局 `.page` 的 `align-items: center`，在 flex 纵向布局下正文按 max-content 宽度撑开（375px 视口下详情页实测宽 863px、横向溢出 504px）。修复为 `.docs-page` 显式 `width: 100%` + `box-sizing: border-box` + `align-items: stretch`，正文宽度跟随 `.docs-page` 上限；超宽表格与代码块改为在自身 `overflow-x: auto` 容器内横向滚动，不再撑破页面。实测 320/360/375/414/480/600/768/820/1024 九档宽度下列表页与详情页均无页面级横向溢出。
 
@@ -612,6 +616,61 @@ Bento Grid 网格布局，自上而下：
 
 - 本页**不读写任何存储键**：最佳步数存于 `PuzzleEngine.js` 模块级内存变量（本会话内有效，页面刷新即清空），不接排行榜（与打地鼠 3.13.2 的取舍一致）。
 
+### 3.15 推箱子（/sokoban，2026-11-05 新增）
+
+#### 3.15.1 架构
+
+- 页面壳 `Sokoban.jsx` 管理四态（start / playing / paused / over / failed）；引擎 `SokobanEngine.js` 纯逻辑（不依赖 React / DOM），通过 `onState` / `onGameOver` / `onPause` 回调与 UI 通信；页面每 200ms 调 `tick()` 驱动倒计时，`dispose()` 解除回调。
+- 数据层 `api/sokobanQuote.js`：一言请求、字段校验、本地降级句子池、按日缓存，全部容错（存储不可用 / JSON 损坏 / 版本或日期不符均视为无缓存）。
+- 渲染为**语义化 DOM**（CSS Grid + `<button>`，不用 Canvas）：`role="grid"` / 行 `role="row"` / 格 `role="gridcell"`；玩家所在格为唯一 `tabIndex=0`（roving tabindex），有效移动后焦点跟随玩家。
+
+#### 3.15.2 玩法规则与关卡
+
+- 地图符号：`#` 墙、`.` 目标点、`$` 箱子、`*` 箱在目标点、`@` 玩家、`+` 玩家在目标点；解析时校验行宽一致、玩家唯一、箱子数 = 目标数。
+- 四方向移动：目标格为墙 → 无效；目标格为箱子时，箱子后方必须为空地，否则整步无效（不增加步数）；有效移动 `moves+1`，推箱额外 `pushes+1`。
+- 全部箱子位于目标点 → 立即 `over` 并结算；箱子离开目标点只更新 HUD。
+- **撤销**：每次有效移动前保存 `{player, boxes, moves, pushes}`，可无限次回退且四项同步还原；历史上限 200 步，超出丢弃最早记录。空栈/非 playing 返回 false，无副作用。
+- **重开**：按当前关初始地图重建，步数/推箱/历史/计时全部清零。
+- 12 个手工关卡（入门 1~4 / 进阶 5~8 / 专家 9~12），最大 6 列 8 行；全部经独立 BFS 求解器验证可通关，`par` 即最短步数（3/5/6/8/9/10/13/13/19/23/26/27）。箱数从 1 增至 4。
+
+#### 3.15.3 计时、计分与失败
+
+- 计时在**首次有效移动**时启动，`elapsedBase + resumeAt` 双字段；`tick()` 每 200ms 刷新，达到限时（入门 120 / 进阶 150 / 专家 180 秒）→ `failed`，得分 0。
+- 未移动不启动计时、不会超时；暂停/切后台冻结时长，恢复重置时钟基准。
+- 通关得分 = `max(100, 基准分 − max(0, moves−par)×8 − floor(秒数)×2)`，基准分 500 / 800 / 1200，下限 100。
+- 暂停：`visibilitychange` + `window.blur` 双路 + `pausedByVisibilityRef` 去重；手动暂停与自动暂停在 paused 屏分别提示；暂停时棋盘 `pointer-events:none` 且 `aria-hidden`。
+
+#### 3.15.4 屏幕、触控与无障碍
+
+- **start 屏**：12 关分组列表（入门/进阶/专家），每关显示参考步数、限时与最佳分或「暂无记录」；点关即开局。start 卡 `max-height: calc(100svh - 32px)` 内部滚动。
+- **playing HUD**：关卡 n/12、步数、推箱、倒计时（`role="timer" aria-live="off"`）。
+- **触控**：点按玩家上下左右相邻格移动（非相邻格播报「只能移动到相邻格」）；3×3 方向键区（↑↓←→，单钮 ≥50px）；棋盘滑动位移 ≥24px 且主轴判定方向（`touch-action:none`）。
+- **键盘/读屏**：方向键直接移动并 `preventDefault` 阻止页面滚动；Enter/Space 播报当前格内容与归位进度；`aria-live` 播报开始/移动/推箱/撞墙/撤销/重开/通关/超时，`tick` 不重复播报。
+- **over 屏**：关卡/步数（含 par）/推箱/用时/得分/最佳 + 通关寄语；非末关显示「下一关」，末关显示「全部 12 关通关」；**failed 屏**：剩余未归位箱数 + 再试一次；**error 屏**：引擎异常 →「棋盘加载失败」+ 重试。
+
+#### 3.15.5 外部 API 与失败降级（约束卡）
+
+- 通关后请求一言 `https://v1.hitokoto.cn/?encode=json&charset=utf-8`，`AbortController` 3 秒超时；`normalizeQuote` 校验 `hitokoto` 非空、截断 80 字、`from` 截断 30 字。
+- 非 2xx / 超时 / 字段非法 → 降级 8 条本地句子池（按关卡确定性选句），标记来源「本地句子池」；成功与降级都写入当日缓存，同日不重复请求。
+
+#### 3.15.6 存储
+
+- `game-sokoban-best-v1`：`{ v:1, best:{ [levelId]:{score,moves,time} }, updatedAt }`，仅更高分覆盖；损坏/版本不符回退空对象。
+- `game-sokoban-stats-v1`：`{ v:1, plays, clears, pushes, timeByTier, updatedAt }` 累计；脏标记 + 1s 兜底 + `pagehide` 落盘；写入失败静默。
+- `game-sokoban-quote-v1`：`{ v:1, date, text, source, fallback }`，按日失效；载荷超 200 字符不写。
+- 配额满时游戏继续，结算页提示「本局成绩未保存」。
+
+#### 3.15.7 移动端与断点
+
+- 地图最多 6 列；<480 页面内边距 12px、棋盘内边距 8px、列间距 4px，320px 下 6 列单格实测 43px（≥40px）；地砖/墙/按钮统一 `box-sizing:border-box`，避免边框造成 2px `scrollWidth` 溢出。
+- 方向键区 50px 轨道、动作按钮 ≥44px、关卡按钮 ≥52px；`.sk-page` `min-height:100svh` + `overflow-x:hidden`；`prefers-reduced-motion` 关闭位移与过渡。
+- 实测 320/360/375/414/480/600/768/820/1024 九档：开始页与 playing 状态均为 0 横向溢出、0 越界、0 热区 <40px、0 字号 <12px；320/375 截图存于仓库根目录 `mobile-audit-shots/`。
+
+#### 3.15.8 验证
+
+- 新增单测 17 个（引擎 12 + 寄语 5），全量套件 86 个通过；覆盖 12 关最短解回放、推箱/撞墙、撤销四项回退、重开、超时、暂停冻结计时、计分、地图解析异常与寄语降级。
+- `npm run verify`（lint + 全量单测 + build）通过；新增代码无 lint error。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -634,9 +693,13 @@ Bento Grid 网格布局，自上而下：
 | `game-pause-board-cache-v1` | localStorage | 飞机大战暂停页排行榜降级缓存（`{ ts, items≤10 }`；TTL 5 分钟，成功响应覆盖） |
 | `game-pause-events-v1` | localStorage | 飞机大战暂停来源计数（`{ manual, visibility, blur, contextlost, total }`，0~999 封顶，仅本地累计） |
 | `mobile-layout-pref` | localStorage | 简历页移动端阅读偏好（`{ v:1, compact:boolean, fontScale:number(0.9~1.3), ts:number }`；30 天 TTL 自动清理；版本不符重置；`ts` 缺失/非正数视为过期清理；`fontScale` 按 0.1 步长归一后越界回退 1.0；>200B 截断；配额满降级内存；仅用户改动后落盘） |
+| `game-sokoban-best-v1` | localStorage | 推箱子每关最佳 `{ v:1, best:{ [levelId]:{score,moves,time} }, updatedAt }`；仅更高分覆盖，损坏回退空对象 |
+| `game-sokoban-stats-v1` | localStorage | 推箱子累计埋点 `{ v:1, plays, clears, pushes, timeByTier, updatedAt }`；1s 兜底 + pagehide 落盘，写入失败静默 |
+| `game-sokoban-quote-v1` | localStorage | 推箱子当日通关寄语缓存 `{ v:1, date, text, source, fallback }`；按日失效，超 200 字符不写 |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |
+| Hitokoto API | 外部 | 每日一句 / 推箱子通关寄语；3 秒超时，失败降级本地句子池并缓存 |
 
 ## 5. 已知不一致点（对比需求文档时需注意）
 
@@ -644,6 +707,7 @@ Bento Grid 网格布局，自上而下：
 
 1. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
 2. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
+3. **基线小节滞后**：关灯挑战 / 四连棋 / 连连看三个既有游戏此前未收录独立小节（1.3 文件树、1.4 路由表与 3.9 文档列表亦有缺项）；本次仅补齐第 16 张卡的 3.1 / 3.9 与新增 3.15 推箱子，其余既有缺项不追溯，避免混入无关改动。
 
 ## 6. 基线对比使用方式
 
