@@ -7,6 +7,7 @@ import lightsoutGame from './lightsout-game.md?raw'
 import connect4Game from './connect4-game.md?raw'
 import lianliankanGame from './lianliankan-game.md?raw'
 import sokobanGame from './sokoban-game.md?raw'
+import reversiGame from './reversi-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
 
 export const docs = [
@@ -79,6 +80,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 9 分钟',
     content: sokobanGame,
+  },
+  {
+    slug: 'reversi-game',
+    title: '黑白棋（Reversi）需求文档与实现说明',
+    summary:
+      '第 17 款小游戏的需求文档：8×8 棋盘夹吃翻转、合法位提示、对手无子自动跳过、终局计子、三档 AI（随机/贪心/alpha-beta 深度 3）、180 秒限时与计分公式、四态页面与双路暂停、键盘与 aria 无障碍，以及两个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Board Game'],
+    readTime: '约 9 分钟',
+    content: reversiGame,
   },
   {
     slug: 'daily-challenge',

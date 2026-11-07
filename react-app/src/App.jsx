@@ -32,6 +32,8 @@ const Connect4 = lazy(() => import('./pages/Connect4'))
 const Lianliankan = lazy(() => import('./pages/Lianliankan'))
 // 推箱子（纯 DOM + 触控滑动/方向键 + 撤销栈），按需加载（独立分包）
 const Sokoban = lazy(() => import('./pages/Sokoban'))
+// 黑白棋（纯 DOM + 触控点按 + 夹吃翻转 + 三档 AI），按需加载（独立分包）
+const Reversi = lazy(() => import('./pages/Reversi'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -142,6 +144,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Sokoban />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/reversi"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Reversi />
             </Suspense>
           }
         />
