@@ -8,6 +8,7 @@ import connect4Game from './connect4-game.md?raw'
 import lianliankanGame from './lianliankan-game.md?raw'
 import sokobanGame from './sokoban-game.md?raw'
 import reversiGame from './reversi-game.md?raw'
+import minesweeperGame from './minesweeper-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
 
 export const docs = [
@@ -90,6 +91,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Board Game'],
     readTime: '约 9 分钟',
     content: reversiGame,
+  },
+  {
+    slug: 'minesweeper-game',
+    title: '扫雷（Minesweeper）需求文档与实现说明',
+    summary:
+      '第 18 款小游戏的需求文档：7×7 / 8×8 / 8×10 三档雷区、首点安全布雷、数字提示与空白格洪泛展开、触屏标记插旗、撤销最多 3 次、180 秒限时与计分公式、四态页面与双路暂停、键盘与 aria 无障碍，以及两个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: minesweeperGame,
   },
   {
     slug: 'daily-challenge',
