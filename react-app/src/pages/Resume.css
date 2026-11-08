@@ -165,6 +165,11 @@
   font-size: 16px;
   letter-spacing: 1px;
 }
+.resume-page .goal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px; /* 内联链接也提供 ≥40px 触控热区 */
+}
 
 .resume-page .hero-meta {
   grid-area: meta;

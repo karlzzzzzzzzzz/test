@@ -33,6 +33,11 @@
 
 .game-back {
   pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px; /* 触控热区 ≥40px */
+  white-space: nowrap;
   color: #9db4d6;
   text-decoration: none;
   font-size: 15px;

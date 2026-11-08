@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import './Pomodoro.css'
 
 const MODES = {
-  focus: { label: '专注', minutes: 25, color: '#e2554c' },
-  short: { label: '短休息', minutes: 5, color: '#3a9d6e' },
-  long: { label: '长休息', minutes: 15, color: '#3d7dc9' },
+  // 主题色需满足白字/白底 ≥4.5:1（原 #e2554c 3.73、#3a9d6e 3.37、#3d7dc9 4.22 均不达标）
+  focus: { label: '专注', minutes: 25, color: '#c24138' },
+  short: { label: '短休息', minutes: 5, color: '#2c7a54' },
+  long: { label: '长休息', minutes: 15, color: '#2f68ad' },
 }
 
 const CYCLE = 4 // 每完成 4 个番茄钟进入一次长休息

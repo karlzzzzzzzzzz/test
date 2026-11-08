@@ -28,6 +28,11 @@
   letter-spacing: 0.02em;
 }
 .pz-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px; /* 触控热区 ≥40px */
+  white-space: nowrap;
   color: var(--home-text-dim, #a9b0c5);
   text-decoration: none;
   font-size: 0.9rem;
@@ -124,6 +129,7 @@
   min-height: 44px;
 }
 .pz-tile {
+  box-sizing: border-box; /* 边框不再撑出 2px scrollWidth */
   width: 100%;
   height: 100%;
   display: flex;
@@ -148,6 +154,7 @@
 .pz-tile-moved { animation: pz-pop 180ms ease-out; }
 .pz-blank {
   display: block;
+  box-sizing: border-box; /* 2px 边框含在宽高内，避免撑出 4px 横向滚动 */
   width: 100%;
   height: 100%;
   border-radius: 12px;

@@ -1,6 +1,6 @@
 ﻿/* 番茄钟页面：全部作用域隔离在 .pomo-page 下 */
 .pomo-page {
-  --accent: #e2554c;
+  --accent: #c24138; /* 对比度 ≥4.5:1（白底文字/白字按钮，原 #e2554c 仅 3.73） */
   min-height: calc(100svh - 60px);
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@
 
 .pomo-tip {
   font-size: 13px;
-  color: #999;
+  color: #6b6b6b; /* 白底 5.33:1（原 #999 仅 2.85） */
   margin: 0 0 22px;
 }
 
@@ -43,6 +43,10 @@
 }
 
 .pomo-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px; /* 触控热区 ≥40px */
   border: 1px solid #e3e0dc;
   background: #faf9f8;
   color: #666;
@@ -155,7 +159,7 @@
 /* 统计 */
 .pomo-stats p {
   font-size: 14px;
-  color: #888;
+  color: #6b6b6b; /* 白底 5.33:1（原 #888 仅 3.54） */
   margin: 0;
 }
 

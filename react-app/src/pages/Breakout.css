@@ -35,12 +35,19 @@
   width: 100%;
   max-width: 480px; /* 对齐画布 ≥768 显示宽度 */
   display: flex;
+  flex-wrap: wrap; /* 分数盒较多，窄屏换行避免 HUD 横向溢出 */
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  row-gap: 8px;
 }
 
 .breakout-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px; /* 触控热区 ≥40px */
+  white-space: nowrap;
   color: #9db4d6;
   text-decoration: none;
   font-size: 15px;
