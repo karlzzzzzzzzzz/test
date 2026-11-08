@@ -233,8 +233,3 @@ export class MemoryEngine {
   }
 }
 
-// 常量：最小步数、图标池、翻转锁定时长
-export const MEMORY = {
-  TICK_MS,
-  FLIP_LOCK_MS: 800,
-}

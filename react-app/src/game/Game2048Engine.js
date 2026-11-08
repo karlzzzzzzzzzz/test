@@ -538,11 +538,3 @@ export class Game2048 {
     }
   }
 }
-
-export const GAME_2048_CONSTANTS = {
-  SIZE,
-  WIN_VALUE,
-  INITIAL_UNDOS,
-  STORAGE_KEY,
-  SCHEMA_VERSION,
-}

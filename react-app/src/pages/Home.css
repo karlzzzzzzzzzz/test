@@ -1,16 +1,9 @@
 /* ============================================================
    首页样式：Bento Grid 网格展示台（方案三）
    作用域全部隔离在 .home-page 下
-   保留：鼠标轨迹 canvas、@property 动画、backdrop-filter、
-        color-mix、:has、clip-path、mask-image
+   保留：鼠标轨迹 canvas、backdrop-filter、color-mix、:has、
+        clip-path、mask-image
    ============================================================ */
-
-/* 自定义属性：用于渐变角度动画 */
-@property --home-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
 
 .home-page {
   --home-accent: #aa3bff;
@@ -773,12 +766,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes bento-rotate {
-  to {
-    --home-angle: 360deg;
   }
 }
 

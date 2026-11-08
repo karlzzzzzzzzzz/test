@@ -727,9 +727,8 @@ export class SpaceShooter {
     this.scene.traverse((obj) => {
       if (obj.geometry) obj.geometry.dispose()
       if (obj.material) {
-        Array.isArray(obj.material)
-          ? obj.material.forEach((m) => m.dispose())
-          : obj.material.dispose()
+        if (Array.isArray(obj.material)) obj.material.forEach((m) => m.dispose())
+        else obj.material.dispose()
       }
     })
     this.renderer.dispose()
