@@ -1,21 +1,23 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」新增页，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
+>
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-08 共 13 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十六大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十八大功能模块。
 
 ### 1.2 技术栈
 
 | 类别 | 技术 |
 |------|------|
-| 框架 | React 18（函数组件 + Hooks） |
+| 框架 | React 19（函数组件 + Hooks，`react ^19.2.8`） |
 | 构建工具 | Vite |
-| 路由 | React Router v6（HashRouter） |
+| 路由 | React Router v7（HashRouter，`react-router-dom ^7.18.3`） |
 | 3D 渲染 | Three.js（游戏引擎自研封装 `SpaceShooter` 类） |
 | Markdown 渲染 | marked（GFM 模式） |
 | 特效 | 原生 Canvas 2D（鼠标轨迹） |
@@ -39,6 +41,11 @@ react-app/src/
 │   ├── Whack.jsx / .css         # 打地鼠页面壳（DOM 3×3 洞位 + 方向键无障碍 + 触控）
 │   ├── Puzzle.jsx / .css        # 数字华容道页面壳（DOM 3×3 滑块 + 点按/滑动 + 触控）
 │   ├── Sokoban.jsx / .css       # 推箱子页面壳（DOM 网格 + 相邻格点按/方向键/滑动 + 撤销）
+│   ├── LightsOut.jsx / .css     # 关灯挑战页面壳（DOM 棋盘 + 十字翻转 + 撤销）
+│   ├── Connect4.jsx / .css      # 四连棋页面壳（DOM 列棋盘 + 三档 AI + 触控）
+│   ├── Lianliankan.jsx / .css   # 连连看页面壳（DOM 牌面 + 点选配对 + 提示/重排）
+│   ├── Reversi.jsx / .css       # 黑白棋页面壳（DOM 8×8 棋盘 + 三档 AI + 落子预览）
+│   ├── Minesweeper.jsx / .css   # 扫雷页面壳（DOM 雷区 + 首点安全 + 插旗 + 撤销）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -54,7 +61,12 @@ react-app/src/
 │   ├── BreakoutEngine.js         # 打砖块引擎（纯逻辑：1/240s 固定步长物理 + 关卡布局 + 持久化）
 │   ├── WhackEngine.js            # 打地鼠引擎（纯逻辑：结束时间戳计时 + 出鼠节奏 + 连击 + 统计持久化）
 │   ├── PuzzleEngine.js           # 数字华容道引擎（纯逻辑：随机合法移动打乱 + 步数/计时 + 完成判定，无持久化）
-│   └── SokobanEngine.js          # 推箱子引擎（纯逻辑：12 关地图解析 + 推箱规则 + 撤销栈 + 限时计分）
+│   ├── SokobanEngine.js          # 推箱子引擎（纯逻辑：12 关地图解析 + 推箱规则 + 撤销栈 + 限时计分）
+│   ├── LightsOutEngine.js         # 关灯挑战引擎（纯逻辑：十字翻转 + 打乱保证可解 + 撤销 + 计分）
+│   ├── Connect4Engine.js          # 四连棋引擎（纯逻辑：重力落子 + 胜负检测 + 三档 AI）
+│   ├── LianliankanEngine.js       # 连连看引擎（纯逻辑：≤2 折线连通判定 + 可解重排 + 计时计分）
+│   ├── ReversiEngine.js           # 黑白棋引擎（纯逻辑：八方向翻转 + 合法着法 + 三档 AI）
+│   └── MinesweeperEngine.js       # 扫雷引擎（纯逻辑：首点安全布雷 + 洪泛展开 + 撤销栈）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -63,7 +75,8 @@ react-app/src/
 │   └── CardLayout.jsx / .css   # 通用卡片布局组件（三段结构 + 技术标签）
 ├── api/
 │   ├── leaderboard.js           # 排行榜 API（localStorage 版，接口对齐未来云函数版）
-│   └── sokobanQuote.js          # 推箱子通关寄语（一言 API + 超时降级本地句子池 + 按日缓存）
+│   ├── sokobanQuote.js          # 推箱子通关寄语（一言 API + 超时降级本地句子池 + 按日缓存）
+│   └── dailyChallenge.js        # 今日游戏挑战（按日期哈希确定性选游戏 + 每日缓存）
 └── docs/
     ├── registry.js              # 文档注册表（slug / 标题 / 摘要 / 标签 / 内容）
     └── *.md                     # Markdown 文档源文件（Vite ?raw 导入）
@@ -86,6 +99,11 @@ react-app/src/
 | `/whack` | Whack 打地鼠 | **lazy 懒加载**（纯 DOM + 键盘无障碍，独立分包） |
 | `/puzzle` | Puzzle 数字华容道 | **lazy 懒加载**（纯 DOM + 触控滑动，独立分包） |
 | `/sokoban` | Sokoban 推箱子 | **lazy 懒加载**（纯 DOM + 撤销栈，独立分包） |
+| `/lightsout` | LightsOut 关灯挑战 | **lazy 懒加载**（纯 DOM + 十字翻转，独立分包） |
+| `/connect4` | Connect4 四连棋 | **lazy 懒加载**（纯 DOM + 三档 AI，独立分包） |
+| `/lianliankan` | Lianliankan 连连看 | **lazy 懒加载**（纯 DOM + 连通判定，独立分包） |
+| `/reversi` | Reversi 黑白棋 | **lazy 懒加载**（纯 DOM + 三档 AI，独立分包） |
+| `/minesweeper` | Minesweeper 扫雷 | **lazy 懒加载**（纯 DOM + 雷区状态机，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -121,8 +139,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：16 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 16 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-05 随作品入口增至 16）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：18 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 18 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-08 随作品入口增至 18）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -467,7 +485,7 @@ Bento Grid 网格布局，自上而下：
   - 面包屑导航；页头设置 `document.title`。
   - 切换文档自动回顶；URL 带 `#锚点` 时延迟 50ms 平滑滚动到对应章节（等待渲染完成）。
   - slug 不存在显示"文档未找到"空态 + 返回列表链接。
-- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`daily-challenge`。
+- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`reversi-game`（黑白棋，2026-11-07 新增）、`minesweeper-game`（扫雷，2026-11-08 新增）、`daily-challenge`。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 - **移动端横向溢出修复（2026-11-02）**：根因是 `.docs-page` 同时继承全局 `.page` 的 `align-items: center`，在 flex 纵向布局下正文按 max-content 宽度撑开（375px 视口下详情页实测宽 863px、横向溢出 504px）。修复为 `.docs-page` 显式 `width: 100%` + `box-sizing: border-box` + `align-items: stretch`，正文宽度跟随 `.docs-page` 上限；超宽表格与代码块改为在自身 `overflow-x: auto` 容器内横向滚动，不再撑破页面。实测 320/360/375/414/480/600/768/820/1024 九档宽度下列表页与详情页均无页面级横向溢出。
 
@@ -671,6 +689,140 @@ Bento Grid 网格布局，自上而下：
 - 新增单测 17 个（引擎 12 + 寄语 5），全量套件 86 个通过；覆盖 12 关最短解回放、推箱/撞墙、撤销四项回退、重开、超时、暂停冻结计时、计分、地图解析异常与寄语降级。
 - `npm run verify`（lint + 全量单测 + build）通过；新增代码无 lint error。
 
+### 3.16 关灯挑战（/lightsout，2026-11-02 新增）
+
+#### 3.16.1 架构
+
+- 页面壳 `LightsOut.jsx` 管理 start / playing / paused / over 四态与 HUD；引擎 `LightsOutEngine.js` 纯逻辑（不依赖 React），通过回调与 UI 通信；卸载清理计时器。
+
+#### 3.16.2 玩法规则
+
+- **难度**：轻松 4×4（打乱 5 步 / 限时 90s / 基准 600）、挑战 5×5（8 步 / 150s / 900）、专家 6×6（12 步 / 180s / 1200）。
+- **翻转**：点按一盏灯会翻转自身与上下左右共 5 格（十字）；棋盘由「全灭」状态按记录逆序打乱，保证一定可解。
+- **胜负**：全部熄灭即胜利；倒计时归零进入超时遮罩，不写最佳记录；「重新打乱」以当前难度重开。
+
+#### 3.16.3 计分与存储
+
+- `score = max(100, round(base − max(0, steps − par) × 8 − elapsedSec × 2))`，`par` 等于打乱步数。
+- 撤销每局 3 次，回退最后一步但**步数不返还**；胜利后写 `game-lightsout-best-v1`（`{easy:{score,steps,time}, normal:{...}, hard:{...}}`，仅更高分覆盖）。
+- 埋点 `game-lightsout-stats-v1`：`{plays, wins, steps, timeByLevel, updatedAt}` 全生命周期累计，脏标记 + 1s 兜底 + `pagehide` 落盘。
+
+#### 3.16.4 无障碍与移动端
+
+- 棋盘 `role=grid` / `row` / `gridcell` + roving tabindex，方向键移动、Enter/Space 翻转；`aria-live=polite` 播报剩余灯数与撤销结果，计时器 `aria-live=off`。
+- 单格与动作按钮触控热区 ≥40px；`prefers-reduced-motion` 关闭过渡；九档宽度（320~1024）审计 0 横向溢出、0 热区违规。
+
+#### 3.16.5 验证
+
+- 引擎单测覆盖翻转、打乱可解、胜利/超时、计分封底、撤销上限与「胜利后撤销」竞态；五款新游戏引擎合计 69 例 `node:test` 全部通过。
+
+### 3.17 四连棋（/connect4，2026-11-03 新增）
+
+#### 3.17.1 架构
+
+- 页面壳 `Connect4.jsx` 四态状态机 + `Connect4Engine.js` 纯逻辑（重力落子、胜负检测、三档 AI）；棋盘 6 行 × 7 列。
+
+#### 3.17.2 玩法规则
+
+- **AI 三档**：轻松（基准 600 分，40% 随机走子）、挑战（900 分，1 层局面评估）、专家（1200 分，alpha-beta 深度 4）。
+- **回合**：玩家先行，落子受重力约束；横、竖、两条斜线任一方向连成 4 子即胜；棋盘填满为平局；限时 180s，超时判负。
+- 电脑回合棋盘用 `aria-disabled` 而非 `disabled`，保留键盘焦点。
+
+#### 3.17.3 计分与存储
+
+- `score = max(100, round(base − 落子数 × 12 − 用时秒 × 2))`，仅胜利计分。
+- `game-connect4-best-v1` 按难度存 `{score, moves, time}`；`game-connect4-stats-v1` 累计 `{plays, wins, losses, draws, moves, timeByLevel, updatedAt}`。
+
+#### 3.17.4 无障碍与移动端
+
+- 棋盘 `role=grid` + roving tabindex，方向键 / Home / End / Enter / Space 操作；`aria-live=polite` 按 `lastAction + moves + turn` 去重播报，tick 不重复打扰。
+- 7 列棋盘在窄屏按比例压缩，单格触控热区 ≥40px；九档审计 0 违规。
+
+#### 3.17.5 验证
+
+- 覆盖重力落子、四方向成四、回合流转、三档 AI、平局/超时、暂停冻结、计分与存储降级。
+
+### 3.18 连连看（/lianliankan，2026-11-03 新增）
+
+#### 3.18.1 架构
+
+- 页面壳 `Lianliankan.jsx` 四态 + `LianliankanEngine.js` 纯逻辑（≤2 折线连通判定、可解性检查、重排）；棋盘外圈留一圈空白边界用于折线绕行。
+
+#### 3.18.2 玩法规则
+
+- **难度**：轻松 6×6 / 18 对 / 180s / 基准 600；挑战 6×7 / 21 对 / 150s / 900；专家 6×8 / 24 对 / 120s / 1200（图案种类 6 / 8 / 10）。
+- **消除**：两张相同图案且不超过 2 次转弯连通即可消除；无解时自动免费洗牌，保证始终存在可消除对。
+- **道具**：提示每局 3 次（返回一对可连通坐标并高亮），手动洗牌每局 2 次；次数用尽按钮禁用。
+- 倒计时首次点按启动；切后台/失焦自动暂停，恢复后不补算暂停时长。
+
+#### 3.18.3 计分与存储
+
+- `score = max(100, 基准 − floor(用时秒) × 2 − 误点 × 5)`，未通关不计分。
+- `game-lianliankan-best-v1` 按难度存 `{score,time,pairs}`；`game-lianliankan-stats-v1` 累计 `{plays,wins,pairs,timeByLevel,updatedAt}`。
+
+#### 3.18.4 无障碍与移动端
+
+- 棋盘 `role=grid` + roving tabindex，方向键移动、Enter/Space 选中；`aria-live=polite` 播报消除、误点、洗牌与胜负；颜色之外另有图案区分。
+- 窄屏按列压缩，单格触控热区 ≥40px；九档审计 0 违规。
+
+#### 3.18.5 验证
+
+- 覆盖连通判定（0/1/2 折线与不可连通）、消除、自动洗牌、提示/洗牌次数、暂停与超时。
+
+### 3.19 黑白棋（/reversi，2026-11-07 新增）
+
+#### 3.19.1 架构
+
+- 页面壳 `Reversi.jsx` 四态 + `ReversiEngine.js` 纯逻辑（八方向夹吃翻转、合法着法枚举、终局计子、三档 AI）；8×8 棋盘。
+
+#### 3.19.2 玩法规则
+
+- **初始盘面**：中心四子黑 d5/e4、白 d4/e5，黑先手；初始合法点固定 c4/d3/e6/f5。
+- **落子**：必须夹住至少一枚对方棋子，落子后八方向翻转；对手无合法点自动跳过并播报「对手跳过」；双方都无合法点或棋盘落满时按棋子数定胜负（相等为平局）。
+- **AI 三档**：随机走神 / 贪心抢角 / 向前算 3 步；限时 180s，超时得分 0。
+
+#### 3.19.3 计分与存储
+
+- `score = max(100, base − moves × 12 − floor(elapsed) × 2 + max(0, 黑子 − 白子) × 20)`；base 600 / 900 / 1200，仅胜利计分。
+- `game-reversi-best-v1` 按难度存 `{score, moves, time}`；`game-reversi-stats-v1` 累计 `{plays, wins, losses, draws, moves, timeByLevel, updatedAt}`。
+
+#### 3.19.4 无障碍与移动端
+
+- 棋盘 `role=grid`，合法点以小圆点提示且不只靠颜色；`aria-live=polite` 播报落子、翻转、跳过与终局；`prefers-reduced-motion` 关闭翻转动画。
+- 8×8 在 320px 下仍保持单格 ≥40px；九档审计 0 违规。
+
+#### 3.19.5 验证
+
+- 覆盖初始合法点、八方向翻转、无子可落自动跳过、终端计子、三档 AI、计分与存储降级。
+
+### 3.20 扫雷（/minesweeper，2026-11-08 新增）
+
+#### 3.20.1 架构
+
+- 页面壳 `Minesweeper.jsx` 四态 + `MinesweeperEngine.js` 纯逻辑（首点安全布雷、数字/洪泛、插旗、撤销栈、计分）；棋盘 `role=grid`。
+
+#### 3.20.2 玩法规则
+
+- **难度**：轻松 7×7 / 8 雷；挑战 8×8 / 12 雷；专家 8 列 × 10 行 / 20 雷；单局限时 180s。
+- **首点安全**：首次翻开保证该格及其八邻域无雷（必要时延迟布雷），相邻 0 雷的空白格向八方向洪泛展开，遇数字格或边界停止。
+- **插旗**：仅未翻开格可插旗/撤旗，旗数上限等于雷数；触屏用「标记模式」，键盘 `F` 直接插旗。
+- **撤销**：记录翻开（含洪泛格）与插旗，最多 3 次；回退首次翻开会重置雷区、计时与安全计数；局末不可撤销。
+- 120ms 内的重复翻开/插旗/撤销忽略，页面播报「操作过快」。
+
+#### 3.20.3 计分与存储
+
+- `score = max(100, baseScore − floor(elapsed) × 2)`，base 600 / 900 / 1200；踩雷、超时不计分，插旗错误不影响胜负判定。
+- `game-minesweeper-best-v1` 每档存 `{score, time, undoLeft}`；`game-minesweeper-stats-v1` 累计 `{plays, wins, losses, timeouts, timeByLevel, reveals, updatedAt}`。
+
+#### 3.20.4 无障碍与移动端
+
+- roving tabindex + 方向键 / Home / End 移动焦点，Enter/Space 按当前模式执行；`aria-live=polite` 播报翻开、洪泛、插旗、撤销与胜负，计时器 `aria-live=off`。
+- 8~10 列棋盘在窄屏按比例压缩，单格触控热区 ≥40px；九档审计 0 违规。
+
+#### 3.20.5 验证
+
+- 覆盖首点安全、洪泛边界、插旗上限、撤销三类回退、踩雷/胜利、节流与计分。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -696,6 +848,16 @@ Bento Grid 网格布局，自上而下：
 | `game-sokoban-best-v1` | localStorage | 推箱子每关最佳 `{ v:1, best:{ [levelId]:{score,moves,time} }, updatedAt }`；仅更高分覆盖，损坏回退空对象 |
 | `game-sokoban-stats-v1` | localStorage | 推箱子累计埋点 `{ v:1, plays, clears, pushes, timeByTier, updatedAt }`；1s 兜底 + pagehide 落盘，写入失败静默 |
 | `game-sokoban-quote-v1` | localStorage | 推箱子当日通关寄语缓存 `{ v:1, date, text, source, fallback }`；按日失效，超 200 字符不写 |
+| `game-lightsout-best-v1` | localStorage | 关灯挑战每档最佳 `{ v:1, best:{easy:{score,steps,time},normal:{...},hard:{...}}, updatedAt }`；仅更高分覆盖 |
+| `game-lightsout-stats-v1` | localStorage | 关灯挑战累计埋点 `{ v:1, plays, wins, steps, timeByLevel, updatedAt }`；1s 兜底 + pagehide 落盘 |
+| `game-connect4-best-v1` | localStorage | 四连棋每档最佳 `{ v:1, best:{easy:{score,moves,time},...}, updatedAt }`；仅胜利且更高分覆盖 |
+| `game-connect4-stats-v1` | localStorage | 四连棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, timeByLevel, updatedAt }` |
+| `game-lianliankan-best-v1` | localStorage | 连连看每档最佳 `{ v:1, best:{easy:{score,time,pairs},...}, updatedAt }`；仅通关且更高分覆盖 |
+| `game-lianliankan-stats-v1` | localStorage | 连连看累计埋点 `{ v:1, plays, wins, pairs, timeByLevel, updatedAt }` |
+| `game-reversi-best-v1` | localStorage | 黑白棋每档最佳 `{ v:1, best:{easy:{score,moves,time},...}, updatedAt }`；仅胜利且更高分覆盖 |
+| `game-reversi-stats-v1` | localStorage | 黑白棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, timeByLevel, updatedAt }` |
+| `game-minesweeper-best-v1` | localStorage | 扫雷每档最佳 `{ v:1, best:{easy:{score,time,undoLeft},...}, updatedAt }`；仅胜利且更高分覆盖 |
+| `game-minesweeper-stats-v1` | localStorage | 扫雷累计埋点 `{ v:1, plays, wins, losses, timeouts, timeByLevel, reveals, updatedAt }` |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |
@@ -707,7 +869,7 @@ Bento Grid 网格布局，自上而下：
 
 1. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
 2. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
-3. **基线小节滞后**：关灯挑战 / 四连棋 / 连连看三个既有游戏此前未收录独立小节（1.3 文件树、1.4 路由表与 3.9 文档列表亦有缺项）；本次仅补齐第 16 张卡的 3.1 / 3.9 与新增 3.15 推箱子，其余既有缺项不追溯，避免混入无关改动。
+3. **今日游戏挑战轮换池滞后**：`src/api/dailyChallenge.js` 的 `GAMES` 仅 11 款（含飞机大战，缺推箱子 / 黑白棋 / 扫雷），而首页已有 13 款小游戏，每日挑战不会抽到这三款；补齐会改变每日抽题分布并需同步改 `dailyChallenge.test.js` 的硬编码数量，本轮不动，待拍板。
 
 ## 6. 基线对比使用方式
 
