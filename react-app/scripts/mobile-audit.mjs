@@ -2,12 +2,17 @@
 /**
  * 移动端审计（统一入口，无第三方依赖）
  *
- * 用法（在 react-app 目录，先起 dev 或 preview）：
+ * 用法（在 react-app 目录）：
  *   npm run audit:mobile
  *   npm run audit:mobile -- --url http://localhost:5199/#/docs --selector '#root'
  *   npm run audit:mobile -- --widths 320,375,414 --no-shots
  *
+ * 本地 URL（localhost/127.0.0.1）若未起服务，会用 dist 自动启动 vite preview，
+ * 结束后关闭；dist 不存在时提示先 npm run build（或手动起 dev server）。
+ *
  * 检查项：320~1024 各档横向溢出/元素越界、可见文本最小字号、可点热区尺寸。
+ * 视觉隐藏的读屏播报区（.sr-only、clip-path: inset(50%)、1px 绝对定位 + overflow:hidden、
+ * opacity:0 的绝对定位元素）不参与越界/滚动/字号判定，避免把 left:-9999px 的 sr-only 当越界。
  * 有任一违规时退出码 1，并输出 JSON 明细；默认在 320/375 各存一张整屏截图。
  */
 
@@ -38,6 +43,40 @@ const opts = {
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** 本地 URL 无服务时自动起 vite preview（审计结束由调用方关闭） */
+async function ensureServer() {
+  const target = new URL(opts.url);
+  try {
+    const res = await fetch(target.origin);
+    if (res.ok) return null;
+  } catch {}
+  if (!['127.0.0.1', 'localhost'].includes(target.hostname)) {
+    throw new Error(`目标 ${opts.url} 不可访问；非本机地址请先启动服务`);
+  }
+  if (!fs.existsSync(path.join(APP_DIR, 'dist/index.html'))) {
+    throw new Error('dist/index.html 不存在：先 npm run build，或手动起 dev server 后重跑');
+  }
+  const viteBin = path.join(APP_DIR, 'node_modules/vite/bin/vite.js');
+  const port = Number(target.port) || 5199;
+  const child = spawn(process.execPath, [viteBin, 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], {
+    cwd: APP_DIR,
+    stdio: 'ignore',
+  });
+  for (let i = 0; i < 60; i++) {
+    if (child.exitCode !== null) throw new Error(`vite preview 退出（code ${child.exitCode}），端口 ${port} 可能被占用`);
+    try {
+      const res = await fetch(target.origin);
+      if (res.ok) {
+        console.log(`未检测到本地服务，已自动启动 vite preview:${port}`);
+        return child;
+      }
+    } catch {}
+    await sleep(250);
+  }
+  try { child.kill(); } catch {}
+  throw new Error(`vite preview 未在 ${target.origin} 就绪`);
+}
 
 function findChrome() {
   const candidates = [
@@ -154,15 +193,25 @@ async function launch() {
 const measureScript = (selector, minFont, minTarget) => `(() => {
   const root = document.querySelector(${JSON.stringify(selector)});
   if (!root) return JSON.stringify({ error: 'selector not found' });
-  const srOnly = (el) => el.classList.contains('sr-only')
-    || getComputedStyle(el).clipPath === 'inset(50%)';
+  const visuallyHidden = (el) => {
+    if (el.classList.contains('sr-only')) return true;
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return true;
+    if (cs.clipPath === 'inset(50%)') return true;
+    if ((cs.position === 'absolute' || cs.position === 'fixed') && cs.overflow === 'hidden') {
+      const r = el.getBoundingClientRect();
+      if (r.width <= 1 || r.height <= 1) return true;
+      if (Number(cs.opacity) === 0) return true;
+    }
+    return false;
+  };
   const outside = [];
   const fontOffenders = [];
   let minFontSeen = 999;
   for (const el of root.querySelectorAll('*')) {
     const r = el.getBoundingClientRect();
     if (r.width <= 0 && r.height <= 0) continue;
-    if (!srOnly(el)) {
+    if (!visuallyHidden(el)) {
       if (r.right > innerWidth + 1 || r.left < -1) {
         outside.push(String(el.className || el.tagName).slice(0, 40) + '@' + Math.round(r.right) + '/' + Math.round(r.left));
       }
@@ -198,10 +247,12 @@ const measureScript = (selector, minFont, minTarget) => `(() => {
 async function main() {
   if (opts.shots) fs.mkdirSync(opts.shots, { recursive: true });
 
-  const cdp = await launch();
+  const server = await ensureServer();
+  let cdp = null;
   const results = [];
   const violations = [];
   try {
+    cdp = await launch();
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 375, height: 900, deviceScaleFactor: 2, mobile: true });
     await cdp.send('Page.navigate', { url: opts.url });
     await cdp.waitFor('document.readyState', (s) => s === 'complete', '页面加载');
@@ -227,7 +278,10 @@ async function main() {
       }
     }
   } finally {
-    await cdp.close();
+    if (cdp) await cdp.close();
+    if (server) {
+      try { server.kill(); } catch {}
+    }
   }
 
   console.log('\n=== SUMMARY ===');
