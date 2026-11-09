@@ -322,7 +322,45 @@
 .weather-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+}
+
+/* 降级态（stale）：琥珀色虚线外框 + 正文 60% 透明度，标识非实时数据
+   outline 不参与布局，四态切换卡片高度不变 */
+.bento-weather {
+  --stale-ink: #b45309;
+}
+
+.bento-weather.is-stale {
+  outline: 1px dashed color-mix(in srgb, var(--stale-ink) 45%, transparent);
+  outline-offset: -1px;
+}
+
+.bento-weather.is-stale .weather-body,
+.bento-weather.is-stale .weather-meta {
+  opacity: 0.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bento-weather {
+    --stale-ink: #fbbf24;
+  }
+}
+
+/* 降级徽标：嵌在表头行内，不新增行高，避免四态切换抖动 */
+.weather-stale-chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border: 1px dashed color-mix(in srgb, currentColor 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: var(--stale-ink);
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .weather-title {
@@ -331,7 +369,7 @@
   text-transform: uppercase;
   color: var(--home-accent-text);
   font-weight: 600;
-  margin: 0;
+  margin: 0 auto 0 0;
 }
 
 .weather-refresh {
@@ -427,6 +465,59 @@
   gap: 8px;
   font-size: 12px;
   color: var(--home-text);
+}
+
+.weather-place-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 降级态行内操作：热区 40px 用 padding + 负外边距补足，行高与正常态一致（不抖动） */
+.weather-place-actions {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.weather-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 10px;
+  margin: -11px 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--home-accent-text);
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.weather-inline-btn:hover:not(:disabled) {
+  color: var(--home-accent);
+  text-decoration: underline;
+}
+
+.weather-inline-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.weather-inline-btn:focus-visible {
+  outline: 2px solid #aa3bff;
+  outline-offset: 2px;
+}
+
+/* 统计条降级态：缓存数据的时间后缀 */
+.bento-stat-weather-age {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.75;
 }
 
 .weather-source {

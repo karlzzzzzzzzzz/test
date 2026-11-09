@@ -10,6 +10,7 @@ import sokobanGame from './sokoban-game.md?raw'
 import reversiGame from './reversi-game.md?raw'
 import minesweeperGame from './minesweeper-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
+import weatherRobustness from './weather-robustness.md?raw'
 
 export const docs = [
   {
@@ -111,6 +112,16 @@ export const docs = [
     tags: ['首页', 'Daily', 'A11y'],
     readTime: '约 8 分钟',
     content: dailyChallenge,
+  },
+  {
+    slug: 'weather-robustness',
+    title: '首页本地天气卡片 请求链路健壮性与失败回退 需求文档',
+    summary:
+      '天气卡片健壮性需求文档：AbortController 10s 超时与并发去重、最多 2 次退避重试、上次成功快照的 stale 降级态（60 分钟有效）、1 级回退与重试按钮 5s 冻结、自动刷新 20/40/60 分钟指数退避、切后台双路暂停、首页统计条 stale 摘要格与 MouseTrail 天气词库联动，以及两个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['首页', '天气', '健壮性'],
+    readTime: '约 9 分钟',
+    content: weatherRobustness,
   },
 ]
 

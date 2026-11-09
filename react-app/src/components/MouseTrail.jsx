@@ -61,11 +61,16 @@ function MouseTrail() {
     // hover/聚焦到带 data-keywords 元素时的主题词表（如精选作品卡），null 时用通用词表
     let mouseKeywords = null
     let focusKeywords = null
+    // 当前 hover/聚焦的是否为天气卡片降级态（stale）：光晕改琥珀色，其余保持紫色
+    let mouseStale = false
+    let focusStale = false
 
     const readKeywords = (el) => {
       const kwEl = el && el.closest && el.closest('[data-keywords]')
       return kwEl ? kwEl.getAttribute('data-keywords').split(',') : null
     }
+
+    const readStale = (el) => !!(el && el.closest && el.closest('[data-weather-stale="true"]'))
 
     const pickKeyword = () => {
       const pool = mouseKeywords || focusKeywords || KEYWORDS
@@ -101,6 +106,7 @@ function MouseTrail() {
 
       const el = e.target
       mouseKeywords = readKeywords(el)
+      mouseStale = readStale(el)
       mouseHovering = !!(el && el.closest && el.closest('a, button, [role="button"]'))
     }
 
@@ -109,6 +115,7 @@ function MouseTrail() {
       target.y = -9999
       mouseHovering = false
       mouseKeywords = null
+      mouseStale = false
     }
 
     // 键盘 focus 联动：focus-visible 时光晕放大变紫、粒子变紫并使用主题词表（与 hover 等效）
@@ -117,11 +124,13 @@ function MouseTrail() {
       if (!el || !el.matches || !el.matches(':focus-visible')) return
       focusHovering = true
       focusKeywords = readKeywords(el)
+      focusStale = readStale(el)
     }
 
     const onFocusOut = () => {
       focusHovering = false
       focusKeywords = null
+      focusStale = false
     }
 
     window.addEventListener('mousemove', onMove, { passive: true })
@@ -134,6 +143,9 @@ function MouseTrail() {
 
     const render = () => {
       const hovering = mouseHovering || focusHovering
+      // 天气卡片降级态：悬停光晕改琥珀色（#d97706），恢复正常态后立即回到紫色
+      const staleGlow = (mouseHovering && mouseStale) || (focusHovering && focusStale)
+      const glowRgb = staleGlow ? '217, 119, 6' : '170, 59, 255'
       ctx.clearRect(0, 0, width, height)
 
       // 光晕缓动跟随
@@ -145,9 +157,9 @@ function MouseTrail() {
         glow.x, glow.y, 0,
         glow.x, glow.y, glowRadius,
       )
-      gradient.addColorStop(0, hovering ? 'rgba(170, 59, 255, 0.16)' : 'rgba(170, 59, 255, 0.09)')
-      gradient.addColorStop(0.4, 'rgba(170, 59, 255, 0.04)')
-      gradient.addColorStop(1, 'rgba(170, 59, 255, 0)')
+      gradient.addColorStop(0, `rgba(${glowRgb}, ${hovering ? 0.16 : 0.09})`)
+      gradient.addColorStop(0.4, `rgba(${glowRgb}, 0.04)`)
+      gradient.addColorStop(1, `rgba(${glowRgb}, 0)`)
       ctx.fillStyle = gradient
       ctx.beginPath()
       ctx.arc(glow.x, glow.y, glowRadius, 0, Math.PI * 2)

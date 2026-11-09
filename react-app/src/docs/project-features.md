@@ -1,6 +1,6 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
 > **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-08 共 13 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
@@ -140,7 +140,7 @@ Bento Grid 网格布局，自上而下：
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
 4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：18 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 18 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-08 随作品入口增至 18）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 18 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-08 随作品入口增至 18）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -151,16 +151,24 @@ Bento Grid 网格布局，自上而下：
 - **关键词粒子**：鼠标移动时在周围随机位置生成 AI 关键词文字粒子，带初速度和"重力"向下坠落，逐渐淡出；生成节流 66ms，上限 40 个，18 个关键词随机取。
 - **hover 反馈**：悬停 `a/button/[role="button"]` 时光晕半径 150→220、颜色变紫、粒子变紫；悬停带 `data-keywords` 的精选作品卡时粒子改用该卡主题词表（6 词/卡）；键盘 `:focus-visible` 聚焦与 hover 等效联动（focusin/focusout 监听）。
 - 支持窗口 resize（devicePixelRatio 上限 2）、鼠标离开窗口隐藏光晕。
+- 天气联动（2026-11-09）：悬停/聚焦天气卡片时粒子词库按当前天气切换（晴/雨/雪/雾/雷/云各 6 词，未知码回退默认 6 词）；卡片降级态（`data-weather-stale="true"`）时光晕改琥珀 `#d97706`，恢复后立即回紫。
 
 #### 3.1.2 天气卡片（Weather）
 
 - 数据源 Open-Meteo 免费接口（当前温度/湿度/体感/风速/天气代码 + 今日最高最低温），无需 API Key。
 - **状态提升**：数据逻辑抽为 `useWeather()` hook 导出，由 Home 持有，天气卡片与统计条天气摘要格共享同一份状态（不重复请求）。
-- 定位：优先浏览器 Geolocation（8s 超时、10min 缓存），失败/拒绝/不支持时回退北京坐标并标注"北京（默认）"；**拒绝授权时卡片顶部显示"已使用北京默认位置"提示条 + "重试定位"按钮**（自动加载每会话最多提示 1 次，sessionStorage 标记；手动重试被拒总是复现）。
+- 定位：优先浏览器 Geolocation（8s 超时、10min 缓存），失败/拒绝/不支持时回退杭州坐标并标注"杭州（默认）"；**拒绝授权时卡片顶部显示"已使用杭州默认位置"提示条 + "重试定位"按钮**（自动加载每会话最多提示 1 次，sessionStorage 标记；手动重试被拒总是复现）。
 - 地名：通过 BigDataCloud 逆地理接口补全，失败静默降级显示"当前位置"。
 - 天气代码：WMO 标准码映射为中文描述 + 白天/夜间两套 emoji 图标，未知码显示"未知 🌡️"。
 - 刷新：每 10 分钟自动刷新；右上角 ↻ 按钮手动刷新（**30s 节流**，节流命中时 title 提示"刷新过于频繁，请稍后再试"；节流时间戳为模块级变量，页面刷新即重置）。
 - 状态：loading 骨架屏 / error 显示"天气获取失败 + 重试按钮" / 成功展示数据；卸载时通过 mountedRef 防止内存泄漏 setState。
+- **请求链路健壮性（2026-11-09 新增）**：
+  - 单次请求 10s 超时（AbortController，不支持时降级 Promise.race），同一时刻最多 1 个 in-flight 请求（并发调用共享同一 Promise），失败后按 1s / 3s 各重试 1 次。
+  - 成功时把 `{ current, daily, place, ts }` 写入 `weather-last-ok`（序列化 >500KB 或配额满则放弃写入/清空后静默降级）；失败且快照年龄 ≤60 分钟进入 **stale 降级态**：继续展示快照数据 + 表头"离线 · N 分钟前"徽标 + `weather-place` 行内「回退」「重试」按钮，正文 `opacity 0.6` + 卡片琥珀虚线 outline；快照缺失或 >60 分钟进入 error 态。
+  - 自动刷新失败按 20 / 40 / 60 分钟指数退避并写 `weather-auto-backoff`（`{ failCount, nextAt }`），任一成功清零回到 10 分钟；`visibilitychange` + `blur` 双路暂停，回前台 / `online` 时若 `nextAt` 已过则补一次请求。
+  - 重试与回退按钮点击后冻结 5s；回退只保留 1 级内存快照（`prevSnapshot`），回退后置 stale 并同步覆盖 `weather-last-ok`，无快照时不渲染回退按钮。
+  - 状态事件 `weather:state`（`{ status, stale, failCount, reason, ts }`）签名去重 + 500ms 节流，`window.__weatherStateStats` 内存计数，不写存储。
+  - 错误文案区分「定位失败，无法获取天气」（定位与天气均失败）与「天气获取失败」。
 - **移动端适配检测（2026-11-02 新增）**：`Weather` 组件内 `useAdaptiveProbe()` 只读检测，不改数据流——
   - 视口按 ≥1024 / 768~1023 / 480~767 / <480 映射 `data-adapt-tier`（desktop/tablet/mobile/compact），`ResizeObserver` 记录卡片实测宽度到 `data-adapt-width`，变化后 300ms 防抖检测。
   - 检查页面横向滚动（`documentElement.scrollWidth - clientWidth > 2px`）与 `.weather-body` / `.weather-meta` / `.weather-place` / `.weather-error` 越过卡片内边距（容差 2px），异常需间隔 200ms 两次复检确认，结果写入 `data-adapt-overflow`。
@@ -859,6 +867,8 @@ Bento Grid 网格布局，自上而下：
 | `game-minesweeper-best-v1` | localStorage | 扫雷每档最佳 `{ v:1, best:{easy:{score,time,undoLeft},...}, updatedAt }`；仅胜利且更高分覆盖 |
 | `game-minesweeper-stats-v1` | localStorage | 扫雷累计埋点 `{ v:1, plays, wins, losses, timeouts, timeByLevel, reveals, updatedAt }` |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
+| `weather-last-ok` | localStorage | 天气上次成功快照 `{ current, daily, place, ts }`；单条覆盖写，序列化 >500KB 放弃写入，配额满清空后降级内存；7 天 TTL 自动清理 |
+| `weather-auto-backoff` | localStorage | 天气连续失败退避记录 `{ failCount, nextAt }`；成功清零，7 天 TTL 自动清理 |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |
 | Hitokoto API | 外部 | 每日一句 / 推箱子通关寄语；3 秒超时，失败降级本地句子池并缓存 |

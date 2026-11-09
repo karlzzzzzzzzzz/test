@@ -5,17 +5,40 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  * - 优先使用浏览器定位，拒绝/失败时回退到杭州（拒绝授权时显示提示条）
  * - 当前实况 + 今日最高/最低温
  * - 地名通过 BigDataCloud 免费逆地理接口补全（失败时静默降级）
- * - 每 10 分钟自动刷新一次；手动刷新 30s 节流防刷
+ * - 请求链路：10s 超时 + 并发去重 + 最多 2 次退避重试（1s / 3s）
+ * - 四态：loading / ok / stale（展示上次成功快照）/ error
+ * - 自动刷新：成功 10 分钟；连续失败按 20 / 40 / 60 分钟指数退避
  * - 数据状态通过 useWeather 提升至 Home，供统计条天气摘要格共享
  */
 
 // 定位失败时的默认坐标（杭州）
 const FALLBACK = { lat: 30.2809, lon: 120.0267, label: '杭州（默认）' }
+// 自动刷新基准间隔
 const REFRESH_INTERVAL = 10 * 60 * 1000
+// 连续失败退避档位：1 次 → 20 分钟，2 次 → 40 分钟，≥3 次 → 60 分钟
+const BACKOFF_STEPS = [20 * 60 * 1000, 40 * 60 * 1000, 60 * 60 * 1000]
+// 单次请求超时
+const REQUEST_TIMEOUT = 10 * 1000
+// 失败重试间隔（最多 2 次）
+const RETRY_DELAYS = [1000, 3000]
+// 快照可用于降级展示的最大年龄
+const STALE_MAX_AGE = 60 * 60 * 1000
+// 快照与退避记录的过期时间
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000
+// 快照体积上限（序列化字符数）
+const SNAPSHOT_MAX_CHARS = 500 * 1024
 // 手动刷新节流窗口
 const REFRESH_THROTTLE = 30 * 1000
+// 重试/回退按钮点击后的冻结时长
+const ACTION_FREEZE = 5000
+// 状态事件节流窗口
+const STATE_EVENT_THROTTLE = 500
+const SNAPSHOT_KEY = 'weather-last-ok'
+const BACKOFF_KEY = 'weather-auto-backoff'
 // 定位拒绝提示的会话标记（每会话最多自动提示 1 次）
 const DENIED_TIP_KEY = 'weather-geo-denied-tip'
+// 未知/加载态下的默认粒子词库
+const DEFAULT_KEYWORDS = '气温,湿度,风速,体感,天气预报,天气'
 
 // 模块级节流时间戳：刷新页面即重置，组件卸载重挂不重置（防反复进出页面刷接口）
 let lastManualRefreshAt = 0
@@ -55,6 +78,86 @@ const WMO_CODES = {
 function describeWeather(code, isDay) {
   const [desc, dayIcon, nightIcon] = WMO_CODES[code] || ['未知', '🌡️', '🌡️']
   return { desc, icon: isDay ? dayIcon : nightIcon }
+}
+
+// 天气 → MouseTrail 粒子词库（6 词）；未知/加载态回退默认词库
+function weatherWordsOf(desc) {
+  if (!desc) return DEFAULT_KEYWORDS
+  if (desc.includes('晴')) return '晴空,阳光,紫外线,防晒,气温,晾晒'
+  if (desc.includes('雨')) return '降雨,雨伞,湿度,路面,积水,雨声'
+  if (desc.includes('雪')) return '降雪,雪景,防滑,低温,积雪,保暖'
+  if (desc.includes('雾')) return '雾气,能见度,湿度,慢行,灯光,气压'
+  if (desc.includes('雷')) return '雷暴,闪电,避雨,气压,湿度,预警'
+  if (desc.includes('云') || desc.includes('阴')) return '云层,气温,通勤,体感,风向,晾晒'
+  return DEFAULT_KEYWORDS
+}
+
+const delayForFailCount = (failCount) => {
+  if (failCount <= 0) return REFRESH_INTERVAL
+  const index = Math.min(failCount, BACKOFF_STEPS.length) - 1
+  return BACKOFF_STEPS[index]
+}
+
+const minutesOf = (ts) => (ts ? Math.max(1, Math.round((Date.now() - ts) / 60000)) : 0)
+
+const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
+
+// ===== 本地快照与退避记录（localStorage 不可用时静默降级为纯内存） =====
+function readSnapshot() {
+  try {
+    const raw = localStorage.getItem(SNAPSHOT_KEY)
+    if (!raw) return null
+    const snapshot = JSON.parse(raw)
+    if (!snapshot || !snapshot.current || !snapshot.ts) return null
+    if (Date.now() - Number(snapshot.ts) > CACHE_TTL) {
+      localStorage.removeItem(SNAPSHOT_KEY)
+      return null
+    }
+    return snapshot
+  } catch {
+    return null
+  }
+}
+
+function writeSnapshot(snapshot) {
+  try {
+    const raw = JSON.stringify(snapshot)
+    if (raw.length > SNAPSHOT_MAX_CHARS) return false
+    localStorage.setItem(SNAPSHOT_KEY, raw)
+    return true
+  } catch {
+    try {
+      localStorage.removeItem(SNAPSHOT_KEY)
+    } catch {
+      // 存储不可用：仅内存快照
+    }
+    return false
+  }
+}
+
+function readBackoff() {
+  try {
+    const raw = localStorage.getItem(BACKOFF_KEY)
+    if (!raw) return { failCount: 0, nextAt: 0 }
+    const parsed = JSON.parse(raw)
+    const failCount = Math.max(0, Math.min(9, Number(parsed.failCount) || 0))
+    const nextAt = Number(parsed.nextAt) || 0
+    if (nextAt && Date.now() - nextAt > CACHE_TTL) {
+      localStorage.removeItem(BACKOFF_KEY)
+      return { failCount: 0, nextAt: 0 }
+    }
+    return { failCount, nextAt }
+  } catch {
+    return { failCount: 0, nextAt: 0 }
+  }
+}
+
+function writeBackoff(failCount, nextAt) {
+  try {
+    localStorage.setItem(BACKOFF_KEY, JSON.stringify({ failCount, nextAt }))
+  } catch {
+    // 存储不可用：退避仅在内存生效
+  }
 }
 
 // ===== 移动端适配检测 =====
@@ -327,62 +430,212 @@ async function reverseGeocode(lat, lon) {
   }
 }
 
+function buildWeatherUrl(lat, lon) {
+  return 'https://api.open-meteo.com/v1/forecast' +
+    `?latitude=${lat}&longitude=${lon}` +
+    '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m' +
+    '&daily=temperature_2m_max,temperature_2m_min' +
+    '&timezone=auto&forecast_days=1'
+}
+
+/**
+ * 带超时的 JSON 请求：10s 未返回即中断并按 timeout 归类
+ * AbortController 不可用时降级为 Promise.race + 定时器
+ */
+function requestJson(url, abortRef) {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+  if (controller) abortRef.current = controller
+  let timer = null
+  const timeout = new Promise((resolve, reject) => {
+    timer = setTimeout(() => {
+      if (controller) controller.abort()
+      const error = new Error('timeout')
+      error.reason = 'timeout'
+      reject(error)
+    }, REQUEST_TIMEOUT)
+  })
+  const request = fetch(url, controller ? { signal: controller.signal } : undefined)
+    .then((res) => {
+      if (!res.ok) {
+        const error = new Error(`HTTP ${res.status}`)
+        error.reason = 'http'
+        throw error
+      }
+      return res.json()
+    })
+    .catch((error) => {
+      if (error && error.reason) throw error
+      const wrapped = new Error(error?.message || 'network')
+      wrapped.reason = controller && error?.name === 'AbortError' ? 'timeout' : 'network'
+      throw wrapped
+    })
+  return Promise.race([request, timeout]).finally(() => {
+    clearTimeout(timer)
+    if (abortRef.current === controller) abortRef.current = null
+  })
+}
+
 /**
  * 天气数据 hook：状态提升至 Home，Weather 卡片与统计条摘要格共用同一份状态
+ * 四态：loading / ok / stale / error；失败时最多回退到 60 分钟内的成功快照
  */
 export function useWeather() {
-  const [data, setData] = useState(null)
-  const [place, setPlace] = useState('')
-  const [status, setStatus] = useState('loading') // loading | ok | error
+  // 首屏启动数据：上次成功快照 + 退避记录（只读一次）
+  const [bootSnapshot] = useState(readSnapshot)
+  const [bootBackoff] = useState(readBackoff)
+
+  const [data, setData] = useState(() => (
+    bootSnapshot ? { current: bootSnapshot.current, daily: bootSnapshot.daily } : null
+  ))
+  const [place, setPlace] = useState(() => bootSnapshot?.place || '')
+  const [status, setStatus] = useState('loading') // loading | ok | stale | error
+  const [staleTs, setStaleTs] = useState(0)
+  const [failCount, setFailCount] = useState(bootBackoff.failCount)
+  const [failReason, setFailReason] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [geoDeniedTip, setGeoDeniedTip] = useState(false)
   const [throttleTip, setThrottleTip] = useState(false)
+  const [actionLocked, setActionLocked] = useState(false)
+  const [hasPrev, setHasPrev] = useState(false)
+  const [paused, setPaused] = useState(false)
+  // 每次加载结束自增，驱动自动刷新重新排期
+  const [loadSeq, setLoadSeq] = useState(0)
+
   const mountedRef = useRef(true)
+  const abortRef = useRef(null)
+  const inFlightRef = useRef(null)
+  const snapshotRef = useRef(bootSnapshot)
+  const prevSnapshotRef = useRef(null)
+  const failCountRef = useRef(bootBackoff.failCount)
+  const nextAtRef = useRef(bootBackoff.nextAt)
+  const lastLoadAtRef = useRef(0)
   const throttleTimerRef = useRef(null)
+  const freezeTimerRef = useRef(null)
+  const resumeTimerRef = useRef(null)
+  // 状态事件节流（签名去重 + 500ms）
+  const statePendingRef = useRef(null)
+  const stateTimerRef = useRef(null)
+  const stateLastAtRef = useRef(0)
+  const stateSignatureRef = useRef('')
 
-  const load = useCallback(async ({ manual = false } = {}) => {
-    setRefreshing(true)
-    try {
-      const { lat, lon, fallback, label, denied } = await getCoords()
-      const url =
-        'https://api.open-meteo.com/v1/forecast' +
-        `?latitude=${lat}&longitude=${lon}` +
-        '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m' +
-        '&daily=temperature_2m_max,temperature_2m_min' +
-        '&timezone=auto&forecast_days=1'
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      if (!mountedRef.current) return
-      setData(json)
-      setStatus('ok')
-
-      if (denied) {
-        // 手动重试被拒：无条件复现提示（不再写会话标记）
-        // 自动加载被拒：每会话最多提示 1 次
-        if (manual) {
-          setGeoDeniedTip(true)
-        } else if (!sessionStorage.getItem(DENIED_TIP_KEY)) {
-          sessionStorage.setItem(DENIED_TIP_KEY, '1')
-          setGeoDeniedTip(true)
-        }
-        setPlace(label)
-      } else {
-        setGeoDeniedTip(false)
+  const applyGeoDeniedTip = useCallback((denied, manual) => {
+    if (!denied) {
+      try {
         sessionStorage.removeItem(DENIED_TIP_KEY)
-        if (fallback) {
-          setPlace(label)
-        } else {
-          const name = await reverseGeocode(lat, lon)
-          if (mountedRef.current) setPlace(name || '当前位置')
-        }
+      } catch {
+        // 忽略存储异常
+      }
+      setGeoDeniedTip(false)
+      return
+    }
+    // 手动重试被拒：无条件复现提示；自动加载被拒：每会话最多提示 1 次
+    if (manual) {
+      setGeoDeniedTip(true)
+      return
+    }
+    try {
+      if (!sessionStorage.getItem(DENIED_TIP_KEY)) {
+        sessionStorage.setItem(DENIED_TIP_KEY, '1')
+        setGeoDeniedTip(true)
       }
     } catch {
-      if (mountedRef.current) setStatus('error')
-    } finally {
-      if (mountedRef.current) setRefreshing(false)
+      setGeoDeniedTip(true)
     }
   }, [])
+
+  const load = useCallback(async ({ manual = false } = {}) => {
+    // 并发去重：同一时刻只保留 1 个 in-flight 请求
+    if (inFlightRef.current) return inFlightRef.current
+    setRefreshing(true)
+    const run = (async () => {
+      let geoFallback = false
+      let coords
+      try {
+        coords = await getCoords()
+        geoFallback = coords.fallback
+      } catch {
+        coords = { ...FALLBACK, fallback: true, denied: false }
+        geoFallback = true
+      }
+      if (!mountedRef.current) return
+
+      let json = null
+      let reason = geoFallback ? 'geo' : 'network'
+      for (let i = 0; i <= RETRY_DELAYS.length; i += 1) {
+        try {
+          json = await requestJson(buildWeatherUrl(coords.lat, coords.lon), abortRef)
+          break
+        } catch (error) {
+          reason = error?.reason || 'network'
+          if (i < RETRY_DELAYS.length) {
+            await sleep(RETRY_DELAYS[i])
+            if (!mountedRef.current) return
+          }
+        }
+      }
+      if (!mountedRef.current) return
+
+      if (json && json.current) {
+        let nextPlace = coords.label || FALLBACK.label
+        if (!geoFallback) {
+          nextPlace = (await reverseGeocode(coords.lat, coords.lon)) || '当前位置'
+          if (!mountedRef.current) return
+        }
+        const snapshot = { current: json.current, daily: json.daily, place: nextPlace, ts: Date.now() }
+        if (snapshotRef.current) {
+          prevSnapshotRef.current = snapshotRef.current
+          setHasPrev(true)
+        }
+        snapshotRef.current = snapshot
+        writeSnapshot(snapshot)
+        failCountRef.current = 0
+        nextAtRef.current = 0
+        writeBackoff(0, 0)
+        setFailCount(0)
+        setFailReason('')
+        setData(json)
+        setPlace(nextPlace)
+        setStaleTs(0)
+        setStatus('ok')
+        applyGeoDeniedTip(Boolean(coords.denied), manual)
+        return
+      }
+
+      // 全部重试失败：累计失败次数并按指数退避排期
+      const nextFailCount = Math.min(failCountRef.current + 1, BACKOFF_STEPS.length + 1)
+      failCountRef.current = nextFailCount
+      nextAtRef.current = Date.now() + delayForFailCount(nextFailCount)
+      writeBackoff(nextFailCount, nextAtRef.current)
+      setFailCount(nextFailCount)
+      setFailReason(geoFallback ? 'geo' : reason)
+
+      const snapshot = snapshotRef.current
+      const age = snapshot ? Date.now() - Number(snapshot.ts || 0) : Infinity
+      if (snapshot && age <= STALE_MAX_AGE) {
+        // 快照有效期内的降级展示（stale）
+        setData({ current: snapshot.current, daily: snapshot.daily })
+        setPlace(snapshot.place || '')
+        setStaleTs(Number(snapshot.ts) || Date.now())
+        setStatus('stale')
+      } else {
+        setData(null)
+        setStaleTs(0)
+        setStatus('error')
+      }
+    })()
+    inFlightRef.current = run
+    try {
+      await run
+    } finally {
+      if (inFlightRef.current === run) inFlightRef.current = null
+      if (mountedRef.current) {
+        setRefreshing(false)
+        lastLoadAtRef.current = Date.now()
+        setLoadSeq((n) => n + 1)
+      }
+    }
+    return run
+  }, [applyGeoDeniedTip])
 
   // 手动刷新（↻ 按钮）：30s 节流，节流命中时提示
   const refresh = useCallback(() => {
@@ -399,43 +652,170 @@ export function useWeather() {
     load({ manual: true })
   }, [load])
 
-  // 重试定位：重新走完整定位流程，不受刷新节流限制
-  const retryGeo = useCallback(() => {
-    load({ manual: true })
-  }, [load])
+  // 重试/回退按钮冻结 5s，避免连点打穿退避策略
+  const freezeActions = useCallback(() => {
+    setActionLocked(true)
+    clearTimeout(freezeTimerRef.current)
+    freezeTimerRef.current = setTimeout(() => {
+      if (mountedRef.current) setActionLocked(false)
+    }, ACTION_FREEZE)
+  }, [])
 
+  // 重试：重新走完整定位 + 天气链路，不受 30s 手动刷新节流限制
+  const retry = useCallback(() => {
+    freezeActions()
+    load({ manual: true })
+  }, [freezeActions, load])
+
+  // 回退：恢复上一次成功快照（仅 1 级），并同步覆盖本地快照
+  const rollback = useCallback(() => {
+    const prev = prevSnapshotRef.current
+    if (!prev) return
+    freezeActions()
+    snapshotRef.current = prev
+    writeSnapshot(prev)
+    setData({ current: prev.current, daily: prev.daily })
+    setPlace(prev.place || '')
+    setStaleTs(Number(prev.ts) || Date.now())
+    setStatus('stale')
+    setFailReason('')
+  }, [freezeActions])
+
+  // 首次加载
   useEffect(() => {
     mountedRef.current = true
     load()
-    const timer = setInterval(load, REFRESH_INTERVAL)
     return () => {
       mountedRef.current = false
-      clearInterval(timer)
+      if (abortRef.current) abortRef.current.abort()
       clearTimeout(throttleTimerRef.current)
+      clearTimeout(freezeTimerRef.current)
+      clearTimeout(resumeTimerRef.current)
+      clearTimeout(stateTimerRef.current)
     }
   }, [load])
+
+  // 自动刷新排期：成功 10 分钟；失败按 20/40/60 分钟退避；切后台暂停
+  useEffect(() => {
+    if (paused || lastLoadAtRef.current === 0) return undefined
+    const now = Date.now()
+    let delay = delayForFailCount(failCount)
+    if (nextAtRef.current > now) delay = nextAtRef.current - now
+    const timer = setTimeout(() => {
+      if (mountedRef.current) load()
+    }, delay)
+    return () => clearTimeout(timer)
+  }, [failCount, loadSeq, paused, load])
+
+  // 切后台/失焦暂停（双路去重），回前台或网络恢复时按 nextAt 补一次
+  useEffect(() => {
+    const pause = () => setPaused(true)
+    const resume = () => {
+      setPaused(false)
+      if (lastLoadAtRef.current === 0) return
+      const now = Date.now()
+      const due = lastLoadAtRef.current + delayForFailCount(failCountRef.current)
+      if (now < due || now < nextAtRef.current) return
+      clearTimeout(resumeTimerRef.current)
+      resumeTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) load()
+      }, 0)
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') pause()
+      else resume()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('blur', pause)
+    window.addEventListener('focus', resume)
+    window.addEventListener('online', resume)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('blur', pause)
+      window.removeEventListener('focus', resume)
+      window.removeEventListener('online', resume)
+      clearTimeout(resumeTimerRef.current)
+    }
+  }, [load])
+
+  // 状态事件：签名去重 + 500ms 节流，供首页与测试观测
+  const emitState = useCallback((payload) => {
+    const signature = `${payload.status}|${payload.stale}|${payload.failCount}|${payload.reason}`
+    if (signature === stateSignatureRef.current) return
+    statePendingRef.current = { signature, payload }
+    if (stateTimerRef.current) return
+    const delay = Math.max(0, STATE_EVENT_THROTTLE - (Date.now() - stateLastAtRef.current))
+    stateTimerRef.current = setTimeout(() => {
+      stateTimerRef.current = null
+      const entry = statePendingRef.current
+      statePendingRef.current = null
+      if (!entry || !mountedRef.current) return
+      if (entry.signature === stateSignatureRef.current) return
+      stateSignatureRef.current = entry.signature
+      stateLastAtRef.current = Date.now()
+      window.dispatchEvent(new CustomEvent('weather:state', { detail: entry.payload }))
+      const prev = window.__weatherStateStats || {}
+      window.__weatherStateStats = {
+        count: Math.min(99999, (Number(prev.count) || 0) + 1),
+        lastStatus: entry.payload.status,
+        lastReason: entry.payload.reason,
+        lastFailCount: entry.payload.failCount,
+        lastTs: entry.payload.ts,
+      }
+    }, delay)
+  }, [])
+
+  useEffect(() => {
+    emitState({
+      status,
+      stale: status === 'stale',
+      failCount,
+      reason: failReason,
+      ts: Date.now(),
+    })
+  }, [status, failCount, failReason, emitState])
 
   // 统计条摘要格数据（与卡片同一份状态，不重复发请求）
   const summary = useMemo(() => {
     if (status === 'loading' && !data) return { kind: 'loading' }
     const current = data?.current
-    if (status === 'error' || !current) return { kind: 'error' }
+    if (!current) return { kind: 'error' }
     const { desc, icon } = describeWeather(current.weather_code, current.is_day)
     return {
-      kind: 'ok',
+      kind: status === 'stale' ? 'stale' : 'ok',
       temp: Math.round(current.temperature_2m),
       desc,
       icon,
       // 逆地理失败时城市名为"当前位置"，摘要格省略城市名
       city: place === '当前位置' ? '' : place,
+      ageMin: minutesOf(staleTs),
     }
-  }, [status, data, place])
+  }, [status, data, place, staleTs])
 
-  return { data, place, status, refreshing, geoDeniedTip, throttleTip, summary, refresh, retryGeo }
+  return {
+    data,
+    place,
+    status,
+    staleTs,
+    staleMinutes: minutesOf(staleTs),
+    refreshing,
+    geoDeniedTip,
+    throttleTip,
+    failReason,
+    actionLocked,
+    hasPrev,
+    summary,
+    refresh,
+    retry,
+    rollback,
+  }
 }
 
 function Weather({ weather }) {
-  const { data, place, status, refreshing, geoDeniedTip, throttleTip, refresh, retryGeo } = weather
+  const {
+    data, place, status, staleMinutes, refreshing, geoDeniedTip,
+    throttleTip, actionLocked, hasPrev, refresh, retry, rollback,
+  } = weather
   const cardRef = useRef(null)
   const { tier, cardWidth, overflowCount, recheck } = useAdaptiveProbe(cardRef, status)
 
@@ -444,19 +824,27 @@ function Weather({ weather }) {
   const { desc, icon } = current
     ? describeWeather(current.weather_code, current.is_day)
     : { desc: '', icon: '🌡️' }
+  const isStale = status === 'stale'
 
   return (
     <section
       ref={cardRef}
-      className="bento-card bento-weather"
+      className={`bento-card bento-weather${isStale ? ' is-stale' : ''}`}
       id="weather-card"
       tabIndex={-1}
       data-adapt-tier={tier}
       data-adapt-width={cardWidth}
       data-adapt-overflow={overflowCount}
+      data-weather-stale={isStale ? 'true' : 'false'}
+      data-keywords={weatherWordsOf(desc)}
     >
       <div className="weather-head">
         <h3 className="weather-title">本地天气</h3>
+        {isStale && (
+          <span className="weather-stale-chip" role="status" aria-live="polite">
+            离线 · {staleMinutes} 分钟前
+          </span>
+        )}
         <button
           type="button"
           className={`weather-refresh${refreshing ? ' is-spinning' : ''}`}
@@ -471,10 +859,10 @@ function Weather({ weather }) {
       </div>
 
       {/* 定位被拒绝：提示条 + 重试定位（每会话自动提示最多 1 次，手动重试被拒总是复现） */}
-      {geoDeniedTip && status === 'ok' && (
+      {geoDeniedTip && status !== 'loading' && (
         <div className="weather-denied-tip" role="status">
           <span>已使用杭州默认位置</span>
-          <button type="button" className="weather-retry" onClick={retryGeo}>
+          <button type="button" className="weather-retry" onClick={retry} disabled={actionLocked}>
             重试定位
           </button>
         </div>
@@ -492,8 +880,8 @@ function Weather({ weather }) {
 
       {status === 'error' && !data && (
         <div className="weather-error">
-          <span>天气获取失败</span>
-          <button type="button" className="weather-retry" onClick={retryGeo}>
+          <span>{weather.failReason === 'geo' ? '定位失败，无法获取天气' : '天气获取失败'}</span>
+          <button type="button" className="weather-retry" onClick={retry} disabled={actionLocked}>
             重试
           </button>
         </div>
@@ -528,15 +916,40 @@ function Weather({ weather }) {
           </div>
 
           <p className="weather-place">
-            📍 {place || '定位中…'}
-            <a
-              className="weather-source"
-              href="https://open-meteo.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open-Meteo
-            </a>
+            <span className="weather-place-name">📍 {place || '定位中…'}</span>
+            {isStale ? (
+              <span className="weather-place-actions">
+                {hasPrev && (
+                  <button
+                    type="button"
+                    className="weather-inline-btn"
+                    onClick={rollback}
+                    disabled={actionLocked}
+                    aria-label={`回退到 ${staleMinutes} 分钟前的天气数据`}
+                  >
+                    回退
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="weather-inline-btn"
+                  onClick={retry}
+                  disabled={actionLocked}
+                  aria-label="重新获取天气数据"
+                >
+                  重试
+                </button>
+              </span>
+            ) : (
+              <a
+                className="weather-source"
+                href="https://open-meteo.com/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open-Meteo
+              </a>
+            )}
           </p>
         </>
       )}

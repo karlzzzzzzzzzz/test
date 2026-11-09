@@ -261,7 +261,8 @@ function AnimatedNumber({ value, suffix = '' }) {
 
 /**
  * 统计条天气摘要格：与天气卡片共享同一份 useWeather 状态
- * 三态：loading "…"占位（不可点击）/ error 提示（可点击定位）/ ok 温度+图标+城市
+ * 四态：loading "…"占位（不可点击）/ error 提示（可点击定位）/ ok 温度+图标+城市
+ *       / stale 缓存温度+图标+城市+「N 分钟前」，与卡片降级态同步
  */
 function WeatherStatCell({ weather }) {
   const { summary } = weather
@@ -297,6 +298,27 @@ function WeatherStatCell({ weather }) {
         >
           <span className="bento-stat-num" aria-hidden="true">–</span>
           <span className="bento-stat-label" aria-hidden="true">天气暂不可用</span>
+        </button>
+      </div>
+    )
+  }
+
+  if (summary.kind === 'stale') {
+    return (
+      <div className="bento-stat bento-stat-weather">
+        <button
+          type="button"
+          className="bento-stat-weather-btn"
+          onClick={handleClick}
+          aria-label={`缓存天气 ${summary.temp}°C ${summary.desc}，数据为 ${summary.ageMin} 分钟前，点击查看天气详情`}
+        >
+          <span className="bento-stat-num" aria-hidden="true">
+            {summary.temp}°C {summary.icon}
+          </span>
+          <span className="bento-stat-label" aria-hidden="true">
+            {summary.city || '实时天气'}
+            <span className="bento-stat-weather-age">{summary.ageMin} 分钟前</span>
+          </span>
         </button>
       </div>
     )
