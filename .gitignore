@@ -7,4 +7,5 @@ test/test.html
 # 部署/审计临时产物（可随时删除，不入库）
 .deploy-lightsout/
 .deploy-src/
+.deploy-backup/
 mobile-audit-shots/
