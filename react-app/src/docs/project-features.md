@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-08 共 13 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-09 共 14 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十八大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十九大功能模块。
 
 ### 1.2 技术栈
 
@@ -46,6 +46,7 @@ react-app/src/
 │   ├── Lianliankan.jsx / .css   # 连连看页面壳（DOM 牌面 + 点选配对 + 提示/重排）
 │   ├── Reversi.jsx / .css       # 黑白棋页面壳（DOM 8×8 棋盘 + 三档 AI + 落子预览）
 │   ├── Minesweeper.jsx / .css   # 扫雷页面壳（DOM 雷区 + 首点安全 + 插旗 + 撤销）
+│   ├── Maze.jsx / .css          # 迷宫寻路页面壳（DOM 网格 + 滑动/点按/方向键 + 三态遮罩）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -66,7 +67,8 @@ react-app/src/
 │   ├── Connect4Engine.js          # 四连棋引擎（纯逻辑：重力落子 + 胜负检测 + 三档 AI）
 │   ├── LianliankanEngine.js       # 连连看引擎（纯逻辑：≤2 折线连通判定 + 可解重排 + 计时计分）
 │   ├── ReversiEngine.js           # 黑白棋引擎（纯逻辑：八方向翻转 + 合法着法 + 三档 AI）
-│   └── MinesweeperEngine.js       # 扫雷引擎（纯逻辑：首点安全布雷 + 洪泛展开 + 撤销栈）
+│   ├── MinesweeperEngine.js       # 扫雷引擎（纯逻辑：首点安全布雷 + 洪泛展开 + 撤销栈）
+│   └── MazeEngine.js              # 迷宫寻路引擎（纯逻辑：DFS 回溯生成 + BFS 最短路 + 限时计分）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -104,6 +106,7 @@ react-app/src/
 | `/lianliankan` | Lianliankan 连连看 | **lazy 懒加载**（纯 DOM + 连通判定，独立分包） |
 | `/reversi` | Reversi 黑白棋 | **lazy 懒加载**（纯 DOM + 三档 AI，独立分包） |
 | `/minesweeper` | Minesweeper 扫雷 | **lazy 懒加载**（纯 DOM + 雷区状态机，独立分包） |
+| `/maze` | Maze 迷宫寻路 | **lazy 懒加载**（纯 DOM + 随机迷宫生成，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -139,8 +142,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：18 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 18 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-08 随作品入口增至 18）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：19 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 19 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -493,7 +496,7 @@ Bento Grid 网格布局，自上而下：
   - 面包屑导航；页头设置 `document.title`。
   - 切换文档自动回顶；URL 带 `#锚点` 时延迟 50ms 平滑滚动到对应章节（等待渲染完成）。
   - slug 不存在显示"文档未找到"空态 + 返回列表链接。
-- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`reversi-game`（黑白棋，2026-11-07 新增）、`minesweeper-game`（扫雷，2026-11-08 新增）、`daily-challenge`。
+- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`reversi-game`（黑白棋，2026-11-07 新增）、`minesweeper-game`（扫雷，2026-11-08 新增）、`maze-game`（迷宫寻路，2026-11-09 新增）、`daily-challenge`。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 - **移动端横向溢出修复（2026-11-02）**：根因是 `.docs-page` 同时继承全局 `.page` 的 `align-items: center`，在 flex 纵向布局下正文按 max-content 宽度撑开（375px 视口下详情页实测宽 863px、横向溢出 504px）。修复为 `.docs-page` 显式 `width: 100%` + `box-sizing: border-box` + `align-items: stretch`，正文宽度跟随 `.docs-page` 上限；超宽表格与代码块改为在自身 `overflow-x: auto` 容器内横向滚动，不再撑破页面。实测 320/360/375/414/480/600/768/820/1024 九档宽度下列表页与详情页均无页面级横向溢出。
 
@@ -831,6 +834,43 @@ Bento Grid 网格布局，自上而下：
 
 - 覆盖首点安全、洪泛边界、插旗上限、撤销三类回退、踩雷/胜利、节流与计分。
 
+### 3.21 迷宫寻路（/maze，2026-11-09 新增）
+
+#### 3.21.1 架构
+
+- 页面壳 `Maze.jsx`（start / loading / error / playing / paused / over 六屏）+ `MazeEngine.js` 纯逻辑（DFS 回溯生成、BFS 最短路、四方向移动、提示、限时计分）；盘面 `role=grid`，墙体用位掩码加四边小块渲染。
+- 小游戏编号：第 14 款。
+
+#### 3.21.2 玩法规则
+
+- **难度**：轻松 5×5 / 120s / 基准 500；挑战 6×6 / 150s / 基准 800；专家 7×7 / 180s / 基准 1200。
+- **生成**：初始每格四面是墙，DFS 回溯随机凿开相邻格之间的墙，形成全格连通的完美迷宫；起点左上角、终点右下角，生成后用 BFS 复核首尾连通，失败抛错进入错误态。
+- **参考步数**：BFS 最短路长度写入 HUD「参考」，作为计分基准。
+- **移动**：方向键、点按相邻格、单指滑动（主轴 ≥24px）三通道等价；撞墙不计步，60ms 内重复指令忽略。
+- **提示**：每局 3 次，给出当前位置沿最短路的下一个方向并高亮目标格 1.4s，每次扣 25 分。
+- **计时**：首次有效移动开始计时，页面每 250ms 调 `tick()`；超时判负，得分 0。
+- **重走 / 换图**：重走本局保留同一张迷宫并清零步数/用时/提示；换新迷宫按当前档位重新生成。
+
+#### 3.21.3 计分与存储
+
+- `score = max(100, baseScore − max(0, steps − par) × 3 − floor(elapsed) × 2 − hints × 25)`；仅胜利结算得分。
+- `game-maze-best-v1` 每档存 `{score, steps, time, hints}`（仅更高分覆盖，损坏回退空对象）。
+- `game-maze-stats-v1` 累计 `{plays, wins, timeouts, resets, steps, timeByLevel, updatedAt}`，脏标记 + 1s 防抖 + `pagehide` 落盘，写入失败不阻断游戏。
+
+#### 3.21.4 三态与无障碍
+
+- **加载**：选择难度后先渲染 220ms 遮罩「正在生成迷宫…」再同步生成，避免生成期间无反馈。
+- **空**：本机无最佳记录时，开始页显示虚线空态「暂无最佳记录，完成一局后自动保存」。
+- **错误**：生成失败显示错误遮罩 + 重试（按上次档位）与返回首页。
+- **暂停**：`visibilitychange(hidden)` 与 `window blur` 双路触发并用标记位去重；暂停时移动、提示、动作按钮全部失效，计时冻结。
+- roving tabindex 跟随玩家，方向键直接移动、Enter/Space 播报当前格可走方向；`aria-live=polite` 播报开局/移动/撞墙/提示/重置/胜负/暂停，倒计时 `aria-live=off`。
+- 页面 `100svh` + `overflow-x: hidden`；每格触控热区 ≥40px，320px 下 7 列约 45px；`prefers-reduced-motion` 关闭过渡与旋转动画。
+
+#### 3.21.5 验证
+
+- 引擎单测覆盖生成连通性与外墙、初始快照、沿最短路通关、撞墙、节流、暂停冻结、超时、提示次数与方向、重走本局、换档复现、计分封底、dispose。
+- 移动端 320/360/375/414/480/600/768/820/1024 九档，开始态与游戏中态均 0 违规。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -866,6 +906,8 @@ Bento Grid 网格布局，自上而下：
 | `game-reversi-stats-v1` | localStorage | 黑白棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, timeByLevel, updatedAt }` |
 | `game-minesweeper-best-v1` | localStorage | 扫雷每档最佳 `{ v:1, best:{easy:{score,time,undoLeft},...}, updatedAt }`；仅胜利且更高分覆盖 |
 | `game-minesweeper-stats-v1` | localStorage | 扫雷累计埋点 `{ v:1, plays, wins, losses, timeouts, timeByLevel, reveals, updatedAt }` |
+| `game-maze-best-v1` | localStorage | 迷宫寻路每档最佳 `{ easy:{score,steps,time,hints}, normal:{...}, hard:{...} }`；仅胜利且更高分覆盖，损坏回退空对象 |
+| `game-maze-stats-v1` | localStorage | 迷宫寻路累计埋点 `{ plays, wins, timeouts, resets, steps, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | `weather-last-ok` | localStorage | 天气上次成功快照 `{ current, daily, place, ts }`；单条覆盖写，序列化 >500KB 放弃写入，配额满清空后降级内存；7 天 TTL 自动清理 |
 | `weather-auto-backoff` | localStorage | 天气连续失败退避记录 `{ failCount, nextAt }`；成功清零，7 天 TTL 自动清理 |
@@ -879,7 +921,7 @@ Bento Grid 网格布局，自上而下：
 
 1. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
 2. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
-3. **今日游戏挑战轮换池滞后**：`src/api/dailyChallenge.js` 的 `GAMES` 仅 11 款（含飞机大战，缺推箱子 / 黑白棋 / 扫雷），而首页已有 13 款小游戏，每日挑战不会抽到这三款；补齐会改变每日抽题分布并需同步改 `dailyChallenge.test.js` 的硬编码数量，本轮不动，待拍板。
+3. **今日游戏挑战轮换池滞后**：`src/api/dailyChallenge.js` 的 `GAMES` 仅 11 款（含飞机大战，缺推箱子 / 黑白棋 / 扫雷 / 迷宫寻路），而首页已有 14 款小游戏，每日挑战不会抽到这四款；补齐会改变每日抽题分布并需同步改 `dailyChallenge.test.js` 的硬编码数量，本轮不动，待拍板。
 
 ## 6. 基线对比使用方式
 

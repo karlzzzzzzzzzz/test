@@ -1,0 +1,430 @@
+/* 迷宫寻路（/maze）—— 深色靛蓝底 + 琥珀色终点，窄屏优先 */
+.mz-page {
+  position: relative;
+  min-height: 100svh;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 20px 56px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  color: #e8ecff;
+  background:
+    radial-gradient(900px 480px at 50% -10%, rgba(108, 128, 255, 0.22), transparent 62%),
+    radial-gradient(600px 340px at 100% 100%, rgba(255, 196, 92, 0.1), transparent 70%),
+    #0a0e1c;
+}
+
+/* ---------- 顶部 ---------- */
+.mz-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.mz-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 168, 255, 0.32);
+  color: #b9c4ff;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.mz-back:hover { background: rgba(120, 140, 255, 0.14); border-color: rgba(170, 186, 255, 0.5); }
+.mz-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mz-pause-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(150, 168, 255, 0.32);
+  background: rgba(120, 140, 255, 0.12);
+  color: #cfd8ff;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.mz-pause-btn:hover { background: rgba(120, 140, 255, 0.2); }
+
+/* ---------- HUD ---------- */
+.mz-hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.mz-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: rgba(20, 26, 48, 0.86);
+  border: 1px solid rgba(120, 140, 220, 0.24);
+}
+.mz-stat-label {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: #93a0d6;
+  white-space: nowrap;
+}
+.mz-stat-val {
+  font-size: 1.15rem;
+  line-height: 1.2;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #eef2ff;
+}
+.mz-timer { color: #ffd166; }
+
+/* 读屏播报（视觉隐藏但保持可读） */
+.mz-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- 盘面 ---------- */
+.mz-board-wrap {
+  display: flex;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  margin-bottom: 16px;
+}
+.mz-board {
+  width: 100%;
+  max-width: 460px;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(26, 33, 62, 0.96), rgba(12, 16, 32, 0.98));
+  border: 1px solid rgba(130, 150, 240, 0.3);
+  box-shadow: 0 18px 40px rgba(4, 7, 20, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  outline: none;
+}
+.mz-row {
+  display: grid;
+  grid-template-columns: repeat(var(--mz-cols, 7), minmax(0, 1fr));
+}
+.mz-cell-wrap {
+  position: relative;
+  min-width: 0;
+  min-height: 40px;
+}
+.mz-cell {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 40px;
+  min-height: 40px;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.035);
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.mz-cell:focus { outline: none; }
+.mz-cell:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: -2px;
+  z-index: 2;
+}
+@media (hover: hover) {
+  .mz-cell:hover { background: rgba(140, 160, 255, 0.14); }
+}
+.mz-cell.mz-visited { background: rgba(110, 132, 235, 0.16); }
+.mz-cell.mz-goal { background: rgba(255, 196, 92, 0.12); }
+.mz-cell.mz-hint-cell {
+  background: rgba(96, 226, 174, 0.3);
+  box-shadow: inset 0 0 0 2px rgba(96, 226, 174, 0.85);
+}
+
+/* 墙体：四边绝对定位的小块，撞墙语义与视觉一致 */
+.mz-wall {
+  position: absolute;
+  background: linear-gradient(180deg, #8b9ae0, #6b7ac4);
+  border-radius: 2px;
+}
+.mz-wall-n { top: 0; left: 0; right: 0; height: 3px; }
+.mz-wall-s { bottom: 0; left: 0; right: 0; height: 3px; }
+.mz-wall-w { top: 0; bottom: 0; left: 0; width: 3px; }
+.mz-wall-e { top: 0; bottom: 0; right: 0; width: 3px; }
+
+/* 玩家与终点标记 */
+.mz-player-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46%;
+  height: 46%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #a8f0ff, #4f8bff 68%, #2b56d8);
+  box-shadow: 0 0 10px rgba(96, 158, 255, 0.8), 0 0 22px rgba(96, 158, 255, 0.35);
+}
+.mz-goal-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34%;
+  height: 34%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-radius: 3px;
+  background: linear-gradient(135deg, #ffe9a8, #ffb340);
+  box-shadow: 0 0 10px rgba(255, 196, 92, 0.65);
+}
+
+/* ---------- 底部动作区 ---------- */
+.mz-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mz-btn,
+.mz-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.mz-btn {
+  border: 1px solid rgba(140, 158, 240, 0.34);
+  background: rgba(90, 108, 200, 0.14);
+  color: #d3dbff;
+}
+.mz-btn:hover { background: rgba(110, 130, 235, 0.22); border-color: rgba(170, 186, 255, 0.5); }
+.mz-btn-primary {
+  border: 1px solid rgba(255, 214, 120, 0.62);
+  background: linear-gradient(180deg, #ffd06a, #f0a92e);
+  color: #26190a;
+  font-weight: 700;
+}
+.mz-btn-primary:hover { filter: brightness(1.06); }
+.mz-btn:disabled,
+.mz-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.mz-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #8d9bcc;
+  text-align: center;
+}
+
+/* ---------- 遮罩 / 卡片 ---------- */
+.mz-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: rgba(6, 9, 20, 0.74);
+  backdrop-filter: blur(6px);
+}
+.mz-overlay-card {
+  width: 100%;
+  max-width: 460px;
+  box-sizing: border-box;
+  padding: 24px 22px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #1b2344, #111631);
+  border: 1px solid rgba(140, 160, 250, 0.34);
+  box-shadow: 0 24px 60px rgba(2, 4, 14, 0.7);
+  text-align: center;
+}
+.mz-overlay-card.mz-overlay-win {
+  border-color: rgba(255, 204, 102, 0.6);
+  box-shadow: 0 24px 60px rgba(2, 4, 14, 0.7), 0 0 0 1px rgba(255, 204, 102, 0.25) inset;
+}
+.mz-overlay-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  color: #f2f5ff;
+}
+.mz-overlay-card p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: #aab6e6;
+}
+.mz-overlay-hint { color: #8d9bcc !important; font-size: 0.8rem !important; }
+.mz-empty {
+  margin: 14px 0 0 !important;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed rgba(140, 158, 240, 0.34);
+  color: #93a0d6 !important;
+  font-size: 0.8rem !important;
+}
+
+/* 难度列表 */
+.mz-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.mz-diff-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(140, 158, 240, 0.34);
+  background: rgba(90, 108, 200, 0.14);
+  color: #e8ecff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.mz-diff-btn:hover {
+  background: rgba(110, 130, 235, 0.24);
+  border-color: rgba(180, 194, 255, 0.6);
+}
+.mz-diff-name { font-size: 1rem; font-weight: 700; }
+.mz-diff-meta { font-size: 0.75rem; line-height: 1.4; color: #9dabdd; }
+
+/* 结算摘要 */
+.mz-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+.mz-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: rgba(12, 17, 36, 0.7);
+  border: 1px solid rgba(120, 140, 220, 0.2);
+}
+.mz-summary span { font-size: 0.75rem; color: #93a0d6; }
+.mz-summary strong {
+  font-size: 0.95rem;
+  color: #eef2ff;
+  font-variant-numeric: tabular-nums;
+}
+.mz-best {
+  margin: 0 0 14px !important;
+  font-size: 0.8rem !important;
+  color: #9dabdd !important;
+}
+.mz-best strong { color: #ffd166; }
+.mz-save-err { display: block; margin-top: 4px; color: #ff9f9f; font-size: 0.75rem; }
+.mz-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.mz-btns .mz-btn,
+.mz-btns .mz-btn-primary { min-width: 110px; }
+
+/* 生成中 */
+.mz-spinner {
+  width: 42px;
+  height: 42px;
+  margin: 4px auto 16px;
+  border-radius: 50%;
+  border: 3px solid rgba(140, 160, 250, 0.22);
+  border-top-color: #ffd166;
+  animation: mz-spin 0.9s linear infinite;
+}
+@keyframes mz-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 400px) {
+  .mz-page { padding: 16px 12px 48px; }
+  .mz-title { font-size: 1.1rem; }
+  .mz-stat-val { font-size: 1.05rem; }
+  .mz-overlay-card { padding: 20px 16px; }
+  .mz-actions { grid-template-columns: 1fr; }
+  .mz-actions .mz-btn { min-height: 44px; }
+}
+
+/* 320px：贴边铺满，确保 7 列时每格热区 ≥40px */
+@media (max-width: 340px) {
+  .mz-page { padding-left: 0; padding-right: 0; }
+  .mz-top,
+  .mz-hud,
+  .mz-actions,
+  .mz-hint { margin-left: 12px; margin-right: 12px; }
+  .mz-board {
+    padding: 0;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    max-width: none;
+  }
+  .mz-board-wrap { margin-bottom: 14px; }
+  .mz-stat { padding: 7px 3px; }
+}
+
+/* ---------- 降低动态 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mz-back,
+  .mz-btn,
+  .mz-btn-primary,
+  .mz-diff-btn,
+  .mz-cell,
+  .mz-pause-btn {
+    transition: none;
+  }
+  .mz-spinner {
+    animation: none;
+    border-top-color: #ffd166;
+  }
+}

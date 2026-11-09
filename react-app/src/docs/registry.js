@@ -9,6 +9,7 @@ import lianliankanGame from './lianliankan-game.md?raw'
 import sokobanGame from './sokoban-game.md?raw'
 import reversiGame from './reversi-game.md?raw'
 import minesweeperGame from './minesweeper-game.md?raw'
+import mazeGame from './maze-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
 import weatherRobustness from './weather-robustness.md?raw'
 
@@ -102,6 +103,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 9 分钟',
     content: minesweeperGame,
+  },
+  {
+    slug: 'maze-game',
+    title: '迷宫寻路（Maze）需求文档与实现说明',
+    summary:
+      '第 14 款小游戏的需求文档：DFS 回溯生成保证全连通的完美迷宫、BFS 最短路作参考步数、四方向移动与 60ms 节流、3 次提示与扣分、三档尺寸与限时计分、加载/空/错误三态、四态页面与双路暂停、触控滑动与键盘无障碍，以及两个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: mazeGame,
   },
   {
     slug: 'daily-challenge',
