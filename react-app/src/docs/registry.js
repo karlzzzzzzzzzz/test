@@ -12,6 +12,7 @@ import minesweeperGame from './minesweeper-game.md?raw'
 import mazeGame from './maze-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
 import weatherRobustness from './weather-robustness.md?raw'
+import sudokuGame from './sudoku-game.md?raw'
 
 export const docs = [
   {
@@ -133,6 +134,16 @@ export const docs = [
     tags: ['首页', '天气', '健壮性'],
     readTime: '约 9 分钟',
     content: weatherRobustness,
+  },
+  {
+    slug: 'sudoku-game',
+    title: '数独（Sudoku）需求文档',
+    summary:
+      '第 15 款小游戏的需求文档：9×9 回溯生成与唯一解复核、三档挖空与限时判负、错误 3 次判负与提示/撤销/笔记、数字面板主输入与 320px 热区策略、六屏状态机与双路暂停盘面遮蔽、一言通关寄语降级、每日挑战轮换池 11→16 款联动修正，以及三个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: sudokuGame,
   },
 ]
 

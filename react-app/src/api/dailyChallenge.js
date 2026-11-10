@@ -1,6 +1,6 @@
 /**
  * 首页「今日游戏挑战」数据层（纯函数 + localStorage 读写）
- * - 按本地日期确定性从 11 款可玩小游戏中选一款：同一日期恒定，连续两天必不相同
+ * - 按本地日期确定性从 16 款可玩小游戏中选一款：同一日期恒定，连续两天必不相同
  * - 「今日一句」来自一言 API；校验失败或请求失败时降级到本地句子池
  * - 存储读写全部容错：不可用 / JSON 损坏 / 版本或日期不符一律视为无数据
  *
@@ -22,6 +22,11 @@ export const GAME_ROSTER = [
   { slug: 'lightsout', name: '关灯挑战', to: '/lightsout', rule: '点按翻转十字灯组，把所有灯熄灭', difficulty: '困难', duration: '2~6 分钟' },
   { slug: 'connect4', name: '四连棋', to: '/connect4', rule: '轮流落子，先连成四子一线者获胜', difficulty: '中等', duration: '3~8 分钟' },
   { slug: 'lianliankan', name: '连连看', to: '/lianliankan', rule: '点两张相同图案，两次转弯内连通即可消除', difficulty: '中等', duration: '3~8 分钟' },
+  { slug: 'sokoban', name: '推箱子', to: '/sokoban', rule: '把箱子推到目标点过关，步数越少分越高', difficulty: '中等', duration: '3~8 分钟' },
+  { slug: 'reversi', name: '黑白棋', to: '/reversi', rule: '夹吃翻转对手棋子，终局子多者胜', difficulty: '中等', duration: '3~8 分钟' },
+  { slug: 'minesweeper', name: '扫雷', to: '/minesweeper', rule: '依据数字提示避开所有地雷，清空雷区', difficulty: '困难', duration: '2~6 分钟' },
+  { slug: 'maze', name: '迷宫寻路', to: '/maze', rule: '从左上角走到右下角，步数越少分越高', difficulty: '简单', duration: '1~3 分钟' },
+  { slug: 'sudoku', name: '数独', to: '/sudoku', rule: '填入 1~9 使每行每列每宫不重复，错误 3 次判负', difficulty: '困难', duration: '2~5 分钟' },
 ]
 
 /** 本地降级句子池：接口不可用时按日期确定性选句 */

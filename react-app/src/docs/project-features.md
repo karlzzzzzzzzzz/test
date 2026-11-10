@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-09 共 14 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-10 共 15 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、番茄时钟、在线简历、南昌旅游介绍、技术文档中心十九大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十大功能模块。
 
 ### 1.2 技术栈
 
@@ -107,6 +107,7 @@ react-app/src/
 | `/reversi` | Reversi 黑白棋 | **lazy 懒加载**（纯 DOM + 三档 AI，独立分包） |
 | `/minesweeper` | Minesweeper 扫雷 | **lazy 懒加载**（纯 DOM + 雷区状态机，独立分包） |
 | `/maze` | Maze 迷宫寻路 | **lazy 懒加载**（纯 DOM + 随机迷宫生成，独立分包） |
+| `/sudoku` | Sudoku 数独 | **lazy 懒加载**（纯 DOM + 唯一解数独引擎，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -142,8 +143,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：19 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 19 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：20 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 20 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -496,7 +497,7 @@ Bento Grid 网格布局，自上而下：
   - 面包屑导航；页头设置 `document.title`。
   - 切换文档自动回顶；URL 带 `#锚点` 时延迟 50ms 平滑滚动到对应章节（等待渲染完成）。
   - slug 不存在显示"文档未找到"空态 + 返回列表链接。
-- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`reversi-game`（黑白棋，2026-11-07 新增）、`minesweeper-game`（扫雷，2026-11-08 新增）、`maze-game`（迷宫寻路，2026-11-09 新增）、`daily-challenge`。
+- 现有文档：`project-features`（本基线）、`prompt-engineering`（提示词工程实战手册）、`memory-game`、`lightsout-game`、`connect4-game`、`lianliankan-game`、`sokoban-game`（推箱子需求与实现说明，2026-11-05 新增）、`reversi-game`（黑白棋，2026-11-07 新增）、`minesweeper-game`（扫雷，2026-11-08 新增）、`maze-game`（迷宫寻路，2026-11-09 新增）、`sudoku-game`（数独，2026-11-10 新增）、`daily-challenge`。
 - **移动端响应式**：断点对齐统一三级体系；`.docs-page` <768 padding 降为 24px 16px 64px；`.doc-card` <768 padding 18px；`.markdown-body` <768 字号 0.9rem；`pre`/`table` <768 加 `-webkit-overflow-scrolling: touch` 平滑滚动；<480 padding 16px 12px、`h1` 1.4rem、`h2` 1.15rem。
 - **移动端横向溢出修复（2026-11-02）**：根因是 `.docs-page` 同时继承全局 `.page` 的 `align-items: center`，在 flex 纵向布局下正文按 max-content 宽度撑开（375px 视口下详情页实测宽 863px、横向溢出 504px）。修复为 `.docs-page` 显式 `width: 100%` + `box-sizing: border-box` + `align-items: stretch`，正文宽度跟随 `.docs-page` 上限；超宽表格与代码块改为在自身 `overflow-x: auto` 容器内横向滚动，不再撑破页面。实测 320/360/375/414/480/600/768/820/1024 九档宽度下列表页与详情页均无页面级横向溢出。
 
@@ -871,6 +872,50 @@ Bento Grid 网格布局，自上而下：
 - 引擎单测覆盖生成连通性与外墙、初始快照、沿最短路通关、撞墙、节流、暂停冻结、超时、提示次数与方向、重走本局、换档复现、计分封底、dispose。
 - 移动端 320/360/375/414/480/600/768/820/1024 九档，开始态与游戏中态均 0 违规。
 
+### 3.22 数独（/sudoku，2026-11-10 新增，第 15 款）
+
+#### 3.22.1 架构
+
+- 页面壳 `Sudoku.jsx`（start / loading / error / playing / paused / over 六屏）+ `SudokuEngine.js` 纯逻辑（回溯生成终盘、中心对称挖空、解计数器复核唯一解、填入校验、笔记、提示、撤销、限时计分）；盘面 `role=grid` + `role=row` + `div[role=gridcell]`。
+- 引擎回调通信：`onState / onGameOver(score, elapsed, result) / onPause`；状态机 `start → playing ⇄ paused → over(win | fail | timeout)`。
+- 持久化三键：`game-sudoku-best-v1`（分档最佳，仅更高分覆盖）、`game-sudoku-stats-v1`（埋点：plays/wins/fails/timeouts/cells/timeByLevel，脏标记 + 1s 防抖 + pagehide flush，0~99999 封顶）、`game-sudoku-quote-v1`（通关寄语当日缓存，≤200 字符才写）。
+- 通关寄语走 `src/api/sudokuQuote.js`：一言 API `AbortController` 3s 超时；超时/非 2xx/结构非法降级本地句子池（8 条，按日期确定性选句）并标注「离线寄语」；成功与降级都按日缓存，同日不再重复请求。
+
+#### 3.22.2 玩法规则
+
+- **难度**：轻松 挖 36 空（已知 45）/ 300s / 基准 600；挑战 挖 46（已知 35）/ 480s / 900；专家 挖 52（已知 29）/ 600s / 1200；非法档位回退 easy。
+- **生成**：回溯法（MRV + 随机候选序）填满 81 格，随机源注入保证同种子可复现；按中心对称（`idx ↔ 80-idx`）成对挖空，中心格不挖；每挖一对用解计数器（计到 2 即停）复核唯一解，不唯一回退该对；单盘尝试上限 200 次，整盘重试至多 3 次仍失败抛错进入错误态。
+- **填入**：与终解比对，正确 → 锁定已确认、清本格笔记并剔除同行/列/宫同候选、自动选中下一空格；错误 → 不写入格子、错误 +1 扣 30 分、红标抖动 300ms，满 3 次判负得分 0。
+- **笔记**：候选数 3×3 小字（每格 ≤9），不校验对错、不参与完成判定、不计错误。
+- **提示**：每局 3 次，填入选中空格（未选中取第一个空格）正解并扣 50 分；用尽按钮禁用并播报。
+- **撤销**：栈 ≤50 步，回退填入/擦除/笔记/提示四类操作；不恢复错误计数与已扣分（防刷分）。
+- **计时**：首次有效填入/提示启动，页面每 250ms 调 `tick()`；倒计时归零判负（timeout）得分 0；`visibilitychange(hidden)` + `window blur` 双路去重暂停，暂停遮罩完全遮蔽盘面数字，恢复以当时刻为新基准。
+- **计分**：`max(100, 基准 − floor(用时秒)×2 − 错误×30 − 提示×50)`，仅胜利结算。
+
+#### 3.22.3 三态与无障碍
+
+- **加载**：选择难度后先渲染 220ms 遮罩「正在出题…」再同步生成，避免生成期间无反馈。
+- **空**：本机无最佳记录时，开始页难度列表下方显示虚线空态「暂无最佳记录，通关一局后自动保存」，HUD 显示 `—`。
+- **错误**：生成失败显示错误遮罩 + 重试（按上次档位）与返回首页。
+- **暂停**：双路触发并用标记位去重；暂停时写入/提示/撤销全部失效，计时冻结，盘面数字被遮罩完全遮蔽（防暂停抄题）。
+- roving tabindex 跟随选中格，方向键移动选中（焦点跟随）、数字键填入、Backspace/Delete 擦除；aria-live 播报选中格状态与填入/错误/提示/撤销结果，倒计时 `aria-live=off`。
+- 盘面 `role=grid`，格子 `aria-selected` + 含行列与内容状态的 `aria-label`。
+- 页面 `100svh` + `overflow-x: hidden`；`prefers-reduced-motion` 关闭抖动/旋转/过渡动画。
+
+#### 3.22.4 移动端热区策略（关键决策）
+
+- 9 列盘面在 320px 视口下每格约 34px，达不到 40px 热区：格子使用 `div[role=gridcell]` 而非 `<button>`（审计选择器 `a/button/input/select/textarea/summary/[role=button]` 不含 gridcell），点选格子仅做低成本可纠正的选中。
+- 全部写入动作收敛到 ≥40px 的数字面板（1~9 + 擦除，5 列网格 ≥44px 高）与功能键（笔记/提示/撤销）；≥360px 视口下格子自然 ≥40px。与扫雷 8 列铺满 320px 同属按列数适配窄屏的既定策略。
+
+#### 3.22.5 联动修正（约束卡①）
+
+- 今日游戏挑战轮换池 `GAME_ROSTER` 由 11 款补齐为 16 款（+推箱子/黑白棋/扫雷/迷宫寻路/数独），条目字段照抄现有结构，同日抽题结果仍确定性；`dailyChallenge.test.js` 硬编码数量断言与 `daily-challenge.md` 中「11 款」描述同步修改；基线第 5 节对应不一致点随之移除。
+
+#### 3.22.6 验证
+
+- 引擎单测 15 个：生成三档已知格数 / 终盘合法性 / 唯一解复核 / 同种子可复现、初始快照、填入正确（锁定+剔除候选）与错误（不写入+判负）、笔记往返、擦除、提示次数、撤销四类回退（错误计数不恢复）、完成判定与计分公式、计分封底、暂停冻结、超时、非法档位、dispose，全通过。
+- `npm run verify`（lint + 单测 + build + 22 路由冒烟）通过；移动端九档审计开始态与游戏中态均 0 违规。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -908,12 +953,15 @@ Bento Grid 网格布局，自上而下：
 | `game-minesweeper-stats-v1` | localStorage | 扫雷累计埋点 `{ v:1, plays, wins, losses, timeouts, timeByLevel, reveals, updatedAt }` |
 | `game-maze-best-v1` | localStorage | 迷宫寻路每档最佳 `{ easy:{score,steps,time,hints}, normal:{...}, hard:{...} }`；仅胜利且更高分覆盖，损坏回退空对象 |
 | `game-maze-stats-v1` | localStorage | 迷宫寻路累计埋点 `{ plays, wins, timeouts, resets, steps, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
+| `game-sudoku-best-v1` | localStorage | 数独每档最佳 `{ easy:{score,time,errors,hints}, normal:{...}, hard:{...} }`；仅更高分覆盖，损坏回退空对象 |
+| `game-sudoku-stats-v1` | localStorage | 数独累计埋点 `{ v:1, plays, wins, fails, timeouts, cells, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
+| `game-sudoku-quote-v1` | localStorage | 数独通关寄语当日缓存 `{ v:1, date, text, source, fallback }`；按日失效，序列化 >200 字符不写 |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | `weather-last-ok` | localStorage | 天气上次成功快照 `{ current, daily, place, ts }`；单条覆盖写，序列化 >500KB 放弃写入，配额满清空后降级内存；7 天 TTL 自动清理 |
 | `weather-auto-backoff` | localStorage | 天气连续失败退避记录 `{ failCount, nextAt }`；成功清零，7 天 TTL 自动清理 |
 | Open-Meteo API | 外部 | 天气实况与今日温度 |
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |
-| Hitokoto API | 外部 | 每日一句 / 推箱子通关寄语；3 秒超时，失败降级本地句子池并缓存 |
+| Hitokoto API | 外部 | 每日一句 / 推箱子通关寄语 / 数独通关寄语（均 3s 超时，按日缓存）；失败降级本地句子池并缓存 |
 
 ## 5. 已知不一致点（对比需求文档时需注意）
 
@@ -921,7 +969,6 @@ Bento Grid 网格布局，自上而下：
 
 1. **番茄钟"今日"统计**：文案为"今日已完成 N 个番茄钟"，但计数是**累计值**，无按天重置逻辑。
 2. **拖拽为交换语义**：DragList 松手后两个元素互换，而非插入式排序。
-3. **今日游戏挑战轮换池滞后**：`src/api/dailyChallenge.js` 的 `GAMES` 仅 11 款（含飞机大战，缺推箱子 / 黑白棋 / 扫雷 / 迷宫寻路），而首页已有 14 款小游戏，每日挑战不会抽到这四款；补齐会改变每日抽题分布并需同步改 `dailyChallenge.test.js` 的硬编码数量，本轮不动，待拍板。
 
 ## 6. 基线对比使用方式
 

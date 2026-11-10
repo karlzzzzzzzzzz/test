@@ -89,8 +89,8 @@ test('pickDailyChallenge 非法日期 / 空注册表返回 null', () => {
   assert.equal(pickDailyChallenge('2026-11-04', null), null)
 })
 
-test('注册表完整：11 款、slug 与路由唯一、展示字段齐全', () => {
-  assert.equal(GAME_ROSTER.length, 11)
+test('注册表完整：16 款、slug 与路由唯一、展示字段齐全', () => {
+  assert.equal(GAME_ROSTER.length, 16)
   const slugs = new Set()
   const routes = new Set()
   for (const game of GAME_ROSTER) {
