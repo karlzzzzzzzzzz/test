@@ -168,6 +168,13 @@
   font-size: 16px;
 }
 
+.pomo-cumulative {
+  font-size: 0.78rem;
+  color: #8a6e3a;
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
 .pomo-dots {
   display: flex;
   justify-content: center;

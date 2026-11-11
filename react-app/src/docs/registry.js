@@ -13,6 +13,7 @@ import mazeGame from './maze-game.md?raw'
 import dailyChallenge from './daily-challenge.md?raw'
 import weatherRobustness from './weather-robustness.md?raw'
 import sudokuGame from './sudoku-game.md?raw'
+import gomokuGame from './gomoku-game.md?raw'
 
 export const docs = [
   {
@@ -144,6 +145,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 9 分钟',
     content: sudokuGame,
+  },
+  {
+    slug: 'gomoku-game',
+    title: '五子棋（Gomoku）需求文档',
+    summary:
+      '第 16 款小游戏的需求文档：15×15 棋盘、横/竖/两斜线四向成五判定、单人 AI（随机/启发式/α-β 深度 4）+ 双人本地对战、回合计时与悔棋栈、六屏状态机、番茄钟「今日」统计口径修正联动（新增 pomodoro-sessions-v1 session 数组）、AI 超时回退与 3 个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Board Game'],
+    readTime: '约 10 分钟',
+    content: gomokuGame,
   },
 ]
 

@@ -1,15 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import './Pomodoro.css'
 
-const MODES = {
-  // 主题色需满足白字/白底 ≥4.5:1（原 #e2554c 3.73、#3a9d6e 3.37、#3d7dc9 4.22 均不达标）
-  focus: { label: '专注', minutes: 25, color: '#c24138' },
-  short: { label: '短休息', minutes: 5, color: '#2c7a54' },
-  long: { label: '长休息', minutes: 15, color: '#2f68ad' },
-}
-
-const CYCLE = 4 // 每完成 4 个番茄钟进入一次长休息
-const MAX_COMPLETED = 99999 // 计数上限，超出封顶（localStorage 容量控制，序列化 ≤ 5 字节）
+/** 番茄钟 session 数组键 —— 与五子棋（/gomoku）联动共用 */
+const SESSION_KEY = 'pomodoro-sessions-v1'
 
 function pad(n) {
   return String(n).padStart(2, '0')
@@ -20,6 +13,46 @@ function formatTime(sec) {
   const s = sec % 60
   return `${pad(m)}:${pad(s)}`
 }
+
+/** 读取 session 数组（损坏回退空数组） */
+function loadSessions() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return []
+    const arr = JSON.parse(raw)
+    return Array.isArray(arr) ? arr.filter((s) => s && typeof s === 'object') : []
+  } catch { return [] }
+}
+
+/** 追加一条番茄钟 session（只保留最近 14 天） */
+function appendSession(startTs, endTs, durSec) {
+  try {
+    const sessions = loadSessions()
+    sessions.push({ startTs, endTs, durSec, game: 'pomodoro', win: true })
+    const cutoff = Date.now() - 14 * 86400 * 1000
+    const trimmed = sessions.filter((s) => s.endTs >= cutoff)
+    localStorage.setItem(SESSION_KEY, JSON.stringify(trimmed))
+  } catch { /* 静默跳过 */ }
+}
+
+/** 最近 24h 内 durSec ≥ 120 的有效番茄钟数 —— 统计条口径 */
+function countRecentPomos() {
+  try {
+    const sessions = loadSessions()
+    const cutoff = Date.now() - 24 * 3600 * 1000
+    return sessions.filter((s) => s.endTs >= cutoff && s.durSec >= 120).length
+  } catch { return 0 }
+}
+
+const MODES = {
+  // 主题色需满足白字/白底 ≥4.5:1（原 #e2554c 3.73、#3a9d6e 3.37、#3d7dc9 4.22 均不达标）
+  focus: { label: '专注', minutes: 25, color: '#c24138' },
+  short: { label: '短休息', minutes: 5, color: '#2c7a54' },
+  long: { label: '长休息', minutes: 15, color: '#2f68ad' },
+}
+
+const CYCLE = 4 // 每完成 4 个番茄钟进入一次长休息
+const MAX_COMPLETED = 99999 // 计数上限，超出封顶（localStorage 容量控制，序列化 ≤ 5 字节）
 
 // 读取持久化计数：仅接受 0~99999 的整数，非法值回退 0 并清除原值
 function loadCompleted() {
@@ -100,6 +133,9 @@ function Pomodoro() {
     return next
   }, [])
 
+  // 记录本轮开始/结束时间（session 数组）
+  const sessionStartAtRef = useRef(0)
+
   // 无脏数据时不产生同步写；写入成功才清除脏标记
   const flushCompleted = useCallback(() => {
     if (!dirtyRef.current) return
@@ -146,6 +182,8 @@ function Pomodoro() {
         let nextMode = 'focus'
         if (finishedMode === 'focus') {
           const nextCompleted = bumpCompleted()
+          // 追加 session 数组（时长 = 25min 专注）
+          appendSession(sessionStartAtRef.current, Date.now(), MODES.focus.minutes * 60)
           nextMode = nextCompleted % CYCLE === 0 ? 'long' : 'short'
         }
         // 休息结束自动回到专注，但不自动开始（给用户准备时间）
@@ -178,6 +216,7 @@ function Pomodoro() {
     if (running) {
       setRunning(false)
     } else {
+      sessionStartAtRef.current = Date.now()
       endAtRef.current = Date.now() + remainingRef.current * 1000
       setRunning(true)
     }
@@ -190,9 +229,9 @@ function Pomodoro() {
 
   const handleSkip = () => {
     if (modeRef.current === 'focus') {
-      // 跳过专注视为完成一个番茄钟：累加计数（脏标记）并推进周期
+      // 跳过专注视为完成一个番茄钟：累加计数（脏标记）+ 推进周期 + 追加 session（按实际时长）
       const nextCompleted = bumpCompleted()
-      // 每完成 CYCLE 个进入长休息，否则短休息（与自然完成逻辑一致）
+      appendSession(sessionStartAtRef.current, Date.now(), Math.round((endAtRef.current - Date.now()) / 1000 + MODES.focus.minutes * 60 - remainingRef.current))
       const nextMode = nextCompleted % CYCLE === 0 ? 'long' : 'short'
       switchMode(nextMode, false)
     } else {
@@ -205,6 +244,9 @@ function Pomodoro() {
   const R = 130
   const C = 2 * Math.PI * R
   const dotsInCycle = completed % CYCLE
+
+  // 统计条数值：最近 24h 内有效番茄钟数（滚动窗口口径）；累计总数保持不变
+  const recentPomos = countRecentPomos()
 
   return (
     <div className="pomo-page" style={{ '--accent': MODES[mode].color }}>
@@ -262,7 +304,8 @@ function Pomodoro() {
             ))}
           </div>
           <p>
-            今日已完成 <strong>{completed}</strong> 个番茄钟
+            <strong>{recentPomos}</strong> 个番茄钟 / 最近 24h
+            <span className="pomo-cumulative"> · 累计 {completed} 个</span>
           </p>
         </div>
       </div>
