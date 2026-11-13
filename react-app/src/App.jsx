@@ -41,6 +41,7 @@ const Maze = lazy(() => import('./pages/Maze'))
 // 数独（纯 DOM + 数字面板写入 + 唯一解校验 + 撤销栈），按需加载（独立分包）
 const Sudoku = lazy(() => import('./pages/Sudoku'))
 const Gomoku = lazy(() => import('./pages/Gomoku'))
+const Pipe = lazy(() => import('./pages/Pipe'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -191,6 +192,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Gomoku />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/pipe"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Pipe />
             </Suspense>
           }
         />

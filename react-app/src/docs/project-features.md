@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-12 共 16 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-13 共 17 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十一大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十二大功能模块。
 
 ### 1.2 技术栈
 
@@ -48,6 +48,7 @@ react-app/src/
 │   ├── Minesweeper.jsx / .css   # 扫雷页面壳（DOM 雷区 + 首点安全 + 插旗 + 撤销）
 │   ├── Maze.jsx / .css          # 迷宫寻路页面壳（DOM 网格 + 滑动/点按/方向键 + 三态遮罩）
 │   ├── Gomoku.jsx / .css        # 五子棋页面壳（DOM 15×15 棋盘 + 六屏遮罩 + 键盘无障碍 + 番茄钟 session 联动）
+│   ├── Pipe.jsx / .css          # 接水管页面壳（DOM 网格 + SVG 管型渲染 + 旋转连通 + 键盘无障碍 + 番茄钟 session 联动）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -71,6 +72,7 @@ react-app/src/
 │   ├── MinesweeperEngine.js       # 扫雷引擎（纯逻辑：首点安全布雷 + 洪泛展开 + 撤销栈）
 │   ├── MazeEngine.js              # 迷宫寻路引擎（纯逻辑：DFS 回溯生成 + BFS 最短路 + 限时计分）
 │   └── GomokuEngine.js            # 五子棋引擎（纯逻辑：15×15 棋盘 + 四向成五 + α-β 深度 4 + 启发式评估 + 回合计时 + 悔棋栈 + AI 超时回退）
+│   └── PipeEngine.js              # 接水管引擎（纯逻辑：网格 + 旋转位掩码 + BFS 连通判定 + 倒计时 + 撤销栈 + 必然可解关卡生成）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -111,6 +113,7 @@ react-app/src/
 | `/maze` | Maze 迷宫寻路 | **lazy 懒加载**（纯 DOM + 随机迷宫生成，独立分包） |
 | `/sudoku` | Sudoku 数独 | **lazy 懒加载**（纯 DOM + 唯一解数独引擎，独立分包） |
 | `/gomoku` | Gomoku 五子棋 | **lazy 懒加载**（纯 DOM + α-β 引擎 + 三档 AI，独立分包） |
+| `/pipe` | Pipe 接水管 | **lazy 懒加载**（纯 DOM + SVG 管型 + 旋转连通，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -146,8 +149,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：21 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 21 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：22 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 22 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -959,6 +962,38 @@ Bento Grid 网格布局，自上而下：
 - `npm run verify`（lint + 161 单测 + build + 23 路由冒烟）通过；Gomoku 产物 `Gomoku-Ba3UYwxT.js` 23.17 kB（gzip 7.42 kB）。
 - `npm run audit:mobile -- --url http://localhost:5199/#/gomoku` 九档 0 违规。
 
+### 3.24 接水管（/pipe，2026-11-13 新增，第 17 款）
+
+#### 3.24.1 架构
+
+- 页面壳 `Pipe.jsx`（六屏 start / playing / paused / over + HUD）+ `PipeEngine.js` 纯逻辑（网格生成 + 管型旋转 + BFS 连通判定）；盘面 `role=grid` + `role=row` + `div[role=gridcell]`。
+- 管型渲染：SVG 内嵌 `<line>` 根据每格 `mask` 绘制四向开口（N=bit0, E=bit1, S=bit2, W=bit3）；已连通的管段加 `.flow` 类触发 `drop-shadow` 脉冲动画。
+- 引擎回调：`onState(snapshot)` / `onGameOver({result, score, elapsed})` / `onPause()`；状态机 `start → playing ⇄ paused → over(win | timeout)`。
+- 持久化：`game-pipe-best-v1`（分档最佳，仅胜局入榜）、`game-pipe-stats-v1`（累计埋点）。
+
+#### 3.24.2 玩法规则
+
+- **管型**：`EMPTY`（空地、点击无反应）、`STRAIGHT`（直管，旋转 2 态）、`CURVE`（弯管，旋转 4 态）、`TEE`（三通，旋转 4 态）、`CROSS`（十字，旋转不变）、`SOURCE`（蓝色源点，固定不旋转）、`TARGET`（橙色终点，固定不旋转）。
+- **旋转编码**：每根管存储 4-bit `mask`，旋转 90° = `(mask << 1 | mask >> 3) & 0xF`（循环左移 1 位）。
+- **关卡生成**：先 DFS 铺一条从源点（[0,0]）到终点（[rows-1, cols-1]）的主路径（保证必然可解），路径上每格根据进/出方向选管型；其余格撒装饰短管或空地；最后所有非源/终点管随机旋转 1~3 次打乱。
+- **连通判定**：从源点出发 BFS，沿相邻开口方向遍历——当前格有方向 `d` 的开口 → 相邻格必须也有反方向 `OPPOSITE[d]` 的开口，到达终点即胜利。
+- **难度**：easy 4×4 90s / normal 5×5 150s / hard 6×6 240s。
+- **撤销**：10 次上限，每次撤销一次旋转（恢复 mask 到前值）。
+- **计分**：`max(50, 基准 − 旋转数×5 − 秒数×1)`。
+
+#### 3.24.3 无障碍与移动端
+
+- **键盘**：方向键移动选中格（焦点跟随）、Enter/Space 旋转、Z 撤销、Esc 暂停、R 重开。
+- **双路暂停**：`visibilitychange(hidden)` + `window blur` 去重自动暂停 + 手动暂停按钮。
+- **移动端**：DOM 网格 `aspect-ratio: 1` 自适应；返回首页链接 `min-height: 44px` 满足热区要求；`.pipe-level-sub` 字号 ≥ 12px；窄屏 HUD 自动换行。
+- **番茄钟联动**：对局时长 ≥ 120s 自动追加 `pomodoro-sessions-v1`（`game:'pipe'`）。
+
+#### 3.24.4 验证
+
+- 引擎单测 22 个：mask 旋转工具（直管/十字/弯管 + 负数归位）、三种难度 start 生成（棋盘合法 + 源终点正确位置）、旋转与撤销、手动构造连通/断开关卡 `_checkWin`、状态机（非 playing 态忽略操作 + dispose 后无回调）、暂停/恢复/超时判定、固定随机源可重现关卡，全通过。
+- `npm run verify`（lint + 183 单测 + build + 24 路由冒烟）通过；Pipe 产物 `Pipe-DwWPj53U.js` 18.03 kB（gzip 6.26 kB）。
+- `npm run audit:mobile -- --url http://localhost:5199/#/pipe` 九档 0 违规（最小字号 12.5px、小热区 0、横向溢出 0）。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -998,6 +1033,8 @@ Bento Grid 网格布局，自上而下：
 | `game-maze-stats-v1` | localStorage | 迷宫寻路累计埋点 `{ plays, wins, timeouts, resets, steps, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
 | `game-sudoku-best-v1` | localStorage | 数独每档最佳 `{ easy:{score,time,errors,hints}, normal:{...}, hard:{...} }`；仅更高分覆盖，损坏回退空对象 |
 | `game-sudoku-stats-v1` | localStorage | 数独累计埋点 `{ v:1, plays, wins, fails, timeouts, cells, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
+| `game-pipe-best-v1` | localStorage | 接水管分档最佳 `{ easy:{score,clicks,timeSec}, normal:{...}, hard:{...} }`；仅胜局入榜，更高分优先（同分更少点击优先），损坏回退空对象 |
+| `game-pipe-stats-v1` | localStorage | 接水管累计埋点 `{ v:1, plays, wins, clicks, timeByDifficulty, updatedAt }`；脏标记 + pagehide 落盘 |
 | `game-sudoku-quote-v1` | localStorage | 数独通关寄语当日缓存 `{ v:1, date, text, source, fallback }`；按日失效，序列化 >200 字符不写 |
 | `game-gomoku-best-v1` | localStorage | 五子棋分档最佳 `{ easy:{moves,timeSec,date}, normal:{...}, hard:{...} }`；单人 AI 仅胜局入榜，双人黑/白胜均入；更少落子优先（落子相同用时更少优先），损坏回退空对象 |
 | `game-gomoku-stats-v1` | localStorage | 五子棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, aiTimeouts, timeByDifficulty, winsByDifficulty, lossesByDifficulty, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘，0~99999 封顶 |
