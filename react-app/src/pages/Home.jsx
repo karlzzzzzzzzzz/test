@@ -236,6 +236,16 @@ const ENTRIES = [
     dataKeywords: 'Pipe 管道 旋转 连通',
     footer: { meta: ['2026-11-13', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '数织',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['Nonogram', 'Picross', '数织', '推理', '行列提示', '像素画'],
+    to: '/nonogram',
+    span: '3',
+    desc: '数织推理：根据每行每列的数字提示涂黑格子，还原隐藏图案。三档尺寸（5×5 / 10×10 / 15×15）+ 撤销 + 提示 + 进度自动保存 + 键盘无障碍',
+    dataKeywords: 'Nonogram 数织 推理 像素',
+    footer: { meta: ['2026-11-17', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [

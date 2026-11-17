@@ -14,6 +14,7 @@ import dailyChallenge from './daily-challenge.md?raw'
 import weatherRobustness from './weather-robustness.md?raw'
 import sudokuGame from './sudoku-game.md?raw'
 import gomokuGame from './gomoku-game.md?raw'
+import nonogramGame from './nonogram-game.md?raw'
 
 export const docs = [
   {
@@ -155,6 +156,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Board Game'],
     readTime: '约 10 分钟',
     content: gomokuGame,
+  },
+  {
+    slug: 'nonogram-game',
+    title: '数织（Nonogram）需求文档',
+    summary:
+      '第 18 款小游戏的需求文档：行列提示推理、填格/叉格循环标记、三档难度（5×5 / 10×10 / 15×15）、每局 3 次提示与撤销栈、行列提示匹配式胜利判定（支持多解）、进度自动保存与 24h 恢复、键盘无障碍与切后台自动暂停、3 个 localStorage 键的容量策略。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 11 分钟',
+    content: nonogramGame,
   },
 ]
 

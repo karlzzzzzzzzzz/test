@@ -42,6 +42,7 @@ const Maze = lazy(() => import('./pages/Maze'))
 const Sudoku = lazy(() => import('./pages/Sudoku'))
 const Gomoku = lazy(() => import('./pages/Gomoku'))
 const Pipe = lazy(() => import('./pages/Pipe'))
+const Nonogram = lazy(() => import('./pages/Nonogram'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -200,6 +201,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Pipe />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/nonogram"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Nonogram />
             </Suspense>
           }
         />

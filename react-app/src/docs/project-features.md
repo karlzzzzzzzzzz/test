@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-13 共 17 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-17 共 18 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十二大功能模块。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十三大功能模块。
 
 ### 1.2 技术栈
 
@@ -49,6 +49,7 @@ react-app/src/
 │   ├── Maze.jsx / .css          # 迷宫寻路页面壳（DOM 网格 + 滑动/点按/方向键 + 三态遮罩）
 │   ├── Gomoku.jsx / .css        # 五子棋页面壳（DOM 15×15 棋盘 + 六屏遮罩 + 键盘无障碍 + 番茄钟 session 联动）
 │   ├── Pipe.jsx / .css          # 接水管页面壳（DOM 网格 + SVG 管型渲染 + 旋转连通 + 键盘无障碍 + 番茄钟 session 联动）
+│   ├── Nonogram.jsx / .css      # 数织页面壳（CSS Grid 棋盘 + 行列提示 + 填格/叉格 + 进度恢复 + 键盘无障碍）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -73,6 +74,7 @@ react-app/src/
 │   ├── MazeEngine.js              # 迷宫寻路引擎（纯逻辑：DFS 回溯生成 + BFS 最短路 + 限时计分）
 │   └── GomokuEngine.js            # 五子棋引擎（纯逻辑：15×15 棋盘 + 四向成五 + α-β 深度 4 + 启发式评估 + 回合计时 + 悔棋栈 + AI 超时回退）
 │   └── PipeEngine.js              # 接水管引擎（纯逻辑：网格 + 旋转位掩码 + BFS 连通判定 + 倒计时 + 撤销栈 + 必然可解关卡生成）
+│   └── NonogramEngine.js          # 数织引擎（纯逻辑：行列提示计算 + 填格/叉格状态机 + 提示匹配式胜利判定 + 撤销栈 + 进度序列化）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -114,6 +116,7 @@ react-app/src/
 | `/sudoku` | Sudoku 数独 | **lazy 懒加载**（纯 DOM + 唯一解数独引擎，独立分包） |
 | `/gomoku` | Gomoku 五子棋 | **lazy 懒加载**（纯 DOM + α-β 引擎 + 三档 AI，独立分包） |
 | `/pipe` | Pipe 接水管 | **lazy 懒加载**（纯 DOM + SVG 管型 + 旋转连通，独立分包） |
+| `/nonogram` | Nonogram 数织 | **lazy 懒加载**（纯 DOM + CSS Grid + 行列提示推理，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -149,8 +152,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘交换，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：22 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 22 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：23 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe、数织→/nonogram），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡；2026-11-17 新增数织卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 23 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -994,6 +997,37 @@ Bento Grid 网格布局，自上而下：
 - `npm run verify`（lint + 183 单测 + build + 24 路由冒烟）通过；Pipe 产物 `Pipe-DwWPj53U.js` 18.03 kB（gzip 6.26 kB）。
 - `npm run audit:mobile -- --url http://localhost:5199/#/pipe` 九档 0 违规（最小字号 12.5px、小热区 0、横向溢出 0）。
 
+### 3.25 数织（/nonogram，2026-11-17 新增，第 18 款）
+
+#### 3.25.1 架构
+
+- 页面壳 `Nonogram.jsx`（六屏 start / playing / paused / over + 恢复卡片 + HUD）+ `NonogramEngine.js` 纯逻辑（关卡生成 + 提示计算 + 填格状态机 + 撤销栈 + 进度导入导出）；盘面 `role=grid` + `div[role=gridcell]`，提示区 `aria-hidden`。
+- 棋盘 CSS Grid：`grid-template-columns: auto repeat(cols, minmax(18px, 1fr))`，左侧行提示列自适应内容；每 5 格绘制紫色分组线（15×15 下形成 3×3 大区块）。
+- 引擎回调：`onState(snapshot)` / `onGameOver({result, elapsed, moves, level, hintsLeft})` / `onPause()`；状态机 `start → playing ⇄ paused → over(win)`。
+- 持久化三键：`game-nonogram-best-v1`（分档最佳用时）、`game-nonogram-stats-v1`（累计埋点）、`game-nonogram-progress-v1`（当前未完成对局，单条）。
+
+#### 3.25.2 玩法规则
+
+- **关卡生成**：按难度密度（easy 0.54 / normal 0.52 / hard 0.50）随机布点，最多重试 60 次直到每行每列都至少有一个填充块；由答案反算行列提示。
+- **标记循环**：点击格子按「空 → 填 → 叉 → 空」循环；X 键在「叉 ↔ 空」间切换。
+- **胜利判定**：用玩家实际填格重新计算行列提示，与目标提示逐行逐列完全一致即胜利——**支持多解**（任何满足提示的图案都算赢），不会出现「填对了却被判错」。
+- **难度**：easy 5×5 / normal 10×10 / hard 15×15。
+- **提示**：每局 3 次，从「答案=1 但未填」的格中随机揭示 1 格。
+- **撤销**：栈上限 200，超出丢弃最早记录。
+- **进度保存**：每 2s + 每次操作落盘，序列化上限 400 字符（15×15 为 225 字符），**超过 24h 的进度读取时直接丢弃**；通关瞬间清除进度键。
+
+#### 3.25.3 无障碍与切后台（约束卡 1 / 3）
+
+- **键盘**：方向键移动焦点（roving tabindex，仅当前格 `tabIndex=0`）、Enter/空格循环标记、X 标叉、Z 撤销、H 提示、R 重开、Esc 暂停/继续；`aria-live` 播报「第 r 行第 c 列，状态。行提示 x，列提示 y」。
+- **双路暂停**：`visibilitychange(hidden)` + `window blur` 去重自动暂停（仅 `playing` 态响应），暂停时计时冻结并立即落盘进度；恢复前台**不自动继续**，需手动点「继续」。
+- **移动端**：15×15 在 320px 视口下格子最小 18px，棋盘容器 `overflow-x: auto` 兜底；行提示字号 12px。
+
+#### 3.25.4 验证
+
+- 引擎单测 29 个：提示计算（连续块/全空/全填/交替）、序列化往返与非法字符、三档生成（尺寸 + 无空行空列 + 提示数量）、填格循环、撤销、非法索引、非 playing 态忽略、清空、提示次数耗尽、胜利判定（按答案填满 + 多解 + 叉格不计入）、暂停冻结、dispose、进度导出/还原/难度不匹配/损坏数据，全通过。
+- `npm run verify`（lint + 单测 + build + 25 路由冒烟）通过；Nonogram 独立分包。
+- `npm run audit:mobile -- --url http://localhost:5199/#/nonogram` 九档 0 违规（最小字号 12.5px、小热区 0、横向溢出 0）。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -1035,6 +1069,9 @@ Bento Grid 网格布局，自上而下：
 | `game-sudoku-stats-v1` | localStorage | 数独累计埋点 `{ v:1, plays, wins, fails, timeouts, cells, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
 | `game-pipe-best-v1` | localStorage | 接水管分档最佳 `{ easy:{score,clicks,timeSec}, normal:{...}, hard:{...} }`；仅胜局入榜，更高分优先（同分更少点击优先），损坏回退空对象 |
 | `game-pipe-stats-v1` | localStorage | 接水管累计埋点 `{ v:1, plays, wins, clicks, timeByDifficulty, updatedAt }`；脏标记 + pagehide 落盘 |
+| `game-nonogram-best-v1` | localStorage | 数织分档最佳 `{ easy:{elapsed,moves}, normal:{...}, hard:{...} }`；仅胜局入榜，用时更短优先（同用时步数更少优先），损坏回退空对象 |
+| `game-nonogram-stats-v1` | localStorage | 数织累计埋点 `{ v:1, plays, wins, timeByLevel, hintsUsed, updatedAt }`；脏标记 + pagehide 落盘，0~99999 封顶 |
+| `game-nonogram-progress-v1` | localStorage | 数织未完成对局 `{ level, grid, elapsed, ts }`；单条覆盖写、序列化 ≤400 字符（超限拒写）、读取时 >24h 直接丢弃、通关瞬间清除 |
 | `game-sudoku-quote-v1` | localStorage | 数独通关寄语当日缓存 `{ v:1, date, text, source, fallback }`；按日失效，序列化 >200 字符不写 |
 | `game-gomoku-best-v1` | localStorage | 五子棋分档最佳 `{ easy:{moves,timeSec,date}, normal:{...}, hard:{...} }`；单人 AI 仅胜局入榜，双人黑/白胜均入；更少落子优先（落子相同用时更少优先），损坏回退空对象 |
 | `game-gomoku-stats-v1` | localStorage | 五子棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, aiTimeouts, timeByDifficulty, winsByDifficulty, lossesByDifficulty, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘，0~99999 封顶 |
