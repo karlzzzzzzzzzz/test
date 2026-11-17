@@ -22,7 +22,7 @@
 | Markdown 渲染 | marked（GFM 模式） |
 | 特效 | 原生 Canvas 2D（鼠标轨迹） |
 | 数据持久化 | localStorage（无后端数据库） |
-| 外部 API | Open-Meteo（天气）、BigDataCloud（逆地理编码）、一言 Hitokoto（每日一句 / 推箱子通关寄语），均免费无 Key |
+| 外部 API | Open-Meteo（天气）、BigDataCloud（逆地理编码）、一言 Hitokoto（每日一句 / 推箱子通关寄语）、timeapi.io（跳棋每日残局权威日期），均免费无 Key |
 
 ### 1.3 目录结构
 
@@ -1051,7 +1051,7 @@ Bento Grid 网格布局，自上而下：
 
 #### 3.26.3 每日残局与约束卡（1 / 2 / 3）
 
-- **每日残局（约束卡①）**：进入页面请求 `worldtimeapi.org/api/ip` 取权威日期（AbortController 6s 超时），成功显示「网络日期」；超时/失败/格式异常降级本地日期并显示「本地日期」+ 说明，残局仍可开局。
+- **每日残局（约束卡①）**：进入页面请求 `timeapi.io` 的 `Asia/Shanghai` 当前时间取权威日期（AbortController 6s 超时），成功显示「网络日期」；超时/失败/格式异常降级本地日期并显示「本地日期」+ 说明，残局仍可开局。
 - **确定性盘面**：日期字符串经 FNV-1a 哈希 + mulberry32 生成随机源，双方各 6 枚棋子，最前排必有棋子保证双方都有合法着法；同一日期盘面完全一致。
 - **节流（约束卡②）**：落子提交 300ms 节流防连点；每日残局刷新 30s 模块级节流，重复点击只提示不请求；AI 思考延迟 340ms，暂停时清理定时器。
 - **埋点（约束卡③）**：结算写 `game-checkers-stats-v1`（plays / wins / losses / draws / captures / promotions / aiMs / dailyPlays / dailyWins）；每日残局另写 `game-checkers-daily-v1` 按日期记录 result / elapsed / level / ts。

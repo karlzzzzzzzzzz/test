@@ -11,10 +11,13 @@ const POMODORO_KEY = 'pomodoro-sessions-v1'
 const LEVEL_KEYS = ['easy', 'normal', 'hard']
 const MOVE_THROTTLE_MS = 300
 const DAILY_THROTTLE_MS = 30000
-const DAILY_API = 'https://worldtimeapi.org/api/ip'
+// 权威日期接口：返回 Asia/Shanghai 时区的 dateTime（CORS 开放）
+const DAILY_API = 'https://timeapi.io/api/Time/current/zone?timeZone=Asia%2FShanghai'
 
-// 模块级时间戳：每日残局刷新 30 秒内不重复请求（约束卡② 节流）
+// 模块级状态：每日残局刷新 30 秒内不重复请求（约束卡② 节流）
 let dailyFetchedAt = 0
+// 请求进行中标记：StrictMode 双执行时静默忽略第二次，避免误报「刷新过于频繁」
+let dailyInFlight = false
 
 function pad2(n) {
   return String(n).padStart(2, '0')
@@ -115,7 +118,6 @@ export default function CheckersPage() {
   const gameStartRef = useRef(0)
   const focusIdxRef = useRef(0)
   const aiTimerRef = useRef(null)
-  const dailyCtrlRef = useRef(null)
 
   const [screen, setScreen] = useState('start')
   const [level, setLevel] = useState('normal')
@@ -183,7 +185,8 @@ export default function CheckersPage() {
 
         const durSec = Math.round(info.elapsed)
         if (gameStartRef.current && durSec >= 120) {
-          appendPomodoroSession(gameStartRef.current, Date.now(), info)
+          const endTs = Date.now()
+          appendPomodoroSession(endTs - durSec * 1000, endTs, info)
         }
 
         setFinalInfo(info)
@@ -201,7 +204,6 @@ export default function CheckersPage() {
     return () => {
       clearInterval(tickTimer)
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current)
-      dailyCtrlRef.current?.abort()
       engine.dispose()
       engineRef.current = null
     }
@@ -210,15 +212,15 @@ export default function CheckersPage() {
 
   // ===== 每日残局：权威日期 + 失败降级 =====
   async function refreshDaily() {
+    if (dailyInFlight) return
     const now = Date.now()
     if (now - dailyFetchedAt < DAILY_THROTTLE_MS) {
       setDailyNote('刷新过于频繁，30 秒内不重复请求')
       return
     }
     dailyFetchedAt = now
-    dailyCtrlRef.current?.abort()
+    dailyInFlight = true
     const ctrl = new AbortController()
-    dailyCtrlRef.current = ctrl
     const timer = setTimeout(() => ctrl.abort(), 6000)
     setDailyLoading(true)
     setDailyNote('')
@@ -226,7 +228,7 @@ export default function CheckersPage() {
       const res = await fetch(DAILY_API, { signal: ctrl.signal })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      const date = typeof data?.datetime === 'string' ? data.datetime.slice(0, 10) : ''
+      const date = typeof data?.dateTime === 'string' ? data.dateTime.slice(0, 10) : ''
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('返回格式异常')
       setDailyDate(date)
       setDailySource('api')
@@ -239,6 +241,7 @@ export default function CheckersPage() {
         : '时间服务不可用，已按本地日期生成残局')
     } finally {
       clearTimeout(timer)
+      dailyInFlight = false
       setDailyLoading(false)
     }
   }
@@ -319,6 +322,17 @@ export default function CheckersPage() {
     scheduleAiIfNeeded()
   }
 
+  /** 返回菜单：先暂停引擎，避免 tick 每 500ms 把界面拉回对局 */
+  function handleMenu() {
+    const e = engineRef.current
+    if (aiTimerRef.current) { clearTimeout(aiTimerRef.current); aiTimerRef.current = null }
+    if (e && e.state === 'playing') e.pause()
+    setSelected(null)
+    setPausedAuto(false)
+    setFinalInfo(null)
+    setScreen('start')
+  }
+
   function announceCell(idx) {
     const snap = snapshotRef.current
     if (!snap || !snap.board.length) return
@@ -354,14 +368,12 @@ export default function CheckersPage() {
       setSelected(nextSelected)
       focusIdxRef.current = cellIdx
       setFocusedIdx(cellIdx)
-      const nextSnap = e.getSnapshot()
       const chainText = res.chain ? '，必须继续连跳' : ''
       const captureCount = hit.captures.length
       setLiveAnnounce(
         `${captureCount ? `吃子 ${captureCount} 枚` : '移动'}到第 ${(cellIdx >> 3) + 1} 行第 ${(cellIdx & 7) + 1} 列${chainText}`
       )
       if (!res.chain) scheduleAiIfNeeded()
-      else if (nextSnap.turn !== SIDE.RED) setSelected(null)
       return
     }
 
@@ -531,7 +543,7 @@ export default function CheckersPage() {
               {screen === 'playing' && <button className="chk-btn" onClick={handlePause}>暂停</button>}
               {screen === 'paused' && <button className="chk-btn chk-btn-primary" onClick={handleResume}>继续</button>}
               <button className="chk-btn" onClick={handleRestart}>重开</button>
-              <button className="chk-btn" onClick={() => { setScreen('start'); setSelected(null) }}>菜单</button>
+              <button className="chk-btn" onClick={handleMenu}>菜单</button>
             </div>
           </div>
 
@@ -605,7 +617,7 @@ export default function CheckersPage() {
                 <div className="chk-overlay-actions">
                   <button className="chk-btn chk-btn-primary big" onClick={handleResume}>继续对局</button>
                   <button className="chk-btn" onClick={handleRestart}>重新开始</button>
-                  <button className="chk-btn" onClick={() => setScreen('start')}>返回菜单</button>
+                  <button className="chk-btn" onClick={handleMenu}>返回菜单</button>
                 </div>
               </div>
             </div>
@@ -629,7 +641,7 @@ export default function CheckersPage() {
                 )}
                 <div className="chk-overlay-actions">
                   <button className="chk-btn chk-btn-primary big" onClick={handleRestart}>再来一局</button>
-                  <button className="chk-btn" onClick={() => setScreen('start')}>返回菜单</button>
+                  <button className="chk-btn" onClick={handleMenu}>返回菜单</button>
                 </div>
               </div>
             </div>

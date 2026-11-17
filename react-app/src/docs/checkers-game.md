@@ -49,7 +49,7 @@
 | `Checkers.jsx` 选子与落子 | 点击深色格 / Enter / 空格 | 选中己方红棋 → 高亮可落点 → 再点落点走子 | 非本方回合、非法落点、连跳期间换子均拦截并 aria 播报 |
 | `Checkers.jsx` 落子节流（约束卡②） | 走子提交 | 两次提交间隔 <300ms 的重复输入直接丢弃 | 仅节流「提交」，选子/暂停不受影响 |
 | `Checkers.jsx` AI 调度 | 玩家走完后 | 延迟 340ms 落子，模拟思考；连跳自动续走 | 暂停/切后台时清理定时器，恢复后按需重排 |
-| `Checkers.jsx` 每日残局（约束卡①） | 进入页面 / 点刷新 | 请求 `worldtimeapi.org/api/ip`（AbortController 6s 超时）取权威日期；失败/超时降级本地日期 | 30s 内重复刷新直接提示「刷新过于频繁」；接口返回格式异常按失败处理 |
+| `Checkers.jsx` 每日残局（约束卡①） | 进入页面 / 点刷新 | 请求 `timeapi.io` 的 `Asia/Shanghai` 当前时间（AbortController 6s 超时）取权威日期；失败/超时降级本地日期 | 30s 内重复刷新直接提示「刷新过于频繁」；接口返回格式异常按失败处理 |
 | `CheckersEngine.js` 每日盘面 | 每日模式开局 | 以日期字符串哈希 + mulberry32 生成确定性盘面，双方各 6 枚，保证各有合法着法 | 同日期结果完全一致；不同日期不同 |
 | `Checkers.jsx` 自动暂停 | `visibilitychange(hidden)` + `window blur` | 双路去重，仅在 playing 时暂停一次；清空 AI 定时器 | 恢复需手动点「继续」，不自动续走 |
 | `Checkers.jsx` 键盘 | 方向键 / Enter / 空格 / Esc | 方向键移动焦点（roving tabindex），Enter/Space 操作，Esc 暂停/继续 | 非 playing 状态忽略；边界不越界 |
@@ -71,7 +71,7 @@
 - **性能**：AI hard 深度 4，单步预算 900ms（搜索内按 deadline 提前返回）；normal 260ms；easy 即时返回。棋盘 64 格纯 DOM，无 Canvas。
 - **移动端**：棋盘宽 100% + `aspect-ratio: 1/1`，320px 视口单格约 34px；棋盘格用 `div[role=gridcell]`（不在审计的按钮/链接选择器内），所有按钮 ≥36px、遮罩按钮 ≥44px；最小字号 0.75rem（12px）。
 - **兼容**：无后端；`min-height: 100vh`；`prefers-reduced-motion` 下关闭棋子/按钮过渡。
-- **约束卡①（外部 API + 失败降级）**：每日残局日期优先取 `https://worldtimeapi.org/api/ip` 的 `datetime`（6s 超时 + AbortController），失败降级本地日期；降级不影响游戏可玩性。
+- **约束卡①（外部 API + 失败降级）**：每日残局日期优先取 `https://timeapi.io/api/Time/current/zone?timeZone=Asia/Shanghai` 的 `dateTime`（6s 超时 + AbortController），失败降级本地日期；降级不影响游戏可玩性。
 - **约束卡②（节流/防抖）**：落子提交 300ms 节流防连点；每日残局刷新 30s 模块级节流，重复点击只提示不请求。
 - **约束卡③（埋点统计）**：`game-checkers-stats-v1` 累计对局、胜负和、吃子、升王、AI 思考耗时、每日残局参与与胜场；每日残局另有按日期战绩表。
 
