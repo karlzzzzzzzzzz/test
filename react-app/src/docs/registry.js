@@ -15,6 +15,7 @@ import weatherRobustness from './weather-robustness.md?raw'
 import sudokuGame from './sudoku-game.md?raw'
 import gomokuGame from './gomoku-game.md?raw'
 import nonogramGame from './nonogram-game.md?raw'
+import checkersGame from './checkers-game.md?raw'
 
 export const docs = [
   {
@@ -166,6 +167,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 11 分钟',
     content: nonogramGame,
+  },
+  {
+    slug: 'checkers-game',
+    title: '跳棋（Checkers）需求文档',
+    summary:
+      '第 19 款小游戏的需求文档：8×8 西洋跳棋、强制吃子与连跳、底线升王、无子/无着法判负与长局面判和、三档 AI（随机/两层/四层 α-β）、每日残局（权威日期 + 失败降级本地）、落子 300ms 与刷新 30s 节流、键盘无障碍与双路暂停、2 个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Board Game'],
+    readTime: '约 10 分钟',
+    content: checkersGame,
   },
 ]
 

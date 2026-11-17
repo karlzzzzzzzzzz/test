@@ -246,6 +246,16 @@ const ENTRIES = [
     dataKeywords: 'Nonogram 数织 推理 像素',
     footer: { meta: ['2026-11-17', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '跳棋',
+    techTags: ['DOM', 'React Hooks', 'Board Game'],
+    keywords: ['Checkers', '跳棋', '吃子', '连跳', '升王', 'AI'],
+    to: '/checkers',
+    span: '3',
+    desc: '西洋跳棋：强制吃子 + 连跳 + 升王，三档 AI（随机 / 两层 / 四层 α-β）。每日残局按权威日期生成固定盘面，失败自动降级本地日期',
+    dataKeywords: 'Checkers 跳棋 吃子 升王',
+    footer: { meta: ['2026-11-17', '3 min'], link: '开始对局' },
+  },
 ]
 
 const PIPELINE = [
