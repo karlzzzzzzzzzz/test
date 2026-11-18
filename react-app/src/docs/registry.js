@@ -16,6 +16,8 @@ import sudokuGame from './sudoku-game.md?raw'
 import gomokuGame from './gomoku-game.md?raw'
 import nonogramGame from './nonogram-game.md?raw'
 import checkersGame from './checkers-game.md?raw'
+import oneStrokeGame from './one-stroke-game.md?raw'
+import match3Game from './match3-game.md?raw'
 
 export const docs = [
   {
@@ -177,6 +179,26 @@ export const docs = [
     tags: ['Game', 'PRD', 'Board Game'],
     readTime: '约 10 分钟',
     content: checkersGame,
+  },
+  {
+    slug: 'one-stroke-game',
+    title: '一笔画（One Stroke）需求文档',
+    summary:
+      '第 20 款小游戏的需求文档：网格欧拉路径、每条边恰好走一次、三档手工关卡与关卡可解性校验、每日关卡（权威日期 + 失败降级）、加载/空/错误三态、撤销与重置、键盘无障碍，以及 3 个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: oneStrokeGame,
+  },
+  {
+    slug: 'match3-game',
+    title: '消消乐（Match 3）需求文档',
+    summary:
+      '第 21 款小游戏的需求文档：8×8 三消判定、连锁下落与倍增计分、三档限步目标分、无解自动重排、局中存档（≤4KB / 24h TTL / 即时清理）、埋点脏标记 + 1s 防抖 + pagehide 落盘、键盘无障碍，以及 3 个 localStorage 键的存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: match3Game,
   },
 ]
 

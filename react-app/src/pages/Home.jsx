@@ -256,6 +256,26 @@ const ENTRIES = [
     dataKeywords: 'Checkers 跳棋 吃子 升王',
     footer: { meta: ['2026-11-17', '3 min'], link: '开始对局' },
   },
+  {
+    title: '一笔画',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['One Stroke', '一笔画', '欧拉路径', '每日关卡', '笔不离纸'],
+    to: '/one-stroke',
+    span: '3',
+    desc: '一笔画解谜：从起点出发、笔不离纸走完所有边，三档网格关卡 + 每日关卡（权威日期 + 失败降级）+ 撤销/重置 + 键盘无障碍',
+    dataKeywords: 'OneStroke 一笔画 欧拉 每日关卡',
+    footer: { meta: ['2026-11-18', '3 min'], link: '开始画线' },
+  },
+  {
+    title: '消消乐',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['Match 3', '消消乐', '三消', '连锁', '限步'],
+    to: '/match3',
+    span: '3',
+    desc: '三消挑战：8×8 棋盘交换相邻宝石，三连消除 + 连锁下落，三档目标分与限步，中途存档 24 小时内可继续',
+    dataKeywords: 'Match3 消消乐 三消 连锁',
+    footer: { meta: ['2026-11-18', '3 min'], link: '开始挑战' },
+  },
 ]
 
 const PIPELINE = [
