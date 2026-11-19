@@ -1,0 +1,484 @@
+/* ========== 生命游戏全局 ========== */
+.life-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(90% 70% at 18% 0%, #123041 0%, transparent 60%),
+    radial-gradient(80% 70% at 88% 10%, #1b2a4a 0%, transparent 55%),
+    #070d16;
+  color: #e2eaf4;
+  padding-bottom: 40px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.life-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 20px;
+  background: rgba(4, 10, 18, 0.55);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.life-nav-back {
+  color: #67e8f9;
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  padding: 10px 12px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+}
+.life-nav-back:hover { color: #cffafe; background: rgba(255, 255, 255, 0.06); }
+.life-nav-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.life-nav-spacer { flex: 1; }
+.life-nav-badge {
+  font-size: 0.78rem;
+  color: #a5f3fc;
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* ========== 通用布局 ========== */
+.life-screen {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.life-screen-wide { padding-top: 18px; }
+.life-card {
+  background: rgba(15, 27, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  padding: 28px 24px;
+  max-width: 620px;
+  width: 100%;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+.life-card-wide { max-width: 860px; padding: 20px; }
+.life-title {
+  font-size: 1.7rem;
+  margin: 0 0 8px;
+  background: linear-gradient(90deg, #22d3ee, #a78bfa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.life-desc {
+  color: #a8b8cb;
+  line-height: 1.75;
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+}
+.life-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0 10px;
+}
+.life-section-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #dbeafe;
+}
+.life-section-head span {
+  font-size: 0.75rem;
+  color: #7f93ab;
+}
+
+/* ========== 图案库 ========== */
+.life-presets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.life-preset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 12px;
+  min-height: 64px;
+  border-radius: 12px;
+  border: 2px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.life-preset strong { font-size: 0.9rem; }
+.life-preset span { font-size: 0.78rem; color: #90a4ba; line-height: 1.45; }
+.life-preset:hover {
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(34, 211, 238, 0.07);
+}
+.life-preset.active {
+  border-color: #22d3ee;
+  background: rgba(34, 211, 238, 0.14);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.18);
+}
+
+/* ========== 速度 / 开关 ========== */
+.life-speeds {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.life-chip {
+  min-height: 40px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: #c3d2e2;
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.life-chip:hover { border-color: rgba(34, 211, 238, 0.5); }
+.life-chip.active {
+  border-color: #22d3ee;
+  background: rgba(34, 211, 238, 0.16);
+  color: #ecfeff;
+}
+.life-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+.life-toggle-row div { display: flex; flex-direction: column; gap: 3px; }
+.life-toggle-row strong { font-size: 0.88rem; }
+.life-toggle-row span { font-size: 0.75rem; color: #8ea2b8; }
+.life-switch {
+  width: 56px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.9);
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+.life-switch span {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #94a3b8;
+  transition: transform 0.2s, background 0.2s;
+}
+.life-switch.on { background: rgba(34, 211, 238, 0.28); border-color: #22d3ee; }
+.life-switch.on span { transform: translateX(16px); background: #22d3ee; }
+
+/* ========== 按钮 ========== */
+.life-start-btn {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #0891b2, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.life-start-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(8, 145, 178, 0.35);
+}
+.life-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.life-inline-actions .life-start-btn { flex: 1 1 180px; margin-top: 0; }
+.life-btn {
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  color: #dbe7f3;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.life-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(34, 211, 238, 0.45); }
+.life-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.life-btn-primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #0891b2, #7c3aed);
+  color: #fff;
+  font-weight: 600;
+}
+.life-btn-primary:hover { filter: brightness(1.08); }
+
+/* ========== RLE 导入 ========== */
+.life-import {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: rgba(8, 19, 32, 0.75);
+}
+.life-import-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+.life-link-btn {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: #67e8f9;
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.life-link-btn:hover { background: rgba(255, 255, 255, 0.06); }
+.life-import-tip { margin: 6px 0 10px; font-size: 0.75rem; color: #8ea2b8; line-height: 1.6; }
+.life-import-tip code { color: #a5f3fc; }
+.life-file-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #9fb3c8;
+}
+.life-file-label input[type='file'] {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.03);
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+.life-import-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(2, 8, 16, 0.85);
+  color: #d8f3f8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.life-import-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.life-import-status {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  border: 1px solid transparent;
+}
+.life-import-status.is-loading { color: #bae6fd; background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.3); }
+.life-import-status.is-empty { color: #fde68a; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); }
+.life-import-status.is-error { color: #fecaca; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.32); }
+.life-import-status.is-ready { color: #bbf7d0; background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.3); }
+
+/* ========== 开始屏补充 ========== */
+.life-stats-line {
+  margin: 18px 0 12px;
+  font-size: 0.8rem;
+  color: #8ea2b8;
+  line-height: 1.7;
+}
+.life-stats-line strong { color: #a5f3fc; }
+.life-rules {
+  margin: 0;
+  padding-left: 18px;
+  color: #93a7bd;
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+
+/* ========== 对局 HUD ========== */
+.life-hud {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.life-stat {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.life-stat span { font-size: 0.75rem; color: #8ea2b8; }
+.life-stat strong {
+  font-size: 1rem;
+  color: #e0f2fe;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== 棋盘 ========== */
+.life-canvas-wrap {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  box-shadow: inset 0 0 40px rgba(8, 47, 73, 0.6);
+}
+.life-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #08111f;
+  touch-action: none;
+  cursor: crosshair;
+}
+.life-pause-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(4, 10, 18, 0.74);
+  backdrop-filter: blur(3px);
+  text-align: center;
+}
+.life-pause-title { margin: 0 0 6px; font-size: 1.1rem; font-weight: 600; color: #e0f2fe; }
+.life-pause-sub { margin: 0 0 14px; font-size: 0.8rem; color: #9fb3c8; line-height: 1.6; }
+.life-pause-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.life-pause-actions .life-btn { min-height: 44px; }
+
+/* ========== 工具栏 ========== */
+.life-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.life-tool-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.life-select-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #9fb3c8;
+}
+.life-select-label select {
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 27, 42, 0.95);
+  color: #dbe7f3;
+  font-family: inherit;
+  font-size: 0.82rem;
+}
+.life-settings {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+.life-settings .life-speeds { flex: 1 1 auto; max-width: 420px; }
+.life-switch-label { font-size: 0.78rem; color: #9fb3c8; white-space: nowrap; }
+.life-hint { margin: 10px 0 0; font-size: 0.75rem; color: #fbbf24; }
+.life-live {
+  margin: 12px 0 0;
+  min-height: 1.2em;
+  font-size: 0.78rem;
+  color: #a5f3fc;
+}
+
+/* ========== 结束屏 ========== */
+.life-over-card { text-align: center; }
+.life-over-mark {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 26px rgba(34, 211, 238, 0.35), inset 0 0 18px rgba(34, 211, 238, 0.25);
+}
+.life-over-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+.life-over-stats div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 10px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.life-over-stats span { font-size: 0.75rem; color: #8ea2b8; }
+.life-over-stats strong { font-size: 0.95rem; color: #e0f2fe; font-variant-numeric: tabular-nums; }
+
+/* ========== 响应式 ========== */
+@media (max-width: 640px) {
+  .life-nav { padding: 8px 12px; gap: 8px; }
+  .life-nav-title { font-size: 1rem; }
+  .life-card { padding: 22px 16px; }
+  .life-card-wide { padding: 14px; }
+  .life-hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .life-speeds { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .life-settings { flex-wrap: wrap; }
+  .life-settings .life-speeds { flex: 1 1 100%; max-width: none; }
+  .life-over-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .life-toolbar { justify-content: flex-start; }
+}
+
+@media (max-width: 380px) {
+  .life-presets { grid-template-columns: 1fr; }
+  .life-chip { font-size: 0.75rem; padding: 6px 4px; }
+  .life-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

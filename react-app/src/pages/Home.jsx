@@ -276,6 +276,16 @@ const ENTRIES = [
     dataKeywords: 'Match3 消消乐 三消 连锁',
     footer: { meta: ['2026-11-18', '3 min'], link: '开始挑战' },
   },
+  {
+    title: '生命游戏',
+    techTags: ['Canvas', 'React Hooks', 'Simulation'],
+    keywords: ['Game of Life', '生命游戏', '元胞自动机', '康威', 'RLE'],
+    to: '/life-game',
+    span: '3',
+    desc: '康威元胞自动机：7 种经典图案 + 随机细胞 + 四档速度，可点击编辑、导入 RLE，切后台自动暂停并记录演化统计',
+    dataKeywords: 'GameOfLife 生命游戏 元胞自动机 RLE',
+    footer: { meta: ['2026-11-19', '3 min'], link: '观察演化' },
+  },
 ]
 
 const PIPELINE = [

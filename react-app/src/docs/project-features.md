@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，2026-11-19 增量同步「生命游戏（Game of Life）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-18 共 21 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-19 共 22 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、跳棋（Checkers）、一笔画（One Stroke）、消消乐（Match 3）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十六**大功能模块**。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、跳棋（Checkers）、一笔画（One Stroke）、消消乐（Match 3）、生命游戏（Game of Life）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十七**大功能模块**。
 
 ### 1.2 技术栈
 
@@ -53,6 +53,7 @@ react-app/src/
 │   ├── Checkers.jsx / .css      # 跳棋页面壳（DOM 8×8 棋盘 + 强制吃子/连跳 + 三档 AI + 每日残局 + 键盘无障碍）
 │   ├── OneStroke.jsx / .css     # 一笔画页面壳（SVG 连线 + 欧拉路径 + 每日关卡三态 + 键盘无障碍）
 │   ├── Match3.jsx / .css        # 消消乐页面壳（8×8 宝石 + 三消连锁 + 局中存档 + 键盘无障碍）
+│   ├── Life.jsx / .css          # 生命游戏页面壳（Canvas 2D + 元胞自动机 + RLE 导入三态 + 双路自动暂停）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -81,6 +82,7 @@ react-app/src/
 │   └── CheckersEngine.js          # 跳棋引擎（纯逻辑：强制吃子 + 连跳 + 底线升王 + 无着法判负 + 三档 α-β AI + 每日残局确定性生成）
 │   └── OneStrokeEngine.js         # 一笔画引擎（纯逻辑：关卡欧拉校验 + 边遍历 + 撤销/重置 + 每日关卡确定性生成）
 │   └── Match3Engine.js            # 消消乐引擎（纯逻辑：三消扫描 + 下落补充 + 连锁计分 + 无解重排 + 存档恢复）
+│   └── LifeEngine.js              # 生命游戏引擎（纯逻辑：B3/S23 演化 + 环绕/固定边界 + 内置图案 + RLE 解析）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -126,6 +128,7 @@ react-app/src/
 | `/checkers` | Checkers 跳棋 | **lazy 懒加载**（纯 DOM + 强制吃子/连跳 + 三档 AI，独立分包） |
 | `/one-stroke` | OneStroke 一笔画 | **lazy 懒加载**（纯 DOM + SVG 连线 + 欧拉路径 + 每日关卡，独立分包） |
 | `/match3` | Match3 消消乐 | **lazy 懒加载**（纯 DOM + 三消连锁 + 局中存档，独立分包） |
+| `/life-game` | Life 生命游戏 | **lazy 懒加载**（Canvas 2D + 元胞自动机 + RLE 导入，独立分包） |
 | `/nanchang` | Nanchang 南昌旅游介绍 | **lazy 懒加载**（图文静态页 + 图集灯箱，独立分包） |
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
@@ -161,8 +164,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘上移/下移，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：26 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe、数织→/nonogram、跳棋→/checkers、一笔画→/one-stroke、消消乐→/match3），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡；2026-11-17 新增数织卡、跳棋卡；2026-11-18 新增一笔画卡、消消乐卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 26 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23、2026-11-17 随作品入口增至 24、2026-11-18 随作品入口增至 25 / 26）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：27 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe、数织→/nonogram、跳棋→/checkers、一笔画→/one-stroke、消消乐→/match3、生命游戏→/life-game），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡；2026-11-17 新增数织卡、跳棋卡；2026-11-18 新增一笔画卡、消消乐卡；2026-11-19 新增生命游戏卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 27 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23、2026-11-17 随作品入口增至 24、2026-11-18 随作品入口增至 25 / 26、2026-11-19 随作品入口增至 27）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -381,7 +384,7 @@ Bento Grid 网格布局，自上而下：
 - **控制**：开始/暂停、重置（回到当前模式满时长）、跳过（跳过专注视为完成一个番茄并推进周期；跳过休息直接回专注）。
 - **完成提示音**：Web Audio API 合成 C5-E5-G5 三连音（无音频文件），AudioContext 模块级单例复用（全程 ≤1 个实例），音频不可用时静默。
 - **进度展示**：SVG 圆环进度（半径 130）+ 中心倒计时 MM:SS + 模式标签；本轮周期完成数圆点（4 个，完成的实心）。
-- **统计**（2026-11-12 修正）：双口径展示——① **最近 24h N 个有效番茄钟**（滚动窗口，`pomodoro-sessions-v1` session 数组，仅 `durSec ≥ 120` 的 session 计入，时长 ≥2min 才算有效番茄钟）；② **累计完成数**（`pomo-completed`，0~99999 封顶）。session 数组同时与五子棋（/gomoku）对局联动——时长 ≥120s 的五子棋对局也会追加一条 session（`game:'gomoku'`），两种来源统一统计口径，session 只保留最近 14 天防 localStorage 配额。`pomo-completed` 值域收敛为 0~99999 整数：读取时非法值回退 0 并清除原值，计数达 99999 封顶不再增长。写入采用脏标记延迟持久化——完成/跳过仅置脏标记，在页面隐藏（visibilitychange）、pagehide/beforeunload、组件卸载时统一写入，运行中每 30 秒兜底写一次；localStorage 不可用时仅内存计数。
+- **统计**（2026-11-12 修正）：双口径展示——① **最近 24h N 个有效番茄钟**（滚动窗口，`pomodoro-sessions-v1` session 数组，仅 `durSec ≥ 120` 的 session 计入，时长 ≥2min 才算有效番茄钟）；② **累计完成数**（`pomo-completed`，0~99999 封顶）。session 数组同时与五子棋 / 跳棋 / 一笔画 / 消消乐 / 生命游戏对局联动——时长 ≥120s 的上述对局也会追加 session（`game` 字段区分 gomoku/checkers/one-stroke/match3/life），多来源统一统计口径，session 只保留最近 14 天防 localStorage 配额。`pomo-completed` 值域收敛为 0~99999 整数：读取时非法值回退 0 并清除原值，计数达 99999 封顶不再增长。写入采用脏标记延迟持久化——完成/跳过仅置脏标记，在页面隐藏（visibilitychange）、pagehide/beforeunload、组件卸载时统一写入，运行中每 30 秒兜底写一次；localStorage 不可用时仅内存计数。
 - **标签页标题**：运行中显示 `MM:SS 模式名 - 番茄钟`，停止时恢复"番茄时钟"。
 - **移动端响应式**：断点对齐统一三级体系；`.pomo-card` <768 `width:100%`、padding 28px 24px；`.pomo-ring` <768 缩至 260px、倒计时字号 48px；<480 `.pomo-ring` 240px、字号 44px。
 
@@ -1141,6 +1144,39 @@ Bento Grid 网格布局，自上而下：
 - `npm run verify`（lint + 单测 + build + 路由冒烟）通过；Match3 独立分包。
 - `npm run audit:mobile -- --url http://localhost:5199/#/match3` 九档 0 违规（最小字号 12px、小热区 0、横向溢出 0）。
 
+### 3.29 生命游戏（/life-game，2026-11-19 新增，第 22 款）
+
+#### 3.29.1 架构
+
+- 页面壳 `Life.jsx` 管理 start / playing / paused / over 四屏、HUD、RLE 导入面板与键盘交互；引擎 `LifeEngine.js` 纯逻辑（40×24 网格、邻居计数、B3/S23 演化、图案放置、RLE 解析），通过 `onState / onGameOver` 回调与 UI 通信，组件卸载时 `dispose()`。
+- 演化节奏由页面 `setInterval` 驱动（慢速 1000ms / 常速 400ms / 快速 140ms / 极速 60ms），引擎 `tick()` 每拍推进一代；暂停 / 换速时重建定时器。
+- 渲染：Canvas 2D，逻辑画布 640×384（每格 16px），CSS 等比缩放；活细胞青色、少量琥珀色点缀，网格线低对比；快照变化时整盘重绘。
+- 持久化一键：`game-life-stats-v1`（累计埋点）。
+
+#### 3.29.2 玩法规则
+
+- **演化规则**：B3/S23——活细胞周围 2 或 3 个活邻居存活；死细胞周围恰有 3 个活邻居复活；其余死亡。
+- **边界**：默认环绕（上下左右与对角相连），可切换固定边界（越界邻居视为死）。
+- **内置图案**：滑翔机、闪烁灯、静物方块、脉冲星、高斯帕滑翔机枪、橡果、R 五连方；开局按网格居中放置。
+- **编辑**：运行中点击画布会先暂停，再切换该格；按住拖动可连续绘制，同一格在一次拖动中只切换一次。
+- **控制**：暂停 / 继续、单步、随机（密度 0.28）、清空、图案下拉、四档速度、环绕开关、结束观察。
+- **结束**：人口归零自动进入 over（灭绝）；手动「结束观察」进入 over（stopped），展示代数、最高人口、累计出生 / 死亡与用时。
+- **RLE 导入**：支持 `x = N, y = N` 头、`b/o/$/!`、数字重复与 `#` 注释；文件读取 / 文本粘贴均可，图案居中，超出 40×24 拒绝。
+- **键盘**：空格暂停 / 继续，N 单步，R 随机，C 清空，Esc 暂停；输入框内不拦截按键。
+
+#### 3.29.3 约束卡（1 / 2 / 3）
+
+- **切后台 / 失焦行为（约束卡①）**：`visibilitychange(hidden)` + `window blur` 双路调用同一暂停函数，依靠 `engine.state === 'playing'` 去重；暂停时立即冲刷统计，回到页面保持 paused，需手动继续。
+- **加载 / 空 / 错误三态（约束卡②）**：RLE 导入显式建模 `loading / empty / error / ready`；文件读取与解析期间显示加载态，空图案（无活细胞）显示空态，缺头 / 非法字符 / 超界显示错误原因；空与错误都不修改当前盘面并保留重试入口。
+- **埋点统计（约束卡③）**：`game-life-stats-v1` 记录 `{ runs, generations, maxPopulation, maxGeneration, extinctions, randomizes, imports, importErrors, speedChanges, updatedAt }`；脏标记 + 1s 防抖 + `pagehide` 落盘，读取逐字段归一，写入失败静默降级内存。
+- **番茄钟联动**：结束观察 / 灭绝且有效演化时长 ≥120s 追加 `pomodoro-sessions-v1`（`game:'life'`，含 win 与 level），同一局只结算一次。
+
+#### 3.29.4 验证
+
+- 引擎单测 22 个：RLE 解析（注释 / 多行 / 重复计数 / 非法字符 / 超界 / 空图案）、邻居计数（环绕 / 固定）、闪烁灯周期 2、方块静物、孤立细胞灭绝、滑翔机 4 代斜移一格、灭绝与手动结束、编辑 / 清空 / 随机、速度与边界切换、自定义图案校验、暂停冻结、dispose，全通过。
+- `npm run verify`（lint + 单测 + build + 路由冒烟）通过；Life 独立分包（26.42 kB / gzip 8.39 kB）。
+- `npm run audit:mobile -- --url http://localhost:5199/#/life-game` 九档 0 违规（最小字号 12px、小热区 0、横向溢出 0）。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -1193,10 +1229,11 @@ Bento Grid 网格布局，自上而下：
 | `game-match3-stats-v1` | localStorage | 消消乐累计埋点 `{ v:1, plays, wins, losses, swaps, matches, cascades, maxCombo, bestScore, timeByLevel, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
 | `game-match3-best-v1` | localStorage | 消消乐分档最佳 `{ easy:{score,ts}, normal:{...}, hard:{...} }`；仅胜利且更高分覆盖，损坏回退空记录 |
 | `game-match3-save-v1` | localStorage | 消消乐未完成对局 `{ v:1, level, board, movesLeft, score, swaps, matches, cascades, maxCombo, elapsed, ts }`；单条覆盖写、≤4096 字符、24h TTL、通关/失败/重开即删 |
+| `game-life-stats-v1` | localStorage | 生命游戏累计埋点 `{ runs, generations, maxPopulation, maxGeneration, extinctions, randomizes, imports, importErrors, speedChanges, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘，逐字段归一为非负整数 |
 | `game-sudoku-quote-v1` | localStorage | 数独通关寄语当日缓存 `{ v:1, date, text, source, fallback }`；按日失效，序列化 >200 字符不写 |
 | `game-gomoku-best-v1` | localStorage | 五子棋分档最佳 `{ easy:{moves,timeSec,date}, normal:{...}, hard:{...} }`；单人 AI 仅胜局入榜，双人黑/白胜均入；更少落子优先（落子相同用时更少优先），损坏回退空对象 |
 | `game-gomoku-stats-v1` | localStorage | 五子棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, aiTimeouts, timeByDifficulty, winsByDifficulty, lossesByDifficulty, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘，0~99999 封顶 |
-| `pomodoro-sessions-v1` | localStorage | 番茄钟 session 数组 `[{startTs,endTs,durSec,game,win,level?,mode?}]`；番茄钟专注完成 + 跳过、五子棋 / 跳棋 / 一笔画 / 消消乐对局结束（≥120s，`game` 字段区分 gomoku/checkers/one-stroke/match3）均追加；仅保留最近 14 天；番茄钟统计条滚动窗口按 endTs 过滤最近 24h + durSec ≥ 120 计有效数 |
+| `pomodoro-sessions-v1` | localStorage | 番茄钟 session 数组 `[{startTs,endTs,durSec,game,win,level?,mode?}]`；番茄钟专注完成 + 跳过、五子棋 / 跳棋 / 一笔画 / 消消乐 / 生命游戏对局结束（≥120s，`game` 字段区分 gomoku/checkers/one-stroke/match3/life）均追加；仅保留最近 14 天；番茄钟统计条滚动窗口按 endTs 过滤最近 24h + durSec ≥ 120 计有效数 |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | `weather-last-ok` | localStorage | 天气上次成功快照 `{ current, daily, place, ts }`；单条覆盖写，序列化 >500KB 放弃写入，配额满清空后降级内存；7 天 TTL 自动清理 |
 | `weather-auto-backoff` | localStorage | 天气连续失败退避记录 `{ failCount, nextAt }`；成功清零，7 天 TTL 自动清理 |

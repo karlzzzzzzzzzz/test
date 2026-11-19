@@ -18,6 +18,7 @@ import nonogramGame from './nonogram-game.md?raw'
 import checkersGame from './checkers-game.md?raw'
 import oneStrokeGame from './one-stroke-game.md?raw'
 import match3Game from './match3-game.md?raw'
+import lifeGame from './life-game.md?raw'
 
 export const docs = [
   {
@@ -199,6 +200,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 9 分钟',
     content: match3Game,
+  },
+  {
+    slug: 'life-game',
+    title: '生命游戏（Game of Life）需求文档',
+    summary:
+      '第 22 款小游戏的需求文档：40×24 网格 B3/S23 演化、环绕/固定边界、7 种内置图案与 RLE 导入（加载/空/错误/成功四态）、四档速度与画布编辑、切后台双路自动暂停、埋点脏标记 + 1s 防抖 + pagehide 落盘，以及统计存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Simulation'],
+    readTime: '约 9 分钟',
+    content: lifeGame,
   },
 ]
 
