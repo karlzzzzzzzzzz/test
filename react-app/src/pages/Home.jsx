@@ -286,6 +286,16 @@ const ENTRIES = [
     dataKeywords: 'GameOfLife 生命游戏 元胞自动机 RLE',
     footer: { meta: ['2026-11-19', '3 min'], link: '观察演化' },
   },
+  {
+    title: '汉诺塔',
+    techTags: ['DOM', 'React Hooks', 'Puzzle'],
+    keywords: ['Tower of Hanoi', '汉诺塔', '递归', '最优步数', '存档'],
+    to: '/hanoi-game',
+    span: '3',
+    desc: '经典汉诺塔：3~8 盘六档难度，点柱子拿放圆盘，键盘 1/2/3 操作；按最少步数计分，进度自动保存 24 小时',
+    dataKeywords: 'Hanoi 汉诺塔 递归 最少步数',
+    footer: { meta: ['2026-11-20', '3 min'], link: '挑战最优' },
+  },
 ]
 
 const PIPELINE = [

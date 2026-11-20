@@ -19,6 +19,7 @@ import checkersGame from './checkers-game.md?raw'
 import oneStrokeGame from './one-stroke-game.md?raw'
 import match3Game from './match3-game.md?raw'
 import lifeGame from './life-game.md?raw'
+import hanoiGame from './hanoi-game.md?raw'
 
 export const docs = [
   {
@@ -210,6 +211,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Simulation'],
     readTime: '约 9 分钟',
     content: lifeGame,
+  },
+  {
+    slug: 'hanoi-game',
+    title: '汉诺塔（Tower of Hanoi）需求文档',
+    summary:
+      '第 23 款小游戏的需求文档：3~8 盘六档难度、三柱点选 / 键盘操作、2^n-1 最优步数计分、撤销与失误统计、24h 本地进度存档（≤4096 字符、坏档清理）、移动端整柱触控与窄屏适配，以及统计存储设计。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 9 分钟',
+    content: hanoiGame,
   },
 ]
 

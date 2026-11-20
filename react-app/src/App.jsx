@@ -51,6 +51,8 @@ const OneStroke = lazy(() => import('./pages/OneStroke'))
 const Match3 = lazy(() => import('./pages/Match3'))
 // 生命游戏（Canvas 2D + 元胞自动机 + RLE 导入），按需加载（独立分包）
 const Life = lazy(() => import('./pages/Life'))
+// 汉诺塔（纯 DOM + 递归最优步数 + 本地进度存档），按需加载（独立分包）
+const Hanoi = lazy(() => import('./pages/Hanoi'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -249,6 +251,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <Life />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/hanoi-game"
+          element={
+            <Suspense fallback={pageLoading}>
+              <Hanoi />
             </Suspense>
           }
         />

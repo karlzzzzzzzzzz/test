@@ -1,0 +1,347 @@
+/* ========== 汉诺塔全局 ========== */
+.hanoi-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(85% 65% at 15% 0%, #2a1e12 0%, transparent 60%),
+    radial-gradient(80% 65% at 88% 8%, #1a2940 0%, transparent 58%),
+    #080d15;
+  color: #e8eef6;
+  padding-bottom: 40px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.hanoi-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 20px;
+  background: rgba(5, 10, 17, 0.58);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.hanoi-nav-back {
+  color: #fbbf24;
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  padding: 10px 12px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+}
+.hanoi-nav-back:hover { color: #fef3c7; background: rgba(255, 255, 255, 0.06); }
+.hanoi-nav-title { margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: 1px; }
+.hanoi-nav-spacer { flex: 1; }
+.hanoi-nav-badge {
+  font-size: 0.78rem;
+  color: #fde68a;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* ========== 通用 ========== */
+.hanoi-screen { display: flex; justify-content: center; padding: 24px 16px; }
+.hanoi-screen-wide { padding-top: 18px; }
+.hanoi-card {
+  background: rgba(15, 24, 38, 0.84);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  padding: 28px 24px;
+  max-width: 640px;
+  width: 100%;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+.hanoi-card-wide { max-width: 880px; padding: 20px; }
+.hanoi-title {
+  font-size: 1.7rem;
+  margin: 0 0 8px;
+  background: linear-gradient(90deg, #fbbf24, #f97316 55%, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hanoi-desc { color: #a8b8cb; line-height: 1.75; margin: 0 0 18px; font-size: 0.9rem; }
+.hanoi-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0 10px;
+}
+.hanoi-section-head h3 { margin: 0; font-size: 0.95rem; color: #f1f5f9; }
+.hanoi-section-head span { font-size: 0.75rem; color: #7f93ab; }
+
+/* ========== 继续上次 ========== */
+.hanoi-resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+}
+.hanoi-resume div:first-child { display: flex; flex-direction: column; gap: 3px; }
+.hanoi-resume strong { font-size: 0.88rem; color: #fde68a; }
+.hanoi-resume span { font-size: 0.78rem; color: #cbd5e1; }
+.hanoi-resume-actions { display: flex; align-items: center; gap: 6px; }
+
+/* ========== 盘数选择 ========== */
+.hanoi-levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.hanoi-level {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 12px;
+  min-height: 82px;
+  border-radius: 12px;
+  border: 2px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.hanoi-level strong { font-size: 0.95rem; }
+.hanoi-level span { font-size: 0.75rem; color: #9fb3c8; }
+.hanoi-level em { font-style: normal; font-size: 0.75rem; color: #fbbf24; }
+.hanoi-level:hover { border-color: rgba(251, 191, 36, 0.5); background: rgba(251, 191, 36, 0.06); }
+.hanoi-level.active {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.16);
+}
+
+/* ========== 按钮 ========== */
+.hanoi-start-btn {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 18px;
+  background: linear-gradient(135deg, #d97706, #f97316 55%, #0891b2);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hanoi-start-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(217, 119, 6, 0.35); }
+.hanoi-inline-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.hanoi-inline-actions .hanoi-start-btn { flex: 1 1 180px; margin-top: 0; }
+.hanoi-btn {
+  min-height: 44px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hanoi-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(251, 191, 36, 0.45); }
+.hanoi-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.hanoi-btn-primary { border-color: transparent; background: linear-gradient(135deg, #d97706, #0891b2); color: #fff; font-weight: 600; }
+.hanoi-btn-primary:hover { filter: brightness(1.08); }
+.hanoi-link-btn {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: #fbbf24;
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.hanoi-link-btn:hover { background: rgba(255, 255, 255, 0.06); }
+
+/* ========== HUD ========== */
+.hanoi-hud { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.hanoi-hud div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 10px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+.hanoi-hud span { font-size: 0.75rem; color: #8ea2b8; }
+.hanoi-hud strong { font-size: 1rem; color: #fef3c7; font-variant-numeric: tabular-nums; }
+
+/* ========== 棋盘 ========== */
+.hanoi-board-wrap {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  background: linear-gradient(180deg, rgba(8, 15, 26, 0.9), rgba(12, 21, 34, 0.9));
+  box-shadow: inset 0 0 50px rgba(8, 47, 73, 0.45);
+}
+.hanoi-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px; }
+.hanoi-peg {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 300px;
+  padding: 12px 6px 20px;
+  border-radius: 12px;
+  border: 2px dashed rgba(148, 163, 184, 0.18);
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.2s, background 0.2s;
+}
+.hanoi-peg:hover { border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.04); }
+.hanoi-peg.selected {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  box-shadow: inset 0 0 40px rgba(251, 191, 36, 0.08);
+}
+.hanoi-peg::before {
+  content: '';
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  width: 10px;
+  height: 76%;
+  transform: translateX(-50%);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.45), rgba(71, 85, 105, 0.65));
+}
+.hanoi-peg-label {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  color: #9fb3c8;
+  white-space: nowrap;
+}
+.hanoi-disks {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  width: 100%;
+  flex: 1;
+  padding-bottom: 6px;
+}
+.hanoi-disk {
+  position: relative;
+  z-index: 2;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hanoi-disk em { font-style: normal; font-size: 0.75rem; color: rgba(8, 15, 26, 0.85); font-weight: 700; }
+.hanoi-peg.selected .hanoi-disks > .hanoi-disk:last-child {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 18px rgba(251, 191, 36, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.hanoi-peg-base {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 92%;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #64748b, #334155);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.hanoi-pause-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(4, 9, 16, 0.76);
+  backdrop-filter: blur(3px);
+  text-align: center;
+}
+.hanoi-pause-title { margin: 0 0 6px; font-size: 1.1rem; font-weight: 600; color: #fef3c7; }
+.hanoi-pause-sub { margin: 0 0 14px; font-size: 0.8rem; color: #9fb3c8; line-height: 1.6; }
+.hanoi-pause-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.hanoi-pause-actions .hanoi-btn { min-height: 44px; }
+
+/* ========== 工具栏 / 提示 ========== */
+.hanoi-hint { margin: 12px 0 0; font-size: 0.78rem; color: #93a7bd; line-height: 1.65; }
+.hanoi-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.hanoi-live { margin: 12px 0 0; min-height: 1.2em; font-size: 0.78rem; color: #fde68a; }
+.hanoi-save-note { margin: 8px 0 0; font-size: 0.75rem; color: #7f93ab; }
+.hanoi-stats-line { margin: 18px 0 12px; font-size: 0.8rem; color: #8ea2b8; line-height: 1.7; }
+.hanoi-stats-line strong { color: #fde68a; }
+.hanoi-rules { margin: 0; padding-left: 18px; color: #93a7bd; font-size: 0.78rem; line-height: 1.8; }
+
+/* ========== 结束屏 ========== */
+.hanoi-over-card { text-align: center; }
+.hanoi-over-mark {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(251, 191, 36, 0.55);
+  box-shadow: 0 0 26px rgba(251, 191, 36, 0.3), inset 0 0 18px rgba(251, 191, 36, 0.2);
+}
+.hanoi-over-mark.win {
+  border-color: #22d3ee;
+  box-shadow: 0 0 26px rgba(34, 211, 238, 0.4), inset 0 0 18px rgba(34, 211, 238, 0.25);
+}
+.hanoi-over-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 16px 0; }
+.hanoi-over-stats div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 10px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hanoi-over-stats span { font-size: 0.75rem; color: #8ea2b8; }
+.hanoi-over-stats strong { font-size: 0.95rem; color: #fef3c7; font-variant-numeric: tabular-nums; }
+.hanoi-over-note { margin: 0 0 14px; font-size: 0.78rem; color: #fbbf24; }
+
+/* ========== 响应式 ========== */
+@media (max-width: 640px) {
+  .hanoi-nav { padding: 8px 12px; gap: 8px; }
+  .hanoi-nav-title { font-size: 1rem; }
+  .hanoi-card { padding: 22px 16px; }
+  .hanoi-card-wide { padding: 12px; }
+  .hanoi-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hanoi-hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hanoi-board { gap: 6px; padding: 8px; }
+  .hanoi-peg { min-height: 260px; padding: 10px 4px 18px; }
+  .hanoi-disk { height: 20px; }
+  .hanoi-over-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 360px) {
+  .hanoi-levels { grid-template-columns: 1fr; }
+  .hanoi-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hanoi-peg { min-height: 230px; }
+  .hanoi-disk { height: 18px; }
+}
