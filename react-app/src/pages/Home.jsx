@@ -296,6 +296,16 @@ const ENTRIES = [
     dataKeywords: 'Hanoi 汉诺塔 递归 最少步数',
     footer: { meta: ['2026-11-20', '3 min'], link: '挑战最优' },
   },
+  {
+    title: '钢琴块',
+    techTags: ['DOM', 'React Hooks', 'Arcade'],
+    keywords: ['Piano Tiles', '钢琴块', '别踩白块', '节奏', '反应'],
+    to: '/piano-tiles',
+    span: '3',
+    desc: '别踩白块街机模式：4 轨道黑块连续下落且越落越快，点中黑块得分，点白块或漏点即结束；本地保存最高分与进度',
+    dataKeywords: 'PianoTiles 钢琴块 别踩白块 节奏 反应',
+    footer: { meta: ['2026-11-23', '2 min'], link: '开始弹奏' },
+  },
 ]
 
 const PIPELINE = [

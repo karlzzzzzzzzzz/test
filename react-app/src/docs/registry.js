@@ -20,6 +20,7 @@ import oneStrokeGame from './one-stroke-game.md?raw'
 import match3Game from './match3-game.md?raw'
 import lifeGame from './life-game.md?raw'
 import hanoiGame from './hanoi-game.md?raw'
+import pianoTiles from './piano-tiles.md?raw'
 
 export const docs = [
   {
@@ -221,6 +222,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 9 分钟',
     content: hanoiGame,
+  },
+  {
+    slug: 'piano-tiles',
+    title: '钢琴块（Piano Tiles）需求文档',
+    summary:
+      '第 24 款小游戏的需求文档：4 轨道黑块连续下落、底部判定线点中得分、点白 / 漏点结束、速度随得分递增、双路自动暂停与恢复不跳帧、24h 本地进度存档（≤4096 字符、坏档清理）、埋点脏标记 + 1s 防抖 + pagehide 落盘，以及统计与番茄钟联动。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Arcade'],
+    readTime: '约 9 分钟',
+    content: pianoTiles,
   },
 ]
 
