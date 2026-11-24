@@ -21,6 +21,7 @@ import match3Game from './match3-game.md?raw'
 import lifeGame from './life-game.md?raw'
 import hanoiGame from './hanoi-game.md?raw'
 import pianoTiles from './piano-tiles.md?raw'
+import slitherlink from './slitherlink.md?raw'
 
 export const docs = [
   {
@@ -232,6 +233,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Arcade'],
     readTime: '约 9 分钟',
     content: pianoTiles,
+  },
+  {
+    slug: 'slitherlink',
+    title: '数回（Slitherlink）需求文档',
+    summary:
+      '第 25 款小游戏的需求文档：点阵网格逻辑谜题，每格 clue 为 0-3 的边数约束，所有画边必须形成单一闭合环；三态边标记、撤销、提示、每日关卡轮换（timeapi.io + 降级池）、双路自动暂停、24h 本地进度存档、埋点防抖与番茄钟联动。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Puzzle'],
+    readTime: '约 10 分钟',
+    content: slitherlink,
   },
 ]
 

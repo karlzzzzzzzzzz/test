@@ -1,0 +1,274 @@
+/* 数回 Slitherlink — 移动端优先 */
+
+.slitherlink-wrap {
+  --gap: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--gap);
+  max-width: 720px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.slitherlink-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.slitherlink-header h1 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 600;
+}
+.slitherlink-back {
+  font-size: 0.875rem;
+  color: var(--text-2, #555);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 8px;
+}
+.slitherlink-back:hover { color: var(--accent, #333); }
+
+/* ---------- 开始屏 ---------- */
+.slitherlink-start {
+  text-align: center;
+  padding: 8px;
+}
+.slitherlink-start h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.slitherlink-rule {
+  font-size: 0.8125rem;
+  color: var(--text-2, #666);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  text-align: left;
+  padding: 10px;
+  background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px;
+}
+
+.slitherlink-save-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  background: #eef4ff;
+  border: 1px solid #c8ddff;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  margin-bottom: 16px;
+}
+.slitherlink-save-card button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  background: #fff;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.slitherlink-save-card button:hover { background: #f0f0f0; }
+
+.slitherlink-diff {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.slitherlink-diff label {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.slitherlink-diff label input { accent-color: var(--accent, #333); }
+.slitherlink-diff label.active {
+  border-color: var(--accent, #333);
+  background: var(--bg-soft, #f0f0f0);
+  font-weight: 600;
+}
+.slitherlink-diff label input { display: none; }
+
+.slitherlink-start-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.slitherlink-start-btns button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+.slitherlink-primary {
+  background: var(--accent, #222) !important;
+  color: #fff !important;
+  border-color: var(--accent, #222) !important;
+}
+
+.slitherlink-hint {
+  font-size: 0.75rem;
+  color: var(--text-3, #888);
+  text-align: left;
+  padding: 0 12px;
+}
+.slitherlink-hint ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---------- HUD ---------- */
+.slitherlink-hud {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 8px;
+  font-size: 0.8125rem;
+  padding: 10px 12px;
+  background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.slitherlink-hud .hud-label {
+  color: var(--text-3, #888);
+  font-size: 0.75rem;
+}
+.slitherlink-hud span { text-align: center; }
+
+.slitherlink-api-note {
+  font-size: 0.75rem;
+  color: #e67e22;
+  text-align: center;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: #fff7e6;
+  border-radius: 6px;
+}
+
+/* ---------- 棋盘 ---------- */
+.slitherlink-board {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: block;
+  touch-action: manipulation;
+}
+.slitherlink-board text {
+  fill: #222;
+  pointer-events: none;
+  user-select: none;
+}
+.slitherlink-conflict text {
+  fill: #d33 !important;
+}
+
+/* ---------- 操作按钮 ---------- */
+.slitherlink-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 12px;
+}
+.slitherlink-actions button {
+  padding: 8px 14px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 36px;
+}
+.slitherlink-actions button:hover:not(:disabled) { background: #f0f0f0; }
+.slitherlink-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- 遮罩 ---------- */
+.slitherlink-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.slitherlink-overlay-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 240px;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.slitherlink-overlay-card h3 {
+  font-size: 1.125rem;
+  margin: 0 0 12px;
+}
+.slitherlink-overlay-card p {
+  font-size: 0.875rem;
+  margin: 4px 0;
+  color: var(--text-2, #555);
+}
+.slitherlink-overlay-card button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.slitherlink-overlay-card button:hover { background: #f0f0f0; }
+.slitherlink-overlay-card .slitherlink-primary {
+  background: var(--accent, #222) !important;
+  color: #fff !important;
+  border-color: var(--accent, #222) !important;
+}
+
+/* ---------- 无障碍 ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ---------- 响应式（320px 视口） ---------- */
+@media (max-width: 360px) {
+  .slitherlink-hud {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .slitherlink-diff label { padding: 8px 10px; font-size: 0.8125rem; }
+  .slitherlink-actions button {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+}

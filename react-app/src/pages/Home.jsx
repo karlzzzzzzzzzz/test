@@ -306,6 +306,14 @@ const ENTRIES = [
     dataKeywords: 'PianoTiles 钢琴块 别踩白块 节奏 反应',
     footer: { meta: ['2026-11-23', '2 min'], link: '开始弹奏' },
   },
+  {
+    title: '数回',
+    path: '/slitherlink',
+    keywords: ['Slitherlink', '数回', '闭合环', '逻辑谜题'],
+    desc: 'Slitherlink 数回：点阵网格逻辑谜题，按数字提示在邻边连线形成闭合环；三态标记、撤销、每日轮换关卡',
+    span: '3',
+    footer: { meta: ['2026-11-24', '3 min'], link: '连接闭合环' },
+  },
 ]
 
 const PIPELINE = [
