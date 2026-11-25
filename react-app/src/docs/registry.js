@@ -22,6 +22,7 @@ import lifeGame from './life-game.md?raw'
 import hanoiGame from './hanoi-game.md?raw'
 import pianoTiles from './piano-tiles.md?raw'
 import slitherlink from './slitherlink.md?raw'
+import ticTacToe from './tic-tac-toe.md?raw'
 
 export const docs = [
   {
@@ -243,6 +244,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Puzzle'],
     readTime: '约 10 分钟',
     content: slitherlink,
+  },
+  {
+    slug: 'tic-tac-toe',
+    title: '井字棋（Tic-Tac-Toe）需求文档',
+    summary:
+      '第 26 款小游戏的需求文档：3×3 / 4×4 人机对战，Minimax AI 三档难度（easy 随机/normal Minimax + 10% 随机/hard Minimax 全胜率）；完整撤销栈、双路自动暂停、24h 本地进度存档、分档最佳记录、每日 API 种子、番茄钟联动。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Board'],
+    readTime: '约 8 分钟',
+    content: ticTacToe,
   },
 ]
 

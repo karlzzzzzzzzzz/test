@@ -314,6 +314,14 @@ const ENTRIES = [
     span: '3',
     footer: { meta: ['2026-11-24', '3 min'], link: '连接闭合环' },
   },
+  {
+    title: '井字棋',
+    path: '/tic-tac-toe',
+    keywords: ['TicTacToe', '井字棋', 'Minimax', '人机对战'],
+    desc: 'Tic-Tac-Toe 井字棋：3×3 / 4×4 人机对战，Minimax AI 三档难度，完整撤销栈，每日 API 种子',
+    span: '3',
+    footer: { meta: ['2026-11-25', '2 min'], link: '来一局' },
+  },
 ]
 
 const PIPELINE = [

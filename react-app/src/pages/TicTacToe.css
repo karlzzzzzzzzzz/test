@@ -1,0 +1,187 @@
+/* 井字棋 Tic-Tac-Toe — 移动端优先 */
+
+.ttt-wrap {
+  --gap: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--gap);
+  max-width: 480px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.ttt-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.ttt-header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
+.ttt-back {
+  font-size: 0.875rem;
+  color: var(--text-2, #555);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 8px;
+}
+.ttt-back:hover { color: var(--accent, #333); }
+
+/* ---------- 开始屏 ---------- */
+.ttt-start { text-align: center; padding: 8px; }
+.ttt-start h2 { font-size: 1.125rem; font-weight: 600; margin: 8px 0; }
+.ttt-rule {
+  font-size: 0.8125rem; color: var(--text-2, #666); line-height: 1.5;
+  margin-bottom: 16px; text-align: left; padding: 10px;
+  background: var(--bg-soft, #f7f7f8); border-radius: 8px;
+}
+
+.ttt-save-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 12px; background: #eef4ff;
+  border: 1px solid #c8ddff; border-radius: 8px;
+  font-size: 0.8125rem; margin-bottom: 16px;
+}
+.ttt-save-card button {
+  padding: 6px 12px; border-radius: 6px; border: 1px solid #bbb;
+  background: #fff; font-size: 0.8125rem; cursor: pointer; min-height: 36px;
+}
+
+.ttt-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.ttt-option-group label {
+  display: block; font-size: 0.75rem; color: var(--text-3, #888);
+  margin-bottom: 6px; text-align: left;
+}
+.ttt-option-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.ttt-option-btns button {
+  padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc;
+  background: #fff; font-size: 0.8125rem; cursor: pointer; min-height: 44px;
+  min-width: 44px;
+}
+.ttt-option-btns button.active {
+  border-color: var(--accent, #333);
+  background: var(--bg-soft, #f0f0f0);
+  font-weight: 600;
+}
+
+.ttt-primary {
+  width: 100%; padding: 12px 20px; border-radius: 8px;
+  background: var(--accent, #222); color: #fff; border: none;
+  font-size: 0.9375rem; font-weight: 600; cursor: pointer;
+  min-height: 44px;
+}
+
+.ttt-hint {
+  font-size: 0.75rem; color: var(--text-3, #888); text-align: left;
+  padding: 0 4px; margin-top: 16px;
+}
+.ttt-hint p { margin: 2px 0; }
+
+/* ---------- HUD ---------- */
+.ttt-hud {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 4px 8px; font-size: 0.8125rem;
+  padding: 10px 12px; background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px; margin-bottom: 16px;
+}
+.ttt-hud .hud-label { color: var(--text-3, #888); font-size: 0.75rem; }
+.ttt-hud span { text-align: center; }
+
+/* ---------- 棋盘 ---------- */
+.ttt-board {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ttt-cell {
+  background: #fafafa;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: clamp(1.5rem, 10vw, 2.5rem);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: 44px;
+  min-height: 44px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ttt-cell:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: #bbb;
+}
+.ttt-cell:disabled { cursor: default; }
+
+.ttt-mark-X { color: #3498db; }
+.ttt-mark-O { color: #e74c3c; }
+
+.ttt-win {
+  background: #fff9e6 !important;
+  border-color: #f1c40f !important;
+  animation: ttt-pulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes ttt-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.04); }
+}
+
+.ttt-focus {
+  outline: 2px solid #4d7cff;
+  outline-offset: -2px;
+}
+
+/* ---------- 操作 ---------- */
+.ttt-actions {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  margin-top: 16px;
+}
+.ttt-actions button {
+  padding: 8px 14px; font-size: 0.8125rem; border-radius: 6px;
+  border: 1px solid #ccc; background: #fff; cursor: pointer;
+  min-width: 44px; min-height: 36px;
+}
+.ttt-actions button:hover:not(:disabled) { background: #f0f0f0; }
+.ttt-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- 遮罩 ---------- */
+.ttt-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+.ttt-overlay-card {
+  background: #fff; padding: 24px; border-radius: 12px;
+  text-align: center; min-width: 240px; max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.ttt-overlay-card h3 { font-size: 1.125rem; margin: 0 0 12px; }
+.ttt-overlay-card p { font-size: 0.875rem; margin: 4px 0; color: var(--text-2, #555); }
+.ttt-overlay-card button {
+  display: block; width: 100%; padding: 10px 16px; margin-top: 10px;
+  border-radius: 8px; border: 1px solid #ccc; background: #fff;
+  font-size: 0.875rem; cursor: pointer; min-height: 36px;
+}
+.ttt-overlay-card button:hover { background: #f0f0f0; }
+
+/* ---------- 响应式 ---------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); border: 0;
+}
+
+@media (max-width: 360px) {
+  .ttt-cell { font-size: 1.5rem; }
+  .ttt-hud { grid-template-columns: repeat(2, 1fr); }
+  .ttt-option-btns button { font-size: 0.75rem; padding: 6px 10px; }
+}

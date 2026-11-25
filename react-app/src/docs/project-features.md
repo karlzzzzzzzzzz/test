@@ -3,7 +3,7 @@
 > 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，2026-11-19 增量同步「生命游戏（Game of Life）」，2026-11-20 增量同步「汉诺塔（Tower of Hanoi）」，2026-11-23 增量同步「钢琴块（Piano Tiles）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-23 共 26 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。，2026-11-24 增量同步「<待填：新游戏中文名>」
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-23 共 27 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。，2026-11-24 增量同步「<待填：新游戏中文名>」，2026-11-25 增量同步「<待填：新游戏中文名>」
 
 ## 1. 项目概览
 
@@ -78,6 +78,8 @@ react-app/src/
 │   ├── PipeEngine.js        # 引擎（纯逻辑 + 特性简述）
 │   ├── SlitherlinkEngine.js        # 引擎（纯逻辑 + 特性简述）
 │   ├── SudokuEngine.js        # 引擎（纯逻辑 + 特性简述）
+│   ├── TicTacToe.jsx         # 页面壳（功能简述 + 持久化/自动化暂停特性）
+│   ├── TicTacToeEngine.js        # 引擎（纯逻辑 + 特性简述）
 ├── game/
 │   ├── SpaceShooter.js          # Three.js 飞机大战引擎（纯逻辑，与 UI 解耦）
 │   ├── Game2048Engine.js         # 2048 引擎（纯逻辑：滑动/合并/撤销/持久化）
@@ -154,6 +156,7 @@ react-app/src/
 | `/docs` | Docs 文档列表 | **lazy 懒加载**（含 marked） |
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `/slitherlink` | Slitherlink 数回 | **lazy 懒加载**（含引擎逻辑，独立分包） |
+| `/tic-tac-toe` | TicTacToe 井字棋 | **lazy 懒加载**（含引擎逻辑，独立分包） |
 | `*` | NotFound 404 | 直接引入 |
 
 懒加载统一使用 `<Suspense fallback="加载中…">`。
@@ -1279,6 +1282,24 @@ Bento Grid 网格布局，自上而下：
 
 - 待人工填写：引擎单测数量、verify 通过、audit:mobile 结果。
 
+### 3.33 井字棋（/tic-tac-toe，2026-11-25 新增，第 25 款）
+
+#### 3.33.1 架构
+
+- 待人工填写：页面壳文件、引擎文件、主循环驱动方式、持久化键。可参考相邻已实现游戏小节的格式。
+
+#### 3.33.2 玩法规则
+
+- 待人工填写：目标 / 操作 / 判定线 / 失败条件 / 继续上次等。
+
+#### 3.33.3 约束卡（如果有 PRD 约束卡）
+
+- 待人工填写：PRD 里的每张约束卡对应实现落点。
+
+#### 3.33.4 验证
+
+- 待人工填写：引擎单测数量、verify 通过、audit:mobile 结果。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -1350,6 +1371,9 @@ Bento Grid 网格布局，自上而下：
 | `game-2048-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
 | `game-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
 > ⚠️ 同步更新 **pomodoro-sessions-v1** 的 game 取值说明，追加 `2048 / tetris / snake / breakout / memory / whack / puzzle / lightsout / connect4 / lianliankan / sokoban / reversi / minesweeper / maze / sudoku / gomoku / nonogram / life-game / hanoi-game / slitherlink`
+| `game-2048-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
+| `game-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
+> ⚠️ 同步更新 **pomodoro-sessions-v1** 的 game 取值说明，追加 `2048 / slitherlink / tic-tac-toe`
 ## 5. 已知不一致点（对比需求文档时需注意）
 
 目前无已知不一致点。原第 1 条「拖拽为交换语义」已于 2026-11-18 修正：`DragList.jsx` 改为插入式排序，鼠标拖拽与键盘 Alt+↑/↓ 语义一致（见 3.1.3）。
