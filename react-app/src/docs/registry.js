@@ -23,6 +23,7 @@ import hanoiGame from './hanoi-game.md?raw'
 import pianoTiles from './piano-tiles.md?raw'
 import slitherlink from './slitherlink.md?raw'
 import ticTacToe from './tic-tac-toe.md?raw'
+import simonSays from './simon-says.md?raw'
 
 export const docs = [
   {
@@ -254,6 +255,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Board'],
     readTime: '约 8 分钟',
     content: ticTacToe,
+  },
+  {
+    slug: 'simon-says',
+    title: '西蒙记忆（Simon Says）需求文档',
+    summary:
+      '第 27 款小游戏的需求文档：四色按钮序列逐轮加长，rAF 驱动回放时钟，3 点生命与节奏加速曲线；键盘 1-4 与触控双操作、aria-live 无障碍播报、双路自动暂停、24h 进度存档、埋点统计与番茄钟联动。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Memory'],
+    readTime: '约 8 分钟',
+    content: simonSays,
   },
 ]
 

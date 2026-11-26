@@ -322,6 +322,14 @@ const ENTRIES = [
     span: '3',
     footer: { meta: ['2026-11-25', '2 min'], link: '来一局' },
   },
+  {
+    title: '西蒙记忆',
+    path: '/simon-says',
+    keywords: ['SimonSays', '西蒙记忆', '序列记忆', '节奏'],
+    desc: 'Simon Says 西蒙记忆：四色按钮序列逐轮加长，3 点生命、节奏递增，键盘 1-4 与触控双操作',
+    span: '3',
+    footer: { meta: ['2026-11-26', '2 min'], link: '记住序列' },
+  },
 ]
 
 const PIPELINE = [

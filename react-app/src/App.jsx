@@ -59,6 +59,8 @@ const PianoTiles = lazy(() => import('./pages/PianoTiles'))
 const Slitherlink = lazy(() => import('./pages/Slitherlink'))
 // 井字棋（Minimax AI + 三档难度 + 撤销 + 本地进度存档），按需加载（独立分包）
 const TicTacToe = lazy(() => import('./pages/TicTacToe'))
+// 西蒙记忆（四色序列记忆 + rAF 回放时钟 + 本地进度存档），按需加载（独立分包）
+const SimonSays = lazy(() => import('./pages/SimonSays'))
 // 南昌旅游介绍页（图文静态页 + 图集灯箱），按需加载
 const Nanchang = lazy(() => import('./pages/Nanchang'))
 // 文档页依赖 marked 解析 markdown，按需加载
@@ -289,6 +291,14 @@ function App() {
           element={
             <Suspense fallback={pageLoading}>
               <TicTacToe />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/simon-says"
+          element={
+            <Suspense fallback={pageLoading}>
+              <SimonSays />
             </Suspense>
           }
         />

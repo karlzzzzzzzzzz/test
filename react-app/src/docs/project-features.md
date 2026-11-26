@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，2026-11-19 增量同步「生命游戏（Game of Life）」，2026-11-20 增量同步「汉诺塔（Tower of Hanoi）」，2026-11-23 增量同步「钢琴块（Piano Tiles）」，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，2026-11-19 增量同步「生命游戏（Game of Life）」，2026-11-20 增量同步「汉诺塔（Tower of Hanoi）」，2026-11-23 增量同步「钢琴块（Piano Tiles）」，2026-11-24 增量同步「数回（Slitherlink）」，2026-11-25 增量同步「井字棋（Tic-Tac-Toe）」，2026-11-26 增量同步「西蒙记忆（Simon Says）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-23 共 27 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。，2026-11-24 增量同步「<待填：新游戏中文名>」，2026-11-25 增量同步「<待填：新游戏中文名>」
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-26 共 28 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、跳棋（Checkers）、一笔画（One Stroke）、消消乐（Match 3）、生命游戏（Game of Life）、汉诺塔（Tower of Hanoi）、钢琴块（Piano Tiles）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心二十九**大功能模块**。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、跳棋（Checkers）、一笔画（One Stroke）、消消乐（Match 3）、生命游戏（Game of Life）、汉诺塔（Tower of Hanoi）、钢琴块（Piano Tiles）、数回（Slitherlink）、井字棋（Tic-Tac-Toe）、西蒙记忆（Simon Says）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心三十二**大功能模块**。
 
 ### 1.2 技术栈
 
@@ -56,6 +56,9 @@ react-app/src/
 │   ├── Life.jsx / .css          # 生命游戏页面壳（Canvas 2D + 元胞自动机 + RLE 导入三态 + 双路自动暂停）
 │   ├── Hanoi.jsx / .css         # 汉诺塔页面壳（3~8 盘 + 整柱触控 + 撤销/失误 + 24h 进度存档）
 │   ├── PianoTiles.jsx / .css    # 钢琴块页面壳（4 轨道传送带下落 + 判定线点按 + 双路自动暂停 + 24h 进度存档）
+│   ├── Slitherlink.jsx / .css   # 数回页面壳（SVG 点阵 + 三态边标记 + 冲突红标 + 每日关卡 + 24h 进度存档）
+│   ├── TicTacToe.jsx / .css     # 井字棋页面壳（3×3/4×4 棋盘 + Minimax 三档 AI + 撤销栈 + 24h 进度存档）
+│   ├── SimonSays.jsx / .css     # 西蒙记忆页面壳（四色序列 + rAF 回放 + 3 生命 + 音效 + 键盘 1-4 + 24h 进度存档）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -63,23 +66,6 @@ react-app/src/
 │   ├── DocView.jsx              # 文档详情页
 │   ├── About.jsx                # 关于页
 │   └── NotFound.jsx             # 404 页
-│   ├── NotFound.jsx         # 页面壳（功能简述 + 持久化/自动化暂停特性）
-│   ├── Slitherlink.jsx         # 页面壳（功能简述 + 持久化/自动化暂停特性）
-│   ├── Sudoku.jsx         # 页面壳（功能简述 + 持久化/自动化暂停特性）
-│   ├── CheckersEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── GomokuEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── HanoiEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── LifeEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── Match3Engine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── MemoryEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── NonogramEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── OneStrokeEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── PianoTilesEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── PipeEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── SlitherlinkEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── SudokuEngine.js        # 引擎（纯逻辑 + 特性简述）
-│   ├── TicTacToe.jsx         # 页面壳（功能简述 + 持久化/自动化暂停特性）
-│   ├── TicTacToeEngine.js        # 引擎（纯逻辑 + 特性简述）
 ├── game/
 │   ├── SpaceShooter.js          # Three.js 飞机大战引擎（纯逻辑，与 UI 解耦）
 │   ├── Game2048Engine.js         # 2048 引擎（纯逻辑：滑动/合并/撤销/持久化）
@@ -104,6 +90,9 @@ react-app/src/
 │   └── LifeEngine.js              # 生命游戏引擎（纯逻辑：B3/S23 演化 + 环绕/固定边界 + 内置图案 + RLE 解析）
 │   └── HanoiEngine.js             # 汉诺塔引擎（纯逻辑：三柱移动校验 + 2^n-1 最优步数 + 撤销历史 + 存档恢复校验）
 │   └── PianoTilesEngine.js        # 钢琴块引擎（纯逻辑：传送带下落 + 判定窗口点按 + 速度递增 + dt 上限防跳帧 + 存档恢复校验）
+│   └── SlitherlinkEngine.js       # 数回引擎（纯逻辑：反向生成闭合环 + clue 反推 + 端点度数/连通性判定 + 撤销栈 + 存档校验）
+│   └── TicTacToeEngine.js         # 井字棋引擎（纯逻辑：Minimax + α-β 剪枝 + 三档难度 + 4×4 深度上限 + 撤销栈 + 存档校验）
+│   └── SimonSaysEngine.js         # 西蒙记忆引擎（纯逻辑：序列生成 + tick 驱动回放时钟 + 三态判定 + 生命/加速 + 存档校验）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -157,6 +146,7 @@ react-app/src/
 | `/docs/:slug` | DocView 文档详情 | **lazy 懒加载** |
 | `/slitherlink` | Slitherlink 数回 | **lazy 懒加载**（含引擎逻辑，独立分包） |
 | `/tic-tac-toe` | TicTacToe 井字棋 | **lazy 懒加载**（含引擎逻辑，独立分包） |
+| `/simon-says` | SimonSays 西蒙记忆 | **lazy 懒加载**（含引擎逻辑，独立分包） |
 | `*` | NotFound 404 | 直接引入 |
 
 懒加载统一使用 `<Suspense fallback="加载中…">`。
@@ -190,7 +180,7 @@ Bento Grid 网格布局，自上而下：
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
 4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：29 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe、数织→/nonogram、跳棋→/checkers、一笔画→/one-stroke、消消乐→/match3、生命游戏→/life-game、汉诺塔→/hanoi-game、钢琴块→/piano-tiles），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡；2026-11-17 新增数织卡、跳棋卡；2026-11-18 新增一笔画卡、消消乐卡；2026-11-19 新增生命游戏卡；2026-11-20 新增汉诺塔卡；2026-11-23 新增钢琴块卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 29 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23、2026-11-17 随作品入口增至 24、2026-11-18 随作品入口增至 25 / 26、2026-11-19 随作品入口增至 27、2026-11-20 随作品入口增至 28、2026-11-23 随作品入口增至 29）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 32 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23、2026-11-17 随作品入口增至 24、2026-11-18 随作品入口增至 25 / 26、2026-11-19 随作品入口增至 27、2026-11-20 随作品入口增至 28、2026-11-23 随作品入口增至 29、2026-11-24 随作品入口增至 30、2026-11-25 随作品入口增至 31、2026-11-26 随作品入口增至 32）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -1300,6 +1290,34 @@ Bento Grid 网格布局，自上而下：
 
 - 待人工填写：引擎单测数量、verify 通过、audit:mobile 结果。
 
+### 3.34 西蒙记忆（/simon-says，2026-11-26 新增，第 27 款）
+
+#### 3.34.1 架构
+
+- 页面壳 `pages/SimonSays.jsx / .css`：四色按钮盘（2×2，红/绿/蓝/黄）+ 六屏（start / playing / paused / over）+ 音效开关。
+- 引擎 `game/SimonSaysEngine.js`：纯逻辑无定时器，序列由 `start()` 生成，回放时间轴由页面 rAF 每帧调 `tick(dt)` 推进（单帧上限 100ms 防跳帧）。
+- 状态机：`idle → showing（回放）→ input（等待复现）→ showing …`；按错扣生命并重播；生命归零 `over`；`paused` 可插在任一玩家等待态之前。
+- 持久化键：`game-simon-says-save-v1` / `game-simon-says-best-v1` / `game-simon-says-stats-v1` / `game-simon-says-settings-v1`。
+
+#### 3.34.2 玩法规则
+
+- 四色块依次高亮（配不同音高），玩家按相同顺序点击或按 1/2/3/4 复现；每通过一关序列 +1 位。
+- 共 3 点生命，按错扣 1 点并从头重播本关序列；生命归零结束（结束屏展示到达关卡与新纪录标记）。
+- 节奏加速：`speedFactor = max(0.45, 1 - (round-1)×0.05)`，每关单步时长缩短 5%，最低 45%。
+- 存档恢复为 paused 态，恢复后从本关开头重播；「继续上次」卡片展示关卡与剩余生命。
+
+#### 3.34.3 约束卡（PRD 三张约束卡落点）
+
+1. **埋点统计关键行为**：`game-simon-says-stats-v1` 记录 plays / gamesOver / bestRound / totalRounds / wrongPresses；脏标记 + 1s 防抖 + `pagehide` 冲刷；结束时不重复结算。
+2. **键盘可访问性与 aria**：四个 pad 为原生 button（`aria-label` 含颜色与快捷键、`aria-pressed` 表达高亮），键盘 1-4 与方向键映射同四块，Esc 暂停/恢复、R 重开；`aria-live="polite"` 播报「正在播放序列 / 还需复现 n 步 / 结束关卡」；`:focus-visible` 外描边。
+3. **移动端触控与窄屏**：四宫格 `aspect-ratio: 1` + `width: min(88vw, 420px)`，`touch-action: manipulation` 消除点击延迟；320px 下字号 ≥0.75rem、无横向滚动、按钮热区 ≥44px（audit 九档 smallTargets 0）。
+
+#### 3.34.4 验证
+
+- 引擎单测 13 项全通过（`node --test src/game/SimonSaysEngine.test.js`）：开局序列/生命、tick 回放与高亮相位、正确复现进关、按错扣血重播、生命归零 over、非输入态忽略、speedFactor 下限、暂停冻结、dt 上限、存档快照恢复、坏档校验、序列长度上限。
+- `npm run verify`：lint 0 error、全量单测通过、build 成功、页面冒烟 34/34（含 `/simon-says`）。
+- `audit:mobile`：320–1024px 九档 0 违规（minFont 12、smallTargets 0、无横向溢出）。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -1360,7 +1378,7 @@ Bento Grid 网格布局，自上而下：
 | `game-sudoku-quote-v1` | localStorage | 数独通关寄语当日缓存 `{ v:1, date, text, source, fallback }`；按日失效，序列化 >200 字符不写 |
 | `game-gomoku-best-v1` | localStorage | 五子棋分档最佳 `{ easy:{moves,timeSec,date}, normal:{...}, hard:{...} }`；单人 AI 仅胜局入榜，双人黑/白胜均入；更少落子优先（落子相同用时更少优先），损坏回退空对象 |
 | `game-gomoku-stats-v1` | localStorage | 五子棋累计埋点 `{ v:1, plays, wins, losses, draws, moves, aiTimeouts, timeByDifficulty, winsByDifficulty, lossesByDifficulty, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘，0~99999 封顶 |
-| `pomodoro-sessions-v1` | localStorage | 番茄钟 session 数组 `[{startTs,endTs,durSec,game,win,level?,mode?}]`；番茄钟专注完成 + 跳过、五子棋 / 跳棋 / 一笔画 / 消消乐 / 生命游戏 / 汉诺塔 / 钢琴块对局结束（≥120s，`game` 字段区分 gomoku/checkers/one-stroke/match3/life/hanoi/piano-tiles）均追加；仅保留最近 14 天；番茄钟统计条滚动窗口按 endTs 过滤最近 24h + durSec ≥ 120 计有效数 |
+| `pomodoro-sessions-v1` | localStorage | 番茄钟 session 数组 `[{startTs,endTs,durSec,game,win,level?,mode?}]`；番茄钟专注完成 + 跳过、五子棋 / 跳棋 / 一笔画 / 消消乐 / 生命游戏 / 汉诺塔 / 钢琴块 / 数回 / 井字棋 / 西蒙记忆对局结束（≥120s，`game` 字段区分 gomoku/checkers/one-stroke/match3/life/hanoi/piano-tiles/slitherlink/tic-tac-toe/simon-says）均追加；仅保留最近 14 天；番茄钟统计条滚动窗口按 endTs 过滤最近 24h + durSec ≥ 120 计有效数 |
 | `weather-geo-denied-tip` | sessionStorage | 定位拒绝提示的会话标记（自动提示每会话最多 1 次） |
 | `weather-last-ok` | localStorage | 天气上次成功快照 `{ current, daily, place, ts }`；单条覆盖写，序列化 >500KB 放弃写入，配额满清空后降级内存；7 天 TTL 自动清理 |
 | `weather-auto-backoff` | localStorage | 天气连续失败退避记录 `{ failCount, nextAt }`；成功清零，7 天 TTL 自动清理 |
@@ -1368,12 +1386,20 @@ Bento Grid 网格布局，自上而下：
 | BigDataCloud API | 外部 | 坐标 → 城市名逆地理编码 |
 | Hitokoto API | 外部 | 每日一句 / 推箱子通关寄语 / 数独通关寄语（均 3s 超时，按日缓存）；失败降级本地句子池并缓存 |
 
-| `game-2048-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
-| `game-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
-> ⚠️ 同步更新 **pomodoro-sessions-v1** 的 game 取值说明，追加 `2048 / tetris / snake / breakout / memory / whack / puzzle / lightsout / connect4 / lianliankan / sokoban / reversi / minesweeper / maze / sudoku / gomoku / nonogram / life-game / hanoi-game / slitherlink`
-| `game-2048-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
-| `game-touch-starts` | localStorage | 待人工填充：键名对应的持久化数据结构 / TTL / 写入时机 |
-> ⚠️ 同步更新 **pomodoro-sessions-v1** 的 game 取值说明，追加 `2048 / slitherlink / tic-tac-toe`
+| `game-slitherlink-save-v1` | localStorage | 数回未完成对局存档 `{ v:1, difficulty, rows, cols, clues, edges(0/1/2 序列), moves, hintLeft, elapsed, ts }`；≤1024 字符、24h TTL、通关/放弃/重开即删、坏档自动清理 |
+| `game-slitherlink-best-v1` | localStorage | 数回分档最佳用时（easy / normal / hard 三档；用时更少优先，同用时步数更少优先） |
+| `game-slitherlink-stats-v1` | localStorage | 数回累计埋点 `{ plays, wins, timeByLevel, hintsUsed, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
+| `game-slitherlink-daily-v1` | localStorage | 数回每日关卡缓存（按日失效，timeapi.io 失败降级本地关卡池） |
+| `game-ttt-save-v1` | localStorage | 井字棋未完成对局存档 `{ v:1, size, difficulty, playerSide, board, currentPlayer, moves, elapsed, ts }`；≤4096 字符、24h TTL、结束/重开/放弃即删 |
+| `game-ttt-best-v1` | localStorage | 井字棋分档最佳（size × difficulty × playerSide；用时更少优先） |
+| `game-ttt-stats-v1` | localStorage | 井字棋累计埋点 `{ plays, wins, losses, draws, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
+| `game-simon-says-save-v1` | localStorage | 西蒙记忆未完成对局 `{ v:1, sequence, inputIndex, round, lives, elapsed, ts }`；序列 ≤60、≤4096 字符、24h TTL、结束/重开/放弃即删、坏档清理 |
+| `game-simon-says-best-v1` | localStorage | 西蒙记忆最佳关卡 `{ bestRound, date }`；仅更高关卡覆盖，损坏回退空对象 |
+| `game-simon-says-stats-v1` | localStorage | 西蒙记忆累计埋点 `{ plays, gamesOver, bestRound, totalRounds, wrongPresses, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
+| `game-simon-says-settings-v1` | localStorage | 西蒙记忆音效开关 `{ sound:boolean }` |
+| `game-player-name` | localStorage | 玩家昵称（飞机大战 / 打砖块 / 俄罗斯方块 / 贪吃蛇 / 记忆翻牌排行榜提交共用；≤12 字符，默认「无名飞侠」） |
+| `game-touch-starts` | localStorage | 打砖块触控开局计数（每局首次触摸 +1，0~99999 封顶） |
+| `game-2048-touch-starts` | localStorage | 2048 触控滑动操作计数（每局首次滑动 +1，0~99999 封顶） |
 ## 5. 已知不一致点（对比需求文档时需注意）
 
 目前无已知不一致点。原第 1 条「拖拽为交换语义」已于 2026-11-18 修正：`DragList.jsx` 改为插入式排序，鼠标拖拽与键盘 Alt+↑/↓ 语义一致（见 3.1.3）。

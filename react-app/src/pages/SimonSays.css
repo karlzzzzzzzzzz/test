@@ -1,0 +1,288 @@
+/* 西蒙记忆 Simon Says — 移动端优先 */
+
+.simon-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.simon-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.simon-header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
+.simon-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  color: var(--text-2, #555);
+  text-decoration: none;
+}
+.simon-back:hover { color: var(--accent, #333); }
+
+/* ---------- 开始屏 ---------- */
+.simon-start { text-align: center; padding: 8px 4px; }
+.simon-start h2 { font-size: 1.125rem; margin: 8px 0 12px; font-weight: 600; }
+.simon-rule {
+  margin: 0 0 16px;
+  padding: 10px;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  text-align: left;
+  color: var(--text-2, #666);
+  background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px;
+}
+
+.simon-save-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px;
+  font-size: 0.8125rem;
+  background: #eef4ff;
+  border: 1px solid #c8ddff;
+  border-radius: 8px;
+}
+.simon-save-card button {
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: 0.8125rem;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.simon-save-card button:hover { background: #f0f0f0; }
+
+.simon-settings {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  font-size: 0.8125rem;
+  color: var(--text-2, #666);
+}
+.simon-toggle {
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+}
+.simon-toggle.on {
+  border-color: var(--accent, #222);
+  background: var(--accent, #222);
+  color: #fff;
+}
+.simon-best { color: var(--text-3, #888); }
+
+.simon-primary {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent, #222);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.simon-primary:active { transform: scale(0.99); }
+
+.simon-hint {
+  margin-top: 16px;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  color: var(--text-3, #888);
+  text-align: left;
+}
+.simon-hint p { margin: 2px 0; }
+
+/* ---------- HUD ---------- */
+.simon-hud {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px;
+}
+.simon-hud-item { text-align: center; min-width: 0; }
+.simon-hud-item .label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-3, #888);
+}
+.simon-hud-item .value {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.simon-lives { color: #e74c3c; letter-spacing: 1px; }
+
+/* ---------- 四色盘 ---------- */
+.simon-board {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: min(88vw, 420px);
+  margin: 0 auto;
+  touch-action: manipulation;
+}
+
+.simon-pad {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 96px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  color: #fff;
+  font-family: inherit;
+  opacity: 0.55;
+  filter: saturate(0.7);
+  transition: opacity 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.simon-pad:disabled { cursor: default; }
+.simon-pad.lit {
+  opacity: 1;
+  filter: saturate(1.25) brightness(1.25);
+  transform: scale(1.03);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.65), 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+.simon-pad:focus-visible { outline: 3px solid #4d7cff; outline-offset: 3px; }
+
+.simon-pad-red { background: #e74c3c; }
+.simon-pad-green { background: #27ae60; }
+.simon-pad-blue { background: #3498db; }
+.simon-pad-yellow { background: #f1c40f; color: #4a3b00; }
+
+.simon-pad-key {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+.simon-pad-name {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.125rem, 5vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.simon-note {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  font-size: 0.8125rem;
+  color: #e67e22;
+  text-align: center;
+}
+
+/* ---------- 操作 ---------- */
+.simon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.simon-actions button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.simon-actions button:hover { background: #f0f0f0; }
+
+/* ---------- 遮罩 ---------- */
+.simon-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  padding: 16px;
+}
+.simon-overlay-card {
+  width: 100%;
+  max-width: 320px;
+  padding: 24px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.simon-overlay-card h3 { margin: 0 0 12px; font-size: 1.125rem; }
+.simon-overlay-card p { margin: 4px 0; font-size: 0.875rem; color: var(--text-2, #555); }
+.simon-new-record { color: #e67e22 !important; font-weight: 700; }
+.simon-overlay-card button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.simon-overlay-card button:hover { background: #f0f0f0; }
+.simon-overlay-card .simon-primary {
+  color: #fff;
+  background: var(--accent, #222);
+  border-color: var(--accent, #222);
+}
+
+/* ---------- 无障碍 ---------- */
+.simon-wrap .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 360px) {
+  .simon-hud { grid-template-columns: repeat(2, 1fr); }
+  .simon-pad { min-height: 88px; border-radius: 12px; }
+  .simon-board { gap: 8px; width: 100%; }
+}
