@@ -313,7 +313,29 @@ function MinesweeperPage() {
     const where = `第${Math.floor(idx / snap.cols) + 1}行第${(idx % snap.cols) + 1}列`
 
     if (cell.revealed) {
-      announce(`${where}已经翻开`)
+      // 已翻开的数字格：旗数与该数字一致时快捷展开周围；否则给出提示
+      if (cell.adj > 0) {
+        const r = Math.floor(idx / snap.cols)
+        const c = idx % snap.cols
+        let flags = 0
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (!dr && !dc) continue
+            const nr = r + dr
+            const nc = c + dc
+            if (nr < 0 || nr >= snap.rows || nc < 0 || nc >= snap.cols) continue
+            if (snap.cells[nr * snap.cols + nc].flagged) flags += 1
+          }
+        }
+        if (flags !== cell.adj) {
+          announce(`${where}周围已有 ${flags} 面旗，标记数需等于 ${cell.adj} 才能快捷展开`)
+          return
+        }
+        const ok = engineRef.current?.chord(idx)
+        if (!ok) announce(`${where}操作过快，请稍后再试`)
+      } else {
+        announce(`${where}已经翻开`)
+      }
       return
     }
     if (mode === 'flag') {
@@ -327,6 +349,16 @@ function MinesweeperPage() {
     }
     const ok = engineRef.current?.reveal(idx)
     if (!ok) announce(`${where}操作过快，请稍后再试`)
+  }
+
+  /** 右键插旗（桌面端习惯操作），与标记模式互不影响 */
+  const handleCellContextMenu = (e, idx) => {
+    e.preventDefault()
+    const snap = snapshotRef.current
+    if (!snap || snap.state !== 'playing') return
+    setFocusedIdx(idx)
+    const ok = engineRef.current?.toggleFlag(idx)
+    if (!ok) announce('无法标记：该格已翻开、旗子已用完或操作过快')
   }
 
   const handleUndo = () => {
@@ -372,7 +404,8 @@ function MinesweeperPage() {
 
   const bestOfLevel = (level) => best[level]?.score
   const canPlay = screen === 'playing' && snapshot?.state === 'playing'
-  const showBoard = snapshot && snapshot.state !== 'start' && screen !== 'over'
+  // 结束后仍保留盘面，便于查看雷位分布；此时盘面只读
+  const showBoard = snapshot && snapshot.state !== 'start'
   const remainingMines = snapshot ? Math.max(0, snapshot.mines - snapshot.flagsUsed) : null
 
   return (
@@ -441,7 +474,7 @@ function MinesweeperPage() {
       {showBoard && (
         <div
           className="ms-board-wrap"
-          style={{ pointerEvents: screen === 'paused' ? 'none' : 'auto' }}
+          style={{ pointerEvents: screen === 'playing' ? 'auto' : 'none' }}
           aria-hidden={screen === 'paused'}
         >
           <div
@@ -452,7 +485,7 @@ function MinesweeperPage() {
             tabIndex={-1}
             onKeyDown={handleBoardKeyDown}
           >
-            {_renderRows(snapshot, focusedIdx, canPlay, handleCell)}
+            {_renderRows(snapshot, focusedIdx, canPlay, handleCell, handleCellContextMenu)}
           </div>
         </div>
       )}
@@ -480,7 +513,7 @@ function MinesweeperPage() {
         </div>
       )}
 
-      <p className="ms-hint">首点及其周围八格保证无雷；数字表示相邻地雷数。切换「标记模式」后点按格子插旗。</p>
+      <p className="ms-hint">首点及其周围八格保证无雷；数字表示相邻地雷数。切换「标记模式」后点按格子插旗，桌面端可直接右键插旗；点击已翻开的数字格（周围旗数等于数字）可快捷展开。</p>
 
       {/* start 遮罩 */}
       {screen === 'start' && (
@@ -488,7 +521,7 @@ function MinesweeperPage() {
           <div className="ms-overlay-card">
             <h2>扫雷</h2>
             <p>翻开所有安全格即胜利，踩到地雷本局结束。首次翻开的位置及其周围八格一定没有雷。</p>
-            <p className="ms-overlay-hint">触屏用「标记模式」插旗；撤销最多 3 次；单局限时 3 分钟。</p>
+            <p className="ms-overlay-hint">触屏用「标记模式」插旗，桌面端可右键插旗；点击已翻开的数字格可快捷展开；撤销最多 3 次；单局限时 3 分钟。</p>
             <div className="ms-diff-list" aria-label="选择难度">
               {LEVELS.map((lv) => (
                 <button
@@ -553,7 +586,7 @@ function MinesweeperPage() {
 }
 
 /** 按行渲染：行 role=row，格 role=gridcell，内部原生 button（roving tabindex） */
-function _renderRows(snapshot, focusedIdx, canPlay, onCell) {
+function _renderRows(snapshot, focusedIdx, canPlay, onCell, onCellContextMenu) {
   const { cells, rows, cols, lastReveal } = snapshot
   const lastIdx = lastReveal?.idx ?? -1
   const out = []
@@ -584,6 +617,7 @@ function _renderRows(snapshot, focusedIdx, canPlay, onCell) {
             aria-disabled={!canPlay}
             aria-label={`第${r + 1}行第${c + 1}列，${stateText}`}
             onClick={() => onCell(idx)}
+            onContextMenu={(e) => onCellContextMenu?.(e, idx)}
           >
             {showFlag && <span className="ms-flag" aria-hidden="true" />}
             {showMine && <span className="ms-mine-icon" aria-hidden="true" />}

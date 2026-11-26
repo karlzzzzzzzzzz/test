@@ -119,7 +119,7 @@ test('插旗与上限：切换进入/撤销，旗子数量不超过雷数', () =
   assert.equal(engine.toggleFlag(DIFFICULTY.easy.mines + 1), false, '旗子用完不能再插')
 })
 
-test('频率节流：120ms 内的重复操作被忽略', () => {
+test('频率节流：不足最小间隔的重复操作被忽略', () => {
   const { engine, advance, at } = create('easy')
   at(1000)
   assert.equal(engine.reveal(24), true)
@@ -127,9 +127,9 @@ test('频率节流：120ms 内的重复操作被忽略', () => {
 
   assert.equal(engine.toggleFlag(hidden), false, '同一毫秒内被节流')
   advance(MINESWEEPER.MIN_TAP_INTERVAL_MS - 1)
-  assert.equal(engine.toggleFlag(hidden), false, '不足 120ms 仍被节流')
+  assert.equal(engine.toggleFlag(hidden), false, '不足最小间隔仍被节流')
   advance(1)
-  assert.equal(engine.toggleFlag(hidden), true, '满 120ms 后放行')
+  assert.equal(engine.toggleFlag(hidden), true, '满最小间隔后放行')
 })
 
 test('撤销插旗：恢复旗子状态，次数递减且不影响步数', () => {
@@ -167,6 +167,7 @@ test('撤销翻开：本步展开的格子重新盖回，安全计数回退', ()
   assert.equal(snap.safeRevealed, afterFirst)
   assert.equal(snap.cells[second].revealed, false)
   assert.equal(snap.undoLeft, MINESWEEPER.UNDO_LIMIT - 1)
+  assert.equal(snap.moves, 1, '撤销只回退一步移动计数')
 })
 
 test('撤销首次翻开：雷区与计时重置，可换首点重开', () => {
@@ -325,4 +326,55 @@ test('dispose 后不再回调页面', () => {
   engine.dispose()
   engine.reveal(24)
   assert.equal(calls, before)
+})
+
+// ---------- 快捷展开（chord） ----------
+
+/** 手工布置「仅 0 号格有雷」的确定性盘面，并翻开与雷相邻的 1 号格 */
+function setupChordBoard() {
+  const { engine, advance } = create('easy')
+  advance(200)
+  engine.mineArr.fill(0)
+  engine.mineArr[0] = 1
+  engine.minesPlaced = true
+  engine._recomputeAdj()
+  engine.started = true
+  engine.revealedArr[1] = 1
+  engine.safeRevealed = 1
+  engine.lastTapAt = -Infinity
+  return { engine, advance }
+}
+
+test('快捷展开：旗数与数字不符时拒绝', () => {
+  const { engine, advance } = setupChordBoard()
+  advance(200)
+  assert.equal(engine.getSnapshot().cells[1].adj, 1)
+  assert.equal(engine.chord(1), false, '周围 0 面旗，数字为 1 → 拒绝')
+  advance(200)
+  assert.equal(engine.chord(0), false, '未翻开的格子不能快捷展开')
+  advance(200)
+  assert.equal(engine.chord(999), false, '越界忽略')
+})
+
+test('快捷展开：旗数匹配但邻格有雷 → 踩雷判负', () => {
+  const { engine, advance } = setupChordBoard()
+  advance(200)
+  assert.equal(engine.toggleFlag(2), true, '在安全格插一面旗，凑够 1 面')
+  advance(200)
+  assert.equal(engine.chord(1), true)
+  const snap = engine.getSnapshot()
+  assert.equal(snap.state, 'over')
+  assert.equal(snap.result, 'lose')
+  assert.equal(snap.cells[0].boom, true)
+})
+
+test('快捷展开：旗数匹配且邻格无雷 → 一次翻开其余邻格', () => {
+  const { engine, advance } = setupChordBoard()
+  advance(200)
+  assert.equal(engine.toggleFlag(0), true, '正确标记唯一的雷')
+  advance(200)
+  assert.equal(engine.chord(1), true)
+  // 1 号格 (0,1) 的邻格 (1,1)=8 应被翻开
+  assert.equal(engine.revealedArr[8], 1)
+  assert.equal(engine.revealedArr[0], 0, '插旗的雷格保持未翻开')
 })

@@ -24,7 +24,8 @@ export const MINESWEEPER = {
   TICK_MS: 250,
   SEC_PENALTY: 2,
   MIN_SCORE: 100,
-  MIN_TAP_INTERVAL_MS: 120,
+  // 40ms 仅用于拦截同一次点按被重复触发的抖动，不阻断真人连续快速操作
+  MIN_TAP_INTERVAL_MS: 40,
   UNDO_LIMIT: 3,
 }
 
@@ -134,6 +135,58 @@ export class MinesweeperEngine {
   }
 
   /**
+   * 快捷展开（chord）：对已翻开的数字格，当周围旗数等于该数字时，
+   * 一次翻开其余未标记的邻格；若其中埋雷则判负。
+   * @returns {boolean} true=已执行
+   */
+  chord(idx) {
+    if (this.state !== 'playing') return false
+    if (!this.minesPlaced) return false
+    if (!Number.isInteger(idx) || idx < 0 || idx >= this.size) return false
+    if (!this.revealedArr[idx]) return false
+    const adj = this.adjArr[idx]
+    if (adj <= 0) return false
+
+    const neighbors = this._neighbors(idx)
+    const flags = neighbors.reduce((acc, i) => acc + (this.flaggedArr[i] ? 1 : 0), 0)
+    if (flags !== adj) return false
+    const targets = neighbors.filter((i) => !this.revealedArr[i] && !this.flaggedArr[i])
+    if (!targets.length) return false
+    if (this._now() - this.lastTapAt < MINESWEEPER.MIN_TAP_INTERVAL_MS) return false
+    this.lastTapAt = this._now()
+
+    const boom = targets.find((i) => this.mineArr[i])
+    if (boom !== undefined) {
+      this.revealedArr[boom] = 1
+      this.boomIdx = boom
+      this.moves += 1
+      this.lastReveal = { idx: boom, count: 1, flooded: false, boom: true }
+      this._finish('lose')
+      return true
+    }
+
+    const opened = []
+    for (const t of targets) {
+      for (const i of this._flood(t)) opened.push(i)
+    }
+    this.safeRevealed += opened.length
+    this.moves += 1
+    this.undoStack.push({ type: 'reveal', indices: opened, first: false })
+    this.lastFlag = null
+    this.lastUndo = null
+    this.lastReveal = { idx, count: opened.length, flooded: opened.length > 1, boom: false }
+
+    if (this.safeRevealed >= this.safeTotal) {
+      this.lastAction = 'win'
+      this._finish('win')
+      return true
+    }
+    this.lastAction = 'reveal'
+    this._emit()
+    return true
+  }
+
+  /**
    * 插旗 / 撤旗（仅未翻开的格子；旗子数量上限等于雷数）。
    * @returns {boolean} true=已执行
    */
@@ -169,7 +222,6 @@ export class MinesweeperEngine {
 
     const action = this.undoStack.pop()
     if (action.type === 'reveal') {
-      this.moves = Math.max(0, this.moves - 1)
       if (action.first) {
         // 首次翻开被回退：雷区回到未生成状态，计时归零，换首点重新开始
         this.mineArr.fill(0)
