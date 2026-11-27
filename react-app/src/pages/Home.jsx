@@ -336,6 +336,16 @@ const ENTRIES = [
     span: '3',
     footer: { meta: ['2026-11-26', '2 min'], link: '记住序列' },
   },
+  {
+    title: '泡泡龙',
+    to: '/bubble-shooter',
+    keywords: ['BubbleShooter', '泡泡龙', '消除', '弹射', '街机'],
+    techTags: ['Canvas2D', 'React Hooks', 'Arcade'],
+    desc: 'Bubble Shooter 泡泡龙：8 列蜂窝盘面瞄准发射，同色 3 连消除、悬空气泡坠落，每 8 发顶部下压一行',
+    dataKeywords: 'BubbleShooter 泡泡龙 消除 弹射 街机 蜂窝 三连',
+    span: '3',
+    footer: { meta: ['2026-11-27', '3 min'], link: '开始弹射' },
+  },
 ]
 
 const PIPELINE = [

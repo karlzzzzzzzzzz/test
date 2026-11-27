@@ -1,0 +1,302 @@
+/* 泡泡龙 Bubble Shooter — 移动端优先 */
+
+.bs-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.bs-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.bs-header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
+.bs-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  color: var(--text-2, #555);
+  text-decoration: none;
+}
+.bs-back:hover { color: var(--accent, #333); }
+
+/* ---------- 开始屏 ---------- */
+.bs-start { text-align: center; padding: 8px 4px; }
+.bs-start h2 { font-size: 1.125rem; margin: 8px 0 12px; font-weight: 600; }
+.bs-rule {
+  margin: 0 0 16px;
+  padding: 10px;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  text-align: left;
+  color: var(--text-2, #666);
+  background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px;
+}
+
+.bs-save-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px;
+  font-size: 0.8125rem;
+  background: #eef4ff;
+  border: 1px solid #c8ddff;
+  border-radius: 8px;
+}
+.bs-save-card button {
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: 0.8125rem;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.bs-save-card button:hover { background: #f0f0f0; }
+
+.bs-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+  font-size: 0.8125rem;
+  color: var(--text-2, #666);
+}
+
+.bs-primary {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent, #222);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  box-sizing: border-box;
+}
+.bs-primary:active { transform: scale(0.99); }
+
+.bs-hint {
+  margin-top: 16px;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  color: var(--text-3, #888);
+  text-align: left;
+}
+.bs-hint p { margin: 2px 0; }
+
+.bs-error {
+  margin: 48px 0;
+  padding: 24px 16px;
+  text-align: center;
+  background: #fff6f5;
+  border: 1px solid #ffd1cc;
+  border-radius: 12px;
+}
+.bs-error h2 { margin: 0 0 12px; font-size: 1.125rem; }
+.bs-error p { margin: 0 0 16px; font-size: 0.8125rem; line-height: 1.6; color: var(--text-2, #666); }
+
+/* ---------- HUD ---------- */
+.bs-hud {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px 6px;
+  margin-bottom: 10px;
+  padding: 10px 8px;
+  background: var(--bg-soft, #f7f7f8);
+  border-radius: 8px;
+}
+.bs-hud-item { text-align: center; min-width: 0; }
+.bs-hud-item .label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-3, #888);
+}
+.bs-hud-item .value {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bs-color { display: inline-flex !important; align-items: center; justify-content: center; gap: 4px; }
+.bs-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ---------- 画布 ---------- */
+.bs-board-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.bs-canvas {
+  display: block;
+  width: min(92vw, 420px);
+  aspect-ratio: 16 / 26.6;
+  height: auto;
+  background: #0d1224;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 150, 220, 0.25);
+  box-shadow: 0 6px 24px rgba(10, 18, 40, 0.16);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* ---------- 操作 ---------- */
+.bs-aim-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.bs-aim-btn,
+.bs-shoot-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bs-aim-btn:hover { background: #f0f0f0; }
+.bs-aim-btn:disabled,
+.bs-shoot-btn:disabled { opacity: 0.5; cursor: default; }
+.bs-shoot-btn {
+  flex: 1;
+  max-width: 160px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent, #222);
+  border-color: var(--accent, #222);
+}
+.bs-shoot-btn:hover { filter: brightness(1.1); }
+.bs-aim-btn:focus-visible,
+.bs-shoot-btn:focus-visible,
+.bs-actions button:focus-visible,
+.bs-save-card button:focus-visible,
+.bs-overlay-card button:focus-visible,
+.bs-primary:focus-visible {
+  outline: 3px solid #4d7cff;
+  outline-offset: 2px;
+}
+
+.bs-note {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  font-size: 0.8125rem;
+  color: #e67e22;
+  text-align: center;
+}
+
+.bs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.bs-actions button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.bs-actions button:hover { background: #f0f0f0; }
+
+/* ---------- 遮罩 ---------- */
+.bs-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  padding: 16px;
+}
+.bs-overlay-card {
+  width: 100%;
+  max-width: 320px;
+  padding: 24px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.bs-overlay-card h3 { margin: 0 0 12px; font-size: 1.125rem; }
+.bs-overlay-card p { margin: 4px 0; font-size: 0.875rem; color: var(--text-2, #555); }
+.bs-new-record { color: #e67e22 !important; font-weight: 700; }
+.bs-overlay-card button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.bs-overlay-card button:hover { background: #f0f0f0; }
+.bs-overlay-card .bs-primary {
+  color: #fff;
+  background: var(--accent, #222);
+  border-color: var(--accent, #222);
+}
+
+/* ---------- 无障碍 ---------- */
+.bs-wrap .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 360px) {
+  .bs-hud { grid-template-columns: repeat(3, 1fr); }
+  .bs-canvas { width: 94vw; border-radius: 10px; }
+  .bs-aim-btn { padding: 8px 10px; font-size: 0.8125rem; }
+  .bs-header h1 { font-size: 0.9375rem; }
+}

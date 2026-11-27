@@ -1,15 +1,15 @@
 # 项目功能详细说明（基线文档）
 
-> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，2026-11-19 增量同步「生命游戏（Game of Life）」，2026-11-20 增量同步「汉诺塔（Tower of Hanoi）」，2026-11-23 增量同步「钢琴块（Piano Tiles）」，2026-11-24 增量同步「数回（Slitherlink）」，2026-11-25 增量同步「井字棋（Tic-Tac-Toe）」，2026-11-26 增量同步「西蒙记忆（Simon Says）」，是当前项目**实际已实现功能**的客观描述。
+> 本文档基于 2026-11-04 对 `react-app` 源码的全量梳理生成，2026-11-05 增量同步「推箱子」，2026-11-08 补齐「关灯挑战 / 四连棋 / 连连看 / 黑白棋 / 扫雷」并校正技术栈与编号口径，2026-11-09 增量同步「天气卡片请求链路健壮性（四态 / 超时重试 / 快照降级 / 指数退避）」，2026-11-09 增量同步「迷宫寻路」，2026-11-10 增量同步「数独」并将今日游戏挑战轮换池补齐为 16 款，2026-11-12 增量同步「五子棋（Gomoku）」并修正番茄钟统计口径（新增 `pomodoro-sessions-v1` session 数组 + 「最近 24h N 个有效番茄钟」滚动窗口），2026-11-13 增量同步「接水管（Pipe Connect）」，2026-11-17 增量同步「数织（Nonogram）」，2026-11-17 增量同步「跳棋（Checkers）」，2026-11-18 增量同步「一笔画（One Stroke）」与「消消乐（Match 3）」并将 DragList 修正为插入式排序，2026-11-19 增量同步「生命游戏（Game of Life）」，2026-11-20 增量同步「汉诺塔（Tower of Hanoi）」，2026-11-23 增量同步「钢琴块（Piano Tiles）」，2026-11-24 增量同步「数回（Slitherlink）」，2026-11-25 增量同步「井字棋（Tic-Tac-Toe）」，2026-11-26 增量同步「西蒙记忆（Simon Says）」，2026-11-27 增量同步「泡泡龙（Bubble Shooter）」，是当前项目**实际已实现功能**的客观描述。
 > 用途：作为基线（Baseline），供 prd-scheduler 定时生成的需求文档进行对比——新需求应在此基线上增量描述，对比时可快速识别"新增 / 修改 / 删除"的功能点。
 >
-> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-26 共 28 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
+> **编号规则**：文中「第 N 款小游戏」统一按**小游戏上线顺序**编号，不含 `/game` 飞机大战与工具页（番茄钟 / 简历 / 南昌旅游 / 文档中心）；截至 2026-11-27 共 29 款。历史章节中的「作品卡片数」是首页入口卡的另一个口径，两者不混用。
 
 ## 1. 项目概览
 
 ### 1.1 项目定位
 
-一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、跳棋（Checkers）、一笔画（One Stroke）、消消乐（Match 3）、生命游戏（Game of Life）、汉诺塔（Tower of Hanoi）、钢琴块（Piano Tiles）、数回（Slitherlink）、井字棋（Tic-Tac-Toe）、西蒙记忆（Simon Says）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心三十二**大功能模块**。
+一个由 AI Agent 全自动构建的作品集网站（首页明确宣传"100% AI 生成代码，0 行人工编码"），包含 3D 射击游戏、2048 小游戏、俄罗斯方块、贪吃蛇、打砖块、记忆翻牌、打地鼠、数字华容道、关灯挑战、四连棋、连连看、推箱子、黑白棋、扫雷、迷宫寻路、数独、五子棋（Gomoku）、接水管（Pipe Connect）、数织（Nonogram）、跳棋（Checkers）、一笔画（One Stroke）、消消乐（Match 3）、生命游戏（Game of Life）、汉诺塔（Tower of Hanoi）、钢琴块（Piano Tiles）、数回（Slitherlink）、井字棋（Tic-Tac-Toe）、西蒙记忆（Simon Says）、泡泡龙（Bubble Shooter）、番茄时钟、在线简历、南昌旅游介绍、技术文档中心三十三**大功能模块**。
 
 ### 1.2 技术栈
 
@@ -59,6 +59,7 @@ react-app/src/
 │   ├── Slitherlink.jsx / .css   # 数回页面壳（SVG 点阵 + 三态边标记 + 冲突红标 + 每日关卡 + 24h 进度存档）
 │   ├── TicTacToe.jsx / .css     # 井字棋页面壳（3×3/4×4 棋盘 + Minimax 三档 AI + 撤销栈 + 24h 进度存档）
 │   ├── SimonSays.jsx / .css     # 西蒙记忆页面壳（四色序列 + rAF 回放 + 3 生命 + 音效 + 键盘 1-4 + 24h 进度存档）
+│   ├── BubbleShooter.jsx / .css # 泡泡龙页面壳（Canvas 2D 蜂窝盘面 + 指针瞄准 40ms 节流 + 双路自动暂停 + 24h 进度存档）
 │   ├── Pomodoro.jsx / .css      # 番茄时钟
 │   ├── Nanchang.jsx / .css      # 南昌旅游介绍（手账风图文页 + 攻略图集灯箱）
 │   ├── Resume.jsx / .css        # 在线简历
@@ -93,6 +94,7 @@ react-app/src/
 │   └── SlitherlinkEngine.js       # 数回引擎（纯逻辑：反向生成闭合环 + clue 反推 + 端点度数/连通性判定 + 撤销栈 + 存档校验）
 │   └── TicTacToeEngine.js         # 井字棋引擎（纯逻辑：Minimax + α-β 剪枝 + 三档难度 + 4×4 深度上限 + 撤销栈 + 存档校验）
 │   └── SimonSaysEngine.js         # 西蒙记忆引擎（纯逻辑：序列生成 + tick 驱动回放时钟 + 三态判定 + 生命/加速 + 存档校验）
+│   └── BubbleShooterEngine.js     # 泡泡龙引擎（纯逻辑：蜂窝网格 + 飞行积分/墙面反弹 + 吸附落位 + 同色 BFS 消除 + 悬空坠落 + 每 8 发下压）
 ├── components/
 │   ├── Navbar.jsx               # 顶部导航
 │   ├── MouseTrail.jsx           # 鼠标轨迹特效（Canvas）
@@ -147,6 +149,7 @@ react-app/src/
 | `/slitherlink` | Slitherlink 数回 | **lazy 懒加载**（含引擎逻辑，独立分包） |
 | `/tic-tac-toe` | TicTacToe 井字棋 | **lazy 懒加载**（含引擎逻辑，独立分包） |
 | `/simon-says` | SimonSays 西蒙记忆 | **lazy 懒加载**（含引擎逻辑，独立分包） |
+| `/bubble-shooter` | BubbleShooter bubble-shooter | **lazy 懒加载**（含引擎逻辑，独立分包） |
 | `*` | NotFound 404 | 直接引入 |
 
 懒加载统一使用 `<Suspense fallback="加载中…">`。
@@ -179,8 +182,8 @@ Bento Grid 网格布局，自上而下：
    - **AI 技术栈卡片**：11 个技能标签（VibeCode、AgentCode、RAG、React 等），包裹在**可拖拽排序**的 DragList 中（支持 Alt+↑/↓ 键盘上移/下移，见 3.1.3）。
    - **本地天气卡片**（见 3.1.1）。
 3. **Agent 工作流**：4 张流程卡（需求理解 → 代码生成 → 浏览器自测 → 构建部署），可 Tab 聚焦（tabindex=0 + role="group"）。
-4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：29 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe、数织→/nonogram、跳棋→/checkers、一笔画→/one-stroke、消消乐→/match3、生命游戏→/life-game、汉诺塔→/hanoi-game、钢琴块→/piano-tiles），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡；2026-11-17 新增数织卡、跳棋卡；2026-11-18 新增一笔画卡、消消乐卡；2026-11-19 新增生命游戏卡；2026-11-20 新增汉诺塔卡；2026-11-23 新增钢琴块卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
-5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 32 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23、2026-11-17 随作品入口增至 24、2026-11-18 随作品入口增至 25 / 26、2026-11-19 随作品入口增至 27、2026-11-20 随作品入口增至 28、2026-11-23 随作品入口增至 29、2026-11-24 随作品入口增至 30、2026-11-25 随作品入口增至 31、2026-11-26 随作品入口增至 32）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
+4. **作品入口**（原「精选作品」+「技术实践」两区块合并，路由去重）：33 张由 `CardLayout` 渲染的卡片（飞机大战→/game、番茄时钟→/pomodoro、在线简历→/resume、南昌旅游→/nanchang、提示词工程文档→/docs、2048 小游戏→/2048、俄罗斯方块→/tetris、贪吃蛇→/snake、打砖块→/breakout、记忆翻牌→/memory、打地鼠→/whack、数字华容道→/puzzle、关灯挑战→/lightsout、连连看→/lianliankan、四连棋→/connect4、推箱子→/sokoban、黑白棋→/reversi、扫雷→/minesweeper、迷宫寻路→/maze、数独→/sudoku、五子棋→/gomoku、接水管→/pipe、数织→/nonogram、跳棋→/checkers、一笔画→/one-stroke、消消乐→/match3、生命游戏→/life-game、汉诺塔→/hanoi-game、钢琴块→/piano-tiles、数回→/slitherlink、井字棋→/tic-tac-toe、西蒙记忆→/simon-says、泡泡龙→/bubble-shooter），每条路由唯一（2026-10-22 打砖块替换原"更多"占位卡；2026-10-26 新增记忆翻牌卡；2026-10-30 新增打地鼠卡；2026-11-01 新增数字华容道卡；2026-11-03 新增关灯挑战/连连看/四连棋卡；2026-11-05 新增推箱子卡；2026-11-07 新增黑白棋卡；2026-11-08 新增扫雷卡；2026-11-09 新增迷宫寻路卡；2026-11-10 新增数独卡；2026-11-12 新增五子棋卡；2026-11-13 新增接水管卡；2026-11-17 新增数织卡、跳棋卡；2026-11-18 新增一笔画卡、消消乐卡；2026-11-19 新增生命游戏卡；2026-11-20 新增汉诺塔卡；2026-11-23 新增钢琴块卡；2026-11-27 新增泡泡龙卡）。卡片 `children` 内容区为作品描述 + 原「技术实践」对应卡的技术描述（`.cl-practice` 段落）；`footer` 为 meta + `Link` 跳转（点击计数写入 `home-entry-clicks`，约束卡①）。`data-keywords` 经 `...rest` 透传供 MouseTrail 切换粒子词库（见 3.1.4）。原 `bento-work` 卡片样式（13 个 `.bento-work*` 选择器）与「03 技术实践」独立区块已移除。
+5. **统计条**：100% AI 生成代码 / 0 行人工编码 / 33 个功能模块（`ENTRIES.length` 驱动，无手写数字；进入视口时 800ms 数字滚动动画，reduced-motion 直接显示；2026-11-09 随作品入口增至 19、2026-11-10 随作品入口增至 20、2026-11-12 随作品入口增至 21、2026-11-13 随作品入口增至 22、2026-11-17 随作品入口增至 23、2026-11-17 随作品入口增至 24、2026-11-18 随作品入口增至 25 / 26、2026-11-19 随作品入口增至 27、2026-11-20 随作品入口增至 28、2026-11-23 随作品入口增至 29、2026-11-24 随作品入口增至 30、2026-11-25 随作品入口增至 31、2026-11-26 随作品入口增至 32、2026-11-27 随作品入口增至 33）/ 实时天气摘要格（与天气卡片共享 useWeather 状态，四态含 stale 降级：缓存温度 + 「N 分钟前」后缀；点击平滑滚动并聚焦天气卡）/ mailto 联系链接。
 - **键盘可达性**：Bento 内全部可交互元素支持 Tab 聚焦 + Enter/Space 激活，统一 `:focus-visible` 紫色焦点环（2px #aa3bff）。
 - **移动端响应式**：断点对齐统一三级体系（≥1024 / 768~1023 / <768 / <480）；Bento 网格 <1024 改 6 列过渡、<768 改单列；`.home-page` <768 padding 降为 24px 16px 48px；`.bento-about`/`.bento-skills` <768 `min-height: auto`；统计条 `.bento-stat-num` <768 24px、<480 统计条改纵向堆叠。
 
@@ -399,7 +402,7 @@ Bento Grid 网格布局，自上而下：
 - **控制**：开始/暂停、重置（回到当前模式满时长）、跳过（跳过专注视为完成一个番茄并推进周期；跳过休息直接回专注）。
 - **完成提示音**：Web Audio API 合成 C5-E5-G5 三连音（无音频文件），AudioContext 模块级单例复用（全程 ≤1 个实例），音频不可用时静默。
 - **进度展示**：SVG 圆环进度（半径 130）+ 中心倒计时 MM:SS + 模式标签；本轮周期完成数圆点（4 个，完成的实心）。
-- **统计**（2026-11-12 修正）：双口径展示——① **最近 24h N 个有效番茄钟**（滚动窗口，`pomodoro-sessions-v1` session 数组，仅 `durSec ≥ 120` 的 session 计入，时长 ≥2min 才算有效番茄钟）；② **累计完成数**（`pomo-completed`，0~99999 封顶）。session 数组同时与五子棋 / 跳棋 / 一笔画 / 消消乐 / 生命游戏 / 汉诺塔对局联动——时长 ≥120s 的上述对局也会追加 session（`game` 字段区分 gomoku/checkers/one-stroke/match3/life/hanoi），多来源统一统计口径，session 只保留最近 14 天防 localStorage 配额。`pomo-completed` 值域收敛为 0~99999 整数：读取时非法值回退 0 并清除原值，计数达 99999 封顶不再增长。写入采用脏标记延迟持久化——完成/跳过仅置脏标记，在页面隐藏（visibilitychange）、pagehide/beforeunload、组件卸载时统一写入，运行中每 30 秒兜底写一次；localStorage 不可用时仅内存计数。
+- **统计**（2026-11-12 修正）：双口径展示——① **最近 24h N 个有效番茄钟**（滚动窗口，`pomodoro-sessions-v1` session 数组，仅 `durSec ≥ 120` 的 session 计入，时长 ≥2min 才算有效番茄钟）；② **累计完成数**（`pomo-completed`，0~99999 封顶）。session 数组同时与五子棋 / 跳棋 / 一笔画 / 消消乐 / 生命游戏 / 汉诺塔对局联动——时长 ≥120s 的上述对局也会追加 session（`game` 字段区分 gomoku/checkers/one-stroke/match3/life/hanoi/simon-says/bubble-shooter），多来源统一统计口径，session 只保留最近 14 天防 localStorage 配额。`pomo-completed` 值域收敛为 0~99999 整数：读取时非法值回退 0 并清除原值，计数达 99999 封顶不再增长。写入采用脏标记延迟持久化——完成/跳过仅置脏标记，在页面隐藏（visibilitychange）、pagehide/beforeunload、组件卸载时统一写入，运行中每 30 秒兜底写一次；localStorage 不可用时仅内存计数。
 - **标签页标题**：运行中显示 `MM:SS 模式名 - 番茄钟`，停止时恢复"番茄时钟"。
 - **移动端响应式**：断点对齐统一三级体系；`.pomo-card` <768 `width:100%`、padding 28px 24px；`.pomo-ring` <768 缩至 260px、倒计时字号 48px；<480 `.pomo-ring` 240px、字号 44px。
 
@@ -1318,6 +1321,36 @@ Bento Grid 网格布局，自上而下：
 - `npm run verify`：lint 0 error、全量单测通过、build 成功、页面冒烟 34/34（含 `/simon-says`）。
 - `audit:mobile`：320–1024px 九档 0 违规（minFont 12、smallTargets 0、无横向溢出）。
 
+### 3.35 泡泡龙（/bubble-shooter，2026-11-27 新增，第 28 款）
+
+#### 3.35.1 架构
+
+- 页面壳 `BubbleShooter.jsx` + `BubbleShooter.css`，引擎 `game/BubbleShooterEngine.js`（纯逻辑，无定时器）。
+- 画布逻辑尺寸 16×26.6（8 列 × 2 单位直径），`devicePixelRatio` 上限 2；引擎快照写入 ref，单 rAF 循环驱动飞行积分与按需重绘，不逐帧 setState。
+- 状态机 `idle → playing ⇄ paused → over`，另含 `error`（Canvas 2D 不可用）；恢复存档后为 paused，需手动继续。
+- 持久化键：`game-bubble-shooter-save-v1` / `game-bubble-shooter-best-v1` / `game-bubble-shooter-stats-v1`。
+
+#### 3.35.2 玩法规则
+
+- 盘面为六边形蜂窝网格：偶数行 8 格、奇数行 7 格（右移半格），初始填充 5 行、随机 5 色，预分配 12 行保证落位总有空格。
+- 拖动或 ←/→ 调整角度（±75°），松手 / 空格发射；气泡 26 单位/秒飞行，撞左右墙反弹，触顶或撞到已有气泡后吸附到最近合法空格（第 0 行或与已有气泡相邻）。
+- 同色 BFS ≥3 消除（每个 +10 分），消除后失去顶行连通的气泡整组坠落（每个 +20 分）。
+- 每发射 8 发顶部插入一行（偏移与首行相反）；任一气泡行号 ≥12 判负（overflow），清空全盘直接通关（cleared），盘面挤满（crowded）同样结束。
+- 结束结算：最佳得分、累计埋点、对局 ≥120s 追加 `pomodoro-sessions-v1`（`game:'bubble-shooter'`、`win` 为是否清空全盘、`level` 为得分）。
+
+#### 3.35.3 约束卡（PRD 三张约束卡落点）
+
+1. **移动端触控与窄屏**：画布 `width: min(92vw, 420px)` + `aspect-ratio: 16 / 26.6`，`touch-action: none` 由 Pointer Events 统一瞄准/发射；按钮 ≥44px、最小字号 0.75rem；320px 无横向溢出。
+2. **键盘可访问性与 aria**：画布 `role="img"` + `aria-label`（气泡数与得分），瞄准/发射/暂停/重开均为原生按钮；←/→ 每次 3°、空格/Enter 发射、Esc 暂停、R 重开；`aria-live="polite"` 播报消除/坠落/结束原因。
+3. **频率控制与基线联动**：指针瞄准 40ms 节流、存档 800ms 防抖、埋点脏标记 + 1s 防抖 + `pagehide` 冲刷；同步 1.4 路由、3.1 卡片与统计条、3.5 registry、第 4 节三个存储键与番茄钟 `game` 取值。
+
+#### 3.35.4 验证
+
+- 引擎单测 14 项全通过（`node --test src/game/BubbleShooterEngine.test.js`）：开局盘面、瞄准夹紧、飞行落位、墙面反弹、触顶吸附、同色消除、悬空坠落、每 8 发下压、触底判负、暂停冻结、瞄准虚线边界、存档快照恢复、坏档校验、蜂窝几何。
+- `npm run verify`：lint 0 error、全量单测 368 通过、build 成功、页面冒烟 35/35（含 `/bubble-shooter`）。
+- `audit:mobile`：320–1024px 九档 0 违规（minFont 12、smallTargets 0、无横向溢出）。
+- 交互冒烟：开始游戏 → 点击画布发射，气泡数 38→39、已发射 0→1，无 console 错误。
+
 ## 4. 数据与存储一览
 
 | 键 / 来源 | 位置 | 用途 |
@@ -1397,6 +1430,9 @@ Bento Grid 网格布局，自上而下：
 | `game-simon-says-best-v1` | localStorage | 西蒙记忆最佳关卡 `{ bestRound, date }`；仅更高关卡覆盖，损坏回退空对象 |
 | `game-simon-says-stats-v1` | localStorage | 西蒙记忆累计埋点 `{ plays, gamesOver, bestRound, totalRounds, wrongPresses, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
 | `game-simon-says-settings-v1` | localStorage | 西蒙记忆音效开关 `{ sound:boolean }` |
+| `game-bubble-shooter-save-v1` | localStorage | 泡泡龙未完成对局 `{ v:1, rows:[{o,c:[]}], score, shotsFired, current, next, aim, elapsed, ts }`；行数 ≤20、≤4096 字符、24h TTL、结束/重开/放弃即删、坏档清理 |
+| `game-bubble-shooter-best-v1` | localStorage | 泡泡龙最佳得分 `{ bestScore, date }`；仅更高分覆盖，损坏回退空对象 |
+| `game-bubble-shooter-stats-v1` | localStorage | 泡泡龙累计埋点 `{ plays, gamesOver, clears, bestScore, totalPops, totalShots, updatedAt }`；脏标记 + 1s 防抖 + pagehide 落盘 |
 | `game-player-name` | localStorage | 玩家昵称（飞机大战 / 打砖块 / 俄罗斯方块 / 贪吃蛇 / 记忆翻牌排行榜提交共用；≤12 字符，默认「无名飞侠」） |
 | `game-touch-starts` | localStorage | 打砖块触控开局计数（每局首次触摸 +1，0~99999 封顶） |
 | `game-2048-touch-starts` | localStorage | 2048 触控滑动操作计数（每局首次滑动 +1，0~99999 封顶） |

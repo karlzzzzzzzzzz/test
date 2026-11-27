@@ -24,6 +24,7 @@ import pianoTiles from './piano-tiles.md?raw'
 import slitherlink from './slitherlink.md?raw'
 import ticTacToe from './tic-tac-toe.md?raw'
 import simonSays from './simon-says.md?raw'
+import bubbleShooter from './bubble-shooter.md?raw'
 
 export const docs = [
   {
@@ -265,6 +266,16 @@ export const docs = [
     tags: ['Game', 'PRD', 'Memory'],
     readTime: '约 8 分钟',
     content: simonSays,
+  },
+  {
+    slug: 'bubble-shooter',
+    title: '泡泡龙（Bubble Shooter）需求文档',
+    summary:
+      '第 28 款小游戏的需求文档：8 列蜂窝盘面角度发射、同色 3 连消除与悬空气泡坠落、每 8 发顶部下压一行；Canvas 2D 按需重绘、瞄准 40ms 节流、双路自动暂停、24h 进度存档、埋点统计与番茄钟联动。',
+    date: '2026-11',
+    tags: ['Game', 'PRD', 'Arcade'],
+    readTime: '约 9 分钟',
+    content: bubbleShooter,
   },
 ]
 
